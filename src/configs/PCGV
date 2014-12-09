@@ -1,0 +1,9 @@
+solver=PCG
+max_levels=100
+cycle=V
+max_iters=10
+presweeps=1
+postsweeps=1
+convergence=ABSOLUTE
+tolerance=1e-6
+smoother=GAUSSSEIDEL

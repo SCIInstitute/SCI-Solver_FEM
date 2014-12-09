@@ -1,0 +1,9 @@
+max_levels=100
+cycle=PCGV
+max_iters=100
+presweeps=1
+postsweeps=1
+norm=L2 
+smoother=GAUSSSEIDEL
+convergence=ABSOLUTE
+tolerance=1e-6
