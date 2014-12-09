@@ -7,11 +7,13 @@ The code was written by Zhisong Fu and T. James Lewis. The theory behind this co
 "Architecting the Finite Element Method Pipeline for the GPU"
 
 AUTHORS
+
 Zhisong Fu(a,b), T. James Lewis(a,b), Robert M. Kirby(a,b), Ross T. Whitaker(a,b)
 a-School of Computing, University of Utah, Salt Lake City, UT, USA
 b-Scientific Computing and Imaging Institute, University of Utah, Salt Lake City, USA
 
 ABSTRACT
+
 The finite element method (FEM) is a widely employed numerical technique
 for approximating the solution of partial differential equations (PDEs) in var-
 ious science and engineering applications. Many of these applications benefit
