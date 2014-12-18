@@ -42,7 +42,7 @@ int main(int argc, char** argv)
                        device, deviceProp.name, deviceProp.major, deviceProp.minor, totalMB);
             }
 
-            cudaSetDevice(1);
+            cudaSetDevice(0);
             if(cudaDeviceReset()!=cudaSuccess)
                 exit(0);
             else {

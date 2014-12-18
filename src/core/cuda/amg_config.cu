@@ -150,6 +150,8 @@ void AMG_Config::setParameter(const char* str) {
 //    setParameter(name, getValue<NormType>(value.c_str()));
   else if(*(iter->second.type)==typeid(ConvergenceType))
     setParameter(name, getValue<ConvergenceType>(value.c_str()));
+  else if(*(iter->second.type)==typeid(AlgorithmType))
+    setParameter(name, getValue<AlgorithmType>(value.c_str()));
   else
   {
     char error[100];
