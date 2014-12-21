@@ -13,6 +13,7 @@
 #include <FEM/FEM3D.h>
 #include <timer.h>
 #include <amg.h>
+#include <setup_solver.h>
 
 /*
 
@@ -54,7 +55,6 @@ void printUsageAndExit()
 
 int main(int argc, char** argv)
 {
-
     // Set up signal handler and create killer thread
     signal(SIGINT, signalHandler);
     pthread_t MasterThread = pthread_self();
@@ -63,102 +63,34 @@ int main(int argc, char** argv)
 
     // Zhisong's code to run the solver
     try {
-
-        srand48(0);
         AMG_Config cfg;
 
         Matrix_d A;
         TriMesh* meshPtr;
         TetMesh* tetmeshPtr;
-        FEM2D fem2d;
-        FEM3D fem3d;
+        FEM2D* fem2d = new FEM2D;
+        FEM3D* fem3d = new FEM3D;
 
-        int deviceCount;
-        cudaGetDeviceCount(&deviceCount);
-        int device;
-        for (device = 0; device < deviceCount; ++device) {
-            cudaDeviceProp deviceProp;
-            cudaGetDeviceProperties(&deviceProp, device);
-            size_t totalMemory = deviceProp.totalGlobalMem;
-            int totalMB = totalMemory / 1000000;
-            printf("Device %d (%s) has compute capability %d.%d, %d regs per block, and %dMb global memory.\n",
-                    device, deviceProp.name, deviceProp.major, deviceProp.minor, deviceProp.regsPerBlock, totalMB);
-        }
-
-        cudaSetDevice(0);
-        if (cudaDeviceReset() != cudaSuccess)
-            exit(0);
-        else {
-            cudaDeviceProp deviceProp;
-            cudaGetDeviceProperties(&deviceProp, 1);
-        }
-
-        double Assemblestart, Assemblestop;
-        double neednbstart, neednbstop;
-        double prepAssemstart, prepAssemstop;
-        double setupstart, setupstop;
+        cfg.setParameter("cuda_device_num", 0);
 
         for (int i = 1; i < argc; i++) {
-            if (strncmp(argv[i], "-help", 100) == 0)
+            if (strncmp(argv[i], "-help", 100) == 0) {
                 printUsageAndExit();
-            else if (strncmp(argv[i], "-matrixtri", 100) == 0 || strncmp(argv[i], "-mtri", 100) == 0) {
-                i++;
+            } else if (strncmp(argv[i], "-matrixtri", 100) == 0 || strncmp(argv[i], "-mtri", 100) == 0) {
+                cfg.setParameter("mesh_type", 0);
                 // load a matrix stored in MatrixMarket format
+                i++;
                 string meshfile = string(argv[i]) + string(".ply");
                 meshPtr = TriMesh::read(meshfile.c_str());
-                meshPtr->rescale(4.0);
-                neednbstart = CLOCK();
-                meshPtr->need_neighbors();
-                meshPtr->need_meshquality();
-                neednbstop = CLOCK();
-                Matrix_ell_d_CG Aell_d;
-                Vector_d_CG RHS(meshPtr->vertices.size(), 0.0);
 
-                prepAssemstart = CLOCK();
-                trimesh2ell<Matrix_ell_d_CG > (meshPtr, Aell_d);
-                cudaThreadSynchronize();
-
-                prepAssemstop = CLOCK();
-                Assemblestart = CLOCK();
-                fem2d = FEM2D(meshPtr);
-
-                fem2d.assemble(meshPtr, Aell_d, RHS);
-
-
-                cudaThreadSynchronize();
-                Assemblestop = CLOCK();
-
-                A = Aell_d;
-                Aell_d.resize(0, 0, 0, 0);
             } else if (strncmp(argv[i], "-matrixtet", 100) == 0 || strncmp(argv[i], "-mtet", 100) == 0) {
-                i++;
-
+                cfg.setParameter("mesh_type", 1);
                 // load a matrix stored in MatrixMarket format
+                i++;
                 string nodefile = string(argv[i]) + string(".node");
                 string elefile = string(argv[i]) + string(".ele");
-
                 tetmeshPtr = TetMesh::read(nodefile.c_str(), elefile.c_str());
-                tetmeshPtr->need_neighbors();
-                tetmeshPtr->need_meshquality();
-                tetmeshPtr->rescale(1.0);
 
-                Matrix_ell_d_CG Aell_d;
-                Matrix_ell_h_CG Aell_h;
-                Vector_d_CG RHS(tetmeshPtr->vertices.size(), 0.0);
-
-                prepAssemstart = CLOCK();
-                tetmesh2ell<Matrix_ell_d_CG > (tetmeshPtr, Aell_d);
-                cudaThreadSynchronize();
-                prepAssemstop = CLOCK();
-
-                fem3d = FEM3D(tetmeshPtr);
-                Assemblestart = CLOCK();
-                fem3d.assemble(tetmeshPtr, Aell_d, RHS, true);
-                cudaThreadSynchronize();
-                Assemblestop = CLOCK();
-                //            cusp::print(Aell_d);
-                A = Aell_d;
-                Aell_d.resize(0, 0, 0, 0);
             } else if (strncmp(argv[i], "-amg", 100) == 0) {
                 i++;
                 cfg.parseParameterString(argv[i]);
@@ -172,20 +104,18 @@ int main(int argc, char** argv)
             printf("Error no matrix specified\n");
             printUsageAndExit();
         }
-        Vector_h_CG b(A.num_rows, 1.0);
-        Vector_h_CG x(A.num_rows, 0.0); //initial
-        Vector_d_CG x_d = x;
-        Vector_d_CG b_d = b;
+        Vector_d_CG b_d;
+        Vector_d_CG x_d;
+        setup_solver(cfg, meshPtr, tetmeshPtr, fem2d, fem3d,
+        		     &A, &b_d, &x_d, false);
 
-        cfg.printAMGConfig();
-        AMG<Matrix_h, Vector_h> amg(cfg);
-        amg.setup(A, meshPtr, tetmeshPtr);
-        amg.printGridStatistics();
-        amg.solve(b_d, x_d);
-
-
+        cusp::print(A);
+        cusp::print(x_d);
+        cusp::print(b_d);
     }
-    catch (exception& e) {
+    catch (const invalid_argument& e) {
+    	cerr << "Invalid argument: " << e.what << endl;
+    	return 1;
     }
     catch (...) {
         throw;
