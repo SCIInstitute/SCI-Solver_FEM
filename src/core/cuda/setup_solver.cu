@@ -13,6 +13,7 @@
 #include <FEM/FEM3D.h>
 #include <timer.h>
 #include <amg.h>
+#include <string>
 
 /*
 
@@ -29,9 +30,10 @@ using namespace std;
 
 int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
 		         FEM2D* fem2d, FEM3D* fem3d, Matrix_d* A,
-		         Vector_d_CG* x_d, Vector_d_CG* b_d, bool verbose)
+		         Vector_d_CG* x_d, Vector_d_CG* b_d, const bool verbose)
 {
     srand48(0);
+    char charBuffer[100];
 
     if( verbose ) {
         int deviceCount;
@@ -47,11 +49,12 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
         }
     }
 
-    int cudaDeviceNumber = cfg.getParameter("cuda_device_num");
+    int cudaDeviceNumber = cfg.getParameter<int>("cuda_device_num");
     cudaSetDevice(cudaDeviceNumber);
     if (cudaDeviceReset() != cudaSuccess) {
         exit(0);
-     	string error = "CUDA device " + cudaDeviceNumber + " is not available on this system.";
+        sprintf(charBuffer, "CUDA device %d is no available on this system.", cudaDeviceNumber);
+     	string error = string(charBuffer);
        	throw invalid_argument(error);
     } else if( verbose ) {
         cudaDeviceProp deviceProp;
@@ -62,7 +65,7 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
     double neednbstart, neednbstop;
     double prepAssemstart, prepAssemstop;
 
-    int meshType = getParameter("mesh_type");
+    int meshType = cfg.getParameter<int>("mesh_type");
     if( meshType == 0 ) {
     	//Triangular mesh
         meshPtr->rescale(4.0);
@@ -79,15 +82,15 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
 
         prepAssemstop = CLOCK();
         Assemblestart = CLOCK();
-        fem2d = FEM2D(meshPtr);
+        fem2d->initializeWithTriMesh(meshPtr);
 
         fem2d->assemble(meshPtr, Aell_d, RHS);
 
         cudaThreadSynchronize();
         Assemblestop = CLOCK();
 
-        A = Aell_d;
-        Aell_d.resize(0, 0, 0, 0);
+        A = &Aell_d;
+        Aell_d->resize(0, 0, 0, 0);
     } else if( meshType == 1 ) {
     	//Tet mesh
         tetmeshPtr->need_neighbors();
@@ -103,25 +106,25 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
         cudaThreadSynchronize();
         prepAssemstop = CLOCK();
 
-        fem3d = FEM3D(tetmeshPtr);
+        fem3d->initializeWithTetMesh(tetmeshPtr);
         Assemblestart = CLOCK();
         fem3d->assemble(tetmeshPtr, Aell_d, RHS, true);
         cudaThreadSynchronize();
         Assemblestop = CLOCK();
         //            cusp::print(Aell_d);
-        A = Aell_d;
-        Aell_d.resize(0, 0, 0, 0);
+        A = &Aell_d;
+        Aell_d->resize(0, 0, 0, 0);
     }
 
-    if (A.num_rows == 0) {
+    if (A->num_rows == 0) {
     	if( verbose ) {
     		printf("Error no matrix specified\n");
     	}
     	string error = "Error no matrix specified";
     	throw invalid_argument(error);
     }
-    Vector_h_CG b(A.num_rows, 1.0);
-    Vector_h_CG x(A.num_rows, 0.0); //initial
+    Vector_h_CG b(A->num_rows, 1.0);
+    Vector_h_CG x(A->num_rows, 0.0); //initial
     x_d = x;
     b_d = b;
 

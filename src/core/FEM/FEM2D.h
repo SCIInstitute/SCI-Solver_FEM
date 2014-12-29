@@ -15,6 +15,7 @@ public:
   {
   };
   FEM2D(TriMesh* meshPtr);
+  void initializeWithTriMesh(TriMesh* meshPtr);
   void assemble(TriMesh* meshPtr, Matrix_ell_d_CG &A, Vector_d_CG &b);
   void assemble(TriMesh* meshPtr, Matrix_d_CG &A, Vector_d_CG &b);
   void JacobiGLZW(Vector_h_CG& Z, Vector_h_CG& weight, int degree, int alpha, int beta);

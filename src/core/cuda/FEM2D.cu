@@ -6,6 +6,11 @@
 
 FEM2D::FEM2D(TriMesh* meshPtr)
 {
+  initializeWithTriMesh(meshPtr);
+}
+
+void FEM2D::initializeWithTriMesh(TriMesh* meshPtr)
+{
   nv = meshPtr->vertices.size();
   ne = meshPtr->faces.size();
   IdxVector_h tri0(ne);
@@ -35,11 +40,11 @@ FEM2D::FEM2D(TriMesh* meshPtr)
   d_vx = vx;
   d_vy = vy;
 
-	tri0.resize(0);
-	tri1.resize(0);
-	tri2.resize(0);
-	vx.resize(0);
-	vy.resize(0);
+  tri0.resize(0);
+  tri1.resize(0);
+  tri2.resize(0);
+  vx.resize(0);
+  vy.resize(0);
 }
 
 double compute_gamma(double x)

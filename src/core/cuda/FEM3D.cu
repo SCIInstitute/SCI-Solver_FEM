@@ -4,6 +4,11 @@
 
 FEM3D::FEM3D(TetMesh* meshPtr)
 {
+  initializeWithTetMesh(meshPtr);
+}
+
+void FEM3D::initializeWithTetMesh(TetMesh* meshPtr)
+{
   nv = meshPtr->vertices.size();
   ne = meshPtr->tets.size();
   IdxVector_h tri0(ne);

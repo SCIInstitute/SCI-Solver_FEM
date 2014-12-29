@@ -14,6 +14,7 @@ public:
   {
   };
   FEM3D(TetMesh* meshPtr);
+  void initializeWithTetMesh(TetMesh* meshPtr);
   void assemble(TetMesh* meshPtr, Matrix_ell_d_CG &A, Vector_d_CG &b, bool isdevice);
   void JacobiGLZW(Vector_h_CG& Z, Vector_h_CG& weight, int degree, int alpha, int beta);
   void JacobiGRZW(Vector_h_CG& Z, Vector_h_CG& weight, int degree, int alpha, int beta);
