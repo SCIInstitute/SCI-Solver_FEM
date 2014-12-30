@@ -61,16 +61,15 @@ int main(int argc, char** argv)
     pthread_t KillerThread;
     pthread_create(&KillerThread, NULL, WaitToKill, (void*) &MasterThread);
 
+    AMG_Config cfg;
+    Matrix_d A;
+    TriMesh* meshPtr;
+    TetMesh* tetmeshPtr;
+    FEM2D* fem2d = new FEM2D;
+    FEM3D* fem3d = new FEM3D;
+
     // Zhisong's code to run the solver
     try {
-        AMG_Config cfg;
-
-        Matrix_d A;
-        TriMesh* meshPtr;
-        TetMesh* tetmeshPtr;
-        FEM2D* fem2d = new FEM2D;
-        FEM3D* fem3d = new FEM3D;
-
         cfg.setParameter("cuda_device_num", 0);
 
         for (int i = 1; i < argc; i++) {
@@ -114,15 +113,13 @@ int main(int argc, char** argv)
         cusp::print(b_d);
     }
     catch (const invalid_argument& e) {
-    	cerr << "Invalid argument: " << e.what << endl;
+    	cerr << "Invalid argument: " << e.what() << endl;
     	return 1;
     }
     catch (...) {
         throw;
     }
 
-    delete meshPtr;
-    delete tetmeshPtr;
     delete fem2d;
     delete fem3d;
 }
