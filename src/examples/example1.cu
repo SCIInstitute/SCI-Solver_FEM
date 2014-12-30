@@ -120,4 +120,9 @@ int main(int argc, char** argv)
     catch (...) {
         throw;
     }
+
+    delete meshPtr;
+    delete tetmeshPtr;
+    delete fem2d;
+    delete fem3d;
 }

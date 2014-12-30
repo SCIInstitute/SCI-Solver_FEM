@@ -89,8 +89,8 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
         cudaThreadSynchronize();
         Assemblestop = CLOCK();
 
-        A = &Aell_d;
-        Aell_d->resize(0, 0, 0, 0);
+        *A = Aell_d;
+        Aell_d.resize(0, 0, 0, 0);
     } else if( meshType == 1 ) {
     	//Tet mesh
         tetmeshPtr->need_neighbors();
@@ -112,8 +112,8 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
         cudaThreadSynchronize();
         Assemblestop = CLOCK();
         //            cusp::print(Aell_d);
-        A = &Aell_d;
-        Aell_d->resize(0, 0, 0, 0);
+        *A = Aell_d;
+        Aell_d.resize(0, 0, 0, 0);
     }
 
     if (A->num_rows == 0) {
@@ -125,16 +125,17 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
     }
     Vector_h_CG b(A->num_rows, 1.0);
     Vector_h_CG x(A->num_rows, 0.0); //initial
-    x_d = x;
-    b_d = b;
+    *x_d = x;
+    *b_d = b;
 
     if( verbose ) {
         cfg.printAMGConfig();
     }
-    AMG<Matrix_h, Vector_h> amg(*cfg);
-    amg.setup(A, meshPtr, tetmeshPtr);
+    AMG<Matrix_h, Vector_h> amg(cfg);
+    amg.setup(*A, meshPtr, tetmeshPtr);
     if( verbose ) {
     	amg.printGridStatistics();
     }
-    amg.solve(b_d, x_d);
+    amg.solve(*b_d, *x_d);
+    return 0;
 }
