@@ -14,16 +14,7 @@
 #include <timer.h>
 #include <amg.h>
 #include <setup_solver.h>
-
-/*
-
-#include <cusp/io/matrix_market.h>
-#include <cusp/print.h>
-#include <cusp/gallery/poisson.h>
-#include <fstream>
-
-
-*/
+#include <amg_level.h>
 
 using namespace std;
 
@@ -38,19 +29,6 @@ void* WaitToKill(void* threadId)
     sleep(60);
     pthread_kill(*((pthread_t*) threadId), SIGINT);
     pthread_exit(NULL);
-}
-
-void printUsageAndExit()
-{
-    std::cout << "Usage: ./amgsolve [-m matrix | -p x y z] [-amg \"variable1=value1 variable2=value2 ... variable3=value3\" -help ] [-c config_file]\n";
-    std::cout << "     -help display the command options\n";
-    std::cout << "     -m specify the matrix input file\n";
-    std::cout << "     -p points x y z:  use a poisson matrix on regular grid of size x y z\n";
-    std::cout << "     -c set the amg solver options from the configuration file\n";
-    std::cout << "     -amg set the amg solver options.  Options include the following:\n";
-    AMG_Config::printOptions();
-
-    exit(0);
 }
 
 int main(int argc, char** argv)
@@ -68,14 +46,12 @@ int main(int argc, char** argv)
     FEM2D* fem2d = new FEM2D;
     FEM3D* fem3d = new FEM3D;
 
-    // Zhisong's code to run the solver
-    try {
-        cfg.setParameter("cuda_device_num", 0);
+    cfg.setParameter("cuda_device_num", 0);
+    cfg.setParameter("algorithm", CLASSICAL);
 
+    try {
         for (int i = 1; i < argc; i++) {
-            if (strncmp(argv[i], "-help", 100) == 0) {
-                printUsageAndExit();
-            } else if (strncmp(argv[i], "-matrixtri", 100) == 0 || strncmp(argv[i], "-mtri", 100) == 0) {
+            if (strncmp(argv[i], "-matrixtri", 100) == 0 || strncmp(argv[i], "-mtri", 100) == 0) {
                 cfg.setParameter("mesh_type", 0);
                 // load a matrix stored in MatrixMarket format
                 i++;
@@ -99,10 +75,6 @@ int main(int argc, char** argv)
             }
         }
 
-        if (A.num_rows == 0) {
-            printf("Error no matrix specified\n");
-            printUsageAndExit();
-        }
         Vector_d_CG b_d;
         Vector_d_CG x_d;
         setup_solver(cfg, meshPtr, tetmeshPtr, fem2d, fem3d,

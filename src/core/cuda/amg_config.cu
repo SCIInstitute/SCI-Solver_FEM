@@ -1,6 +1,11 @@
-#include<amg_config.h>
+#include <amg_config.h>
 #include <iostream>
+#include <exception>
 #include <error.h>
+#include <types.h>
+
+using namespace std;
+
 SignalHandler AMG_Config::sh;
 AMG_Config::ParamDesc AMG_Config::param_desc;
 bool AMG_Config::registered=false;
@@ -49,14 +54,14 @@ Type AMG_Config::getParameter(std::string name) {
   //verify the paramter has been registered
   ParamDesc::iterator desc_iter=param_desc.find(name);
   if(desc_iter==param_desc.end()) {
-    std::cout << "getParameter error: '" << name << "' not found\n";
-    throw;
+    string error = "getParameter error: '" + name + "' not found\n";
+    throw invalid_argument(error);
   }
   //verify the types match
   if(desc_iter->second.type!=&typeid(Type))
   {
-    std::cout << "getParameter error: '" << name << "' type miss match\n";
-    throw;
+    string error = "getParameter error: '" + name + "' type mismatch\n";
+    throw invalid_argument(error);
   }
 
   //check if the paramter has been set
@@ -74,12 +79,12 @@ void AMG_Config::setParameter(std::string name, Type value) {
   //verify that the parameter has been registered
   ParamDesc::iterator iter=param_desc.find(name);
   if(iter==param_desc.end()) {
-    std::cout << "setParameter error: '" << name << "' not found\n";
-    throw;
+    string error = "setParameter error: '" + name + "' not found\n";
+    throw invalid_argument(error);
   }
   if(iter->second.type!=&typeid(Type)) {
-    std::cout << "setParameter error: '" << name << "' type miss match\n";
-    throw;
+    string error = "setParameter error: '" + name + "' type mismatch\n";
+    throw invalid_argument(error);
   }
   params[name]=value;
 }

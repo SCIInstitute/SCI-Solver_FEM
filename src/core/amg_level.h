@@ -28,6 +28,20 @@ inline const char* getString(AlgorithmType p)
 #include "tetmesh.h"
 #include <cusp/print.h>
 
+template <>
+inline AlgorithmType getValue<AlgorithmType>(const char* name) {
+  if(strncmp(name,"CLASSICAL",100)==0)
+    return CLASSICAL;
+  else if(strncmp(name,"SAMG",100)==0)
+    return SAMG;
+  else if(strncmp(name,"SAMGFULL",100)==0)
+    return SAMGFULL;
+
+  char error[100];
+  sprintf(error,"Algorithm '%s' is not defined",name);
+  FatalError(error);
+}
+
 /********************************************************
  * AMG Level class:
  *  This class is a base class for AMG levels.  This

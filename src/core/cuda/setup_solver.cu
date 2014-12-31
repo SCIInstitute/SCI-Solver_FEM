@@ -27,6 +27,16 @@
 
 using namespace std;
 
+void checkMatrixForValidContents(Matrix_d* A, const bool verbose)
+{
+    if (A->num_rows == 0) {
+        if( verbose ) {
+            printf("Error no matrix specified\n");
+        }
+        string error = "Error no matrix specified";
+        throw invalid_argument(error);
+    }
+}
 
 int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
 		         FEM2D* fem2d, FEM3D* fem3d, Matrix_d* A,
@@ -60,6 +70,8 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
         cudaDeviceProp deviceProp;
         cudaGetDeviceProperties(&deviceProp, 1);
     }
+
+    checkMatrixForValidContents(A, verbose);
 
     double Assemblestart, Assemblestop;
     double neednbstart, neednbstop;
@@ -116,13 +128,8 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
         Aell_d.resize(0, 0, 0, 0);
     }
 
-    if (A->num_rows == 0) {
-    	if( verbose ) {
-    		printf("Error no matrix specified\n");
-    	}
-    	string error = "Error no matrix specified";
-    	throw invalid_argument(error);
-    }
+    checkMatrixForValidContents(A, verbose);
+
     Vector_h_CG b(A->num_rows, 1.0);
     Vector_h_CG x(A->num_rows, 0.0); //initial
     *x_d = x;
