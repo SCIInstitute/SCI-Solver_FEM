@@ -71,7 +71,7 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
         cudaGetDeviceProperties(&deviceProp, 1);
     }
 
-    checkMatrixForValidContents(A, verbose);
+    //checkMatrixForValidContents(A, verbose);
 
     double Assemblestart, Assemblestop;
     double neednbstart, neednbstop;
