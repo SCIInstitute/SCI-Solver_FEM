@@ -38,6 +38,7 @@ int main(int argc, char** argv)
     pthread_t MasterThread = pthread_self();
     pthread_t KillerThread;
     pthread_create(&KillerThread, NULL, WaitToKill, (void*) &MasterThread);
+    bool verbose_output = false;
 
     AMG_Config cfg;
     Matrix_d A;
@@ -78,11 +79,14 @@ int main(int argc, char** argv)
         Vector_d_CG b_d;
         Vector_d_CG x_d;
         setup_solver(cfg, meshPtr, tetmeshPtr, fem2d, fem3d,
-        		     &A, &b_d, &x_d, false);
+        		     &A, &b_d, &x_d, verbose_output);
 
-        cusp::print(A);
-        cusp::print(x_d);
-        cusp::print(b_d);
+        if( verbose_output )
+        {
+            cusp::print(A);
+            cusp::print(x_d);
+            cusp::print(b_d);
+        }
     }
     catch (const invalid_argument& e) {
     	cerr << "Invalid argument: " << e.what() << endl;

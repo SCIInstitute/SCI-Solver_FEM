@@ -44,6 +44,8 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
 {
     srand48(0);
     char charBuffer[100];
+    streambuf* oldCoutStreamBuf;
+    ostringstream strCout;
 
     if( verbose ) {
         int deviceCount;
@@ -57,6 +59,9 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
             printf("Device %d (%s) has compute capability %d.%d, %d regs per block, and %dMb global memory.\n",
                     device, deviceProp.name, deviceProp.major, deviceProp.minor, deviceProp.regsPerBlock, totalMB);
         }
+    } else {
+    	oldCoutStreamBuf = cout.rdbuf();
+    	cout.rdbuf(strCout.rdbuf());
     }
 
     int cudaDeviceNumber = cfg.getParameter<int>("cuda_device_num");
@@ -144,5 +149,9 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
     	amg.printGridStatistics();
     }
     amg.solve(*b_d, *x_d);
+    if( !verbose ) {
+    	cout.rdbuf(oldCoutStreamBuf);
+    	cout << strCout.str()<< endl;
+    }
     return 0;
 }
