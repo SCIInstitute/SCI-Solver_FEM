@@ -1,0 +1,1 @@
+examples/Example1 -c ../src/configs/PCGV -mtet ../matrixdata/CubeMesh_size256step16 -amg "post_relaxes=1 tolerance=1e-8 smoother_weight=0.7 pro_omega=0.7 max_iters=10 PreINNER_iters=2 PostINNER_iters=3 top_size=256 DS_type=0 mesh_type=1 aggregator_type=1 metis_size=090102"
