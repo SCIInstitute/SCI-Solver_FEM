@@ -15,6 +15,7 @@
 #include <amg.h>
 #include <setup_solver.h>
 #include <amg_level.h>
+#include "cuda_resources.h"
 
 using namespace std;
 
@@ -49,6 +50,7 @@ int main(int argc, char** argv)
 
     cfg.setParameter("cuda_device_num", 0);
     cfg.setParameter("algorithm", CLASSICAL);
+    cfg.setParameter("max_threads_per_block", getMaxThreads(64,0));
 
     try {
         for (int i = 1; i < argc; i++) {

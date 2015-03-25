@@ -111,6 +111,7 @@ set(CORE_CUDA_SOURCES
 	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/misHelpers.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/randomizedMIS_GPU.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/setup_solver.cu"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cuda/cuda_resources.cu"
 
 	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_Aggregation_CPU.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_Aggregation_GPU.cu"

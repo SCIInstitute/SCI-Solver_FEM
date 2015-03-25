@@ -152,5 +152,6 @@ public:
   int nPreInnerIter;
   int nPostInnerIter;
   int post_relaxes;
+  int max_threads_per_block_;
   
 };
