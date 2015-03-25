@@ -15,15 +15,10 @@
 #include <amg.h>
 #include <string>
 
-/*
-
-#include <cusp/io/matrix_market.h>
-#include <cusp/print.h>
-#include <cusp/gallery/poisson.h>
-#include <fstream>
-
-
- */
+#ifdef WIN32
+#include <cstdlib>
+#define srand48 srand
+#endif
 
 using namespace std;
 

@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <iostream>
-#include <pthread.h>
 #include <signal.h>
 #include <exception>
 
@@ -19,26 +18,8 @@
 
 using namespace std;
 
-void signalHandler(int signum)
-{
-  //    DataRecorder::Add("Execution Halted", "By signal handler");
-  pthread_exit(NULL);
-}
-
-void* WaitToKill(void* threadId)
-{
-  sleep(60);
-  pthread_kill(*((pthread_t*) threadId), SIGINT);
-  pthread_exit(NULL);
-}
-
 int main(int argc, char** argv)
 {
-  // Set up signal handler and create killer thread
-  signal(SIGINT, signalHandler);
-  pthread_t MasterThread = pthread_self();
-  pthread_t KillerThread;
-  pthread_create(&KillerThread, NULL, WaitToKill, (void*) &MasterThread);
   bool verbose_output = true;
 
   AMG_Config cfg;

@@ -18,7 +18,6 @@
 #else
 #include <malloc.h>
 #endif
-#include <strings.h>
 #include <string.h>
 #include <ctype.h>
 #include <math.h>

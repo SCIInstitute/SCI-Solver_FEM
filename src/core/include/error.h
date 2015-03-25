@@ -1,15 +1,17 @@
 #pragma once
-
+#ifndef WIN32
 #include <execinfo.h>
 #include <dlfcn.h>
 #include <cxxabi.h>
 #include <unistd.h>
+#endif
 #include <stdio.h>
 
 /******************************************************
  * prints the current stack trace
  *****************************************************/
 inline void printStackTrace() {
+#ifndef WIN32
   const int MAX_STACK=30;
   size_t n;
   static void *addresses[MAX_STACK];
@@ -40,6 +42,7 @@ inline void printStackTrace() {
     else
       printf("    %d: %p\n",i-1,(char*)addresses[i]);
   }
+#endif
 }
 
 /********************************************************

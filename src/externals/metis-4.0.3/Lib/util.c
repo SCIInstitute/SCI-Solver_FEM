@@ -13,6 +13,11 @@
 
 #include <metis.h>
 
+#ifdef WIN32
+#include <cstdlib>
+#define srand48 srand
+#endif
+
 
 /*************************************************************************
 * This function prints an error message and exits
