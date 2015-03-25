@@ -1,5 +1,4 @@
 #include "AggMIS_Testing.h"
-//#include "debugHelpers.h"
 namespace AggMIS {
     namespace Testing {
         MetricsContext::MetricsContext(Graph_CSR& graph, IdxVector_h& aggregation) {
@@ -125,10 +124,6 @@ namespace AggMIS {
                 if (b->count((*it).first))
                     intersection.insert((*it).first);
 
-        //    // Delete stuff
-        //    delete a;
-        //    delete b;
-
             // Continuing on for every envelope in the aggregate:
             for (int i = 2; i < aggregate.size(); i++)
             {
@@ -140,12 +135,10 @@ namespace AggMIS {
                         toRemove.insert(*sIt);
                 for (sIt = toRemove.begin(); sIt != toRemove.end(); sIt++)
                     intersection.erase(*sIt);
-        //        delete a;
             }
 
             // Now finding the enclosing sphere sizes for all nodes in intersection
             set<int>::iterator sIt;
-        //    int bestSphereCenter = -1;
             int bestSphereSize = 1000000;
             for(sIt = intersection.begin(); sIt != intersection.end(); sIt++)
             {
@@ -163,13 +156,10 @@ namespace AggMIS {
                 if (bestSphereSize > nodeCount)
                 {
                     bestSphereSize = nodeCount;
-        //            bestSphereCenter = *sIt;
                 }
-        //        delete a;
             }
 
             // Returning the ratio score
-        //    printf("Found center of minimum enclosing sphere at %d with size of %d\n", bestSphereCenter, bestSphereSize);
 
             return (double)aggregate.size()/bestSphereSize;
         }
@@ -186,20 +176,6 @@ namespace AggMIS {
             {
                 int startNode = aggregate[rootIdx];
                 map<int,int> *distances = FindDistances(startNode, aggregate);
-//                printf("Found distance map from node %d \n", startNode);
-//                int counter = 0;
-//                printf("\t");
-//                for (map<int,int>::iterator it = distances->begin(); it != distances->end(); it++)
-//                {
-//                    if (counter++ == 10)
-//                    {
-//                        counter = 0;
-//                        printf("\n\t");
-//                    }
-//                    printf("(%d,%d) ", (*it).first, (*it).second);
-//                }
-//                char s;
-//                cin >> s;
                 
                 // Get paths for each distinct pair of nodes in the aggregate
                 for (int endIdx = rootIdx + 1; endIdx < aggregate.size(); endIdx++)
@@ -242,8 +218,6 @@ namespace AggMIS {
             // If there were required externals found add them and recurse:
             if (neededExternal.size() > 0)
             {
-        //        printf("Adding some needed nodes:\n");
-        //        debugHelpers::printResult(&neededExternal, "Nodes added");
 
                 aggregate.insert(aggregate.end(), neededExternal.begin(), neededExternal.end());
                 std::sort(aggregate.begin(), aggregate.end());
@@ -255,8 +229,6 @@ namespace AggMIS {
             {
                 set<int>* result = BruteForceMinimalNodes(externalPossibilities);
 
-        //        printf("Had to brute force solve:\n");
-        //        debugHelpers::printResult(result, "Nodes added");
 
                 aggregate.insert(aggregate.end(), result->begin(), result->end());
                 std::sort(aggregate.begin(), aggregate.end());
@@ -288,7 +260,6 @@ namespace AggMIS {
             bool betterFound = true;
             while(betterFound)
             {       
-        //        printf("Checking around node %d with score %d\n", currentNode, scores[currentNode]);
                 betterFound = false;
                 int start = graph->adjIndexes[currentNode];
                 int end = graph->adjIndexes[currentNode + 1];
@@ -298,7 +269,6 @@ namespace AggMIS {
                     if (scores.count(neighbor) == 0)
                         scores[neighbor] = FindMassScore(neighbor, aggregate);
 
-        //            printf("\tNeighbor %d with score %d\n", neighbor, scores[neighbor]);
                     if (scores[neighbor] < bestScore)
                     {
                         bestScore = scores[neighbor];
@@ -308,7 +278,6 @@ namespace AggMIS {
                 }
             }
 
-        //    printf("Best value of %d found at node %d\n", bestScore, currentNode);
             // Find any adjacent nodes with equivalent score
             vector<int> *result = new vector<int>();
             result->push_back(currentNode);
@@ -320,7 +289,6 @@ namespace AggMIS {
                 if (scores.count(neighbor) == 0)
                     scores[neighbor] = FindMassScore(neighbor, aggregate);
 
-        //        printf("\t Neighbor %d found with score %d\n", neighbor, scores[neighbor]);
                 if (scores[neighbor] == bestScore)
                 {
                     result->push_back(neighbor);

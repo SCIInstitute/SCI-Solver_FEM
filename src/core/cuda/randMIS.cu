@@ -3,9 +3,9 @@
 #include <queue>
 #include <time.h>
 #include <smoothedMG/aggregators/misHelpers.h>
-#include <AggMIS/AggMIS_Aggregation_GPU.h>
-#include <AggMIS/AggMIS_MergeSplitConditioner.h>
-#include <AggMIS/AggMIS_MIS_GPU.h>
+#include <AggMIS_Aggregation_GPU.h>
+#include <AggMIS_MergeSplitConditioner.h>
+#include <AggMIS_MIS_GPU.h>
 using namespace std;
 
 template <class Matrix, class Vector>

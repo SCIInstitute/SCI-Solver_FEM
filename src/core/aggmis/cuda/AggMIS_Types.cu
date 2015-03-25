@@ -13,9 +13,6 @@ namespace AggMIS {
             std::cout << "Error: " << cudaGetErrorString(code) << "\n";
             std::cout << "In file " << file << " line " << line << "\n";
             std::cout << "\n*****************************************************\n";
-//            DataRecorder::Add("Cuda Error", cudaGetErrorString(code));
-//            DataRecorder::Add("Cuda Error File", file);
-//            DataRecorder::Add("Cuda Error Line", line);
         }
         code = cudaGetLastError();
         if (code != cudaSuccess) {
@@ -23,9 +20,6 @@ namespace AggMIS {
             std::cout << "Error: " << cudaGetErrorString(code) << "\n";
             std::cout << "In file " << file << " line " << line << "\n";
             std::cout << "\n*****************************************************\n";
-//            DataRecorder::Add("Cuda Error", cudaGetErrorString(code));
-//            DataRecorder::Add("Cuda Error File", file);
-//            DataRecorder::Add("Cuda Error Line", line);
         }
         return false;
     }
@@ -36,35 +30,22 @@ namespace AggMIS {
             cudaEventCreate(&endTimeCuda);
             started = false;
             stopped = false;
-//            startTimeSec = startTimeNs = endTimeSec = endTimeNs = 0;
             startTimeHost.tv_sec = startTimeHost.tv_nsec = 0;
             endTimeHost.tv_sec = endTimeHost.tv_nsec = 0;
         }
         JTimer::~JTimer() {}
         void JTimer::start() {
-//            printf("Begin of start(): startTimeSec=%13d startTimeNs=%13d\n", startTimeSec, startTimeNs);
             cudaEventRecord(startTimeCuda, 0);
             clock_gettime(CLOCK_REALTIME, &startTimeHost);
-//            startTimeSec = startTimeHost.tv_sec;
-//            startTimeNs = startTimeHost.tv_nsec;
-//            printf("Timer started with start time: %16d seconds %16d nanoseconds\n", startTimeHost.tv_sec, startTimeHost.tv_nsec);
             started = true;
             stopped = false;
-//            printf("End of stop(): startTimeSec=%13d startTimeNs=%13d\n", startTimeSec, startTimeNs);
         }
         void JTimer::stop() {
             if (started && !stopped) {
-//                printf("Begin of stop(): startTimeSec=%13d startTimeNs=%13d\n", startTimeSec, startTimeNs);
                 cudaEventRecord(endTimeCuda, 0);
                 cudaEventSynchronize(endTimeCuda);
                 clock_gettime(CLOCK_REALTIME, &endTimeHost);
-//                endTimeSec = endTimeHost.tv_sec;
-//                endTimeNs = endTimeHost.tv_nsec;
-//                printf("Timer stopped with stop time: %16d seconds %16d nanoseconds\n", endTimeHost.tv_sec, endTimeHost.tv_nsec);
-//                printf("Timer start time: %16d seconds %16d nanoseconds\n", startTimeHost.tv_sec, startTimeHost.tv_nsec);
-//                started = false;
                 stopped = true;
-//                printf("End of stop(): startTimeSec=%13d startTimeNs=%13d\n", startTimeSec, startTimeNs);
             }
         }
         double JTimer::getElapsedTimeInSec(bool host) {
@@ -73,14 +54,10 @@ namespace AggMIS {
                 return -1.0;
             }
             if (host) {
-//                printf("Start time: %13ds %13dns\n", startTimeHost.tv_sec, startTimeHost.tv_nsec);
-//                printf("Stop  time: %13ds %13dns\n", endTimeHost.tv_sec, endTimeHost.tv_nsec);
-                // Check if we need to carry some nanoseconds
                 if (endTimeHost.tv_nsec < startTimeHost.tv_nsec) {
                     endTimeHost.tv_nsec += 1000000000;
                     endTimeHost.tv_sec -= 1;
                 }
-//                printf("Stop2 time: %13ds %13dns\n", endTimeHost.tv_sec, endTimeHost.tv_nsec);
                 long timeInMicrosec = ((endTimeHost.tv_sec - startTimeHost.tv_sec) * 1000000)
                                 + ((endTimeHost.tv_nsec - startTimeHost.tv_nsec) / 1000);
                 return (double)(timeInMicrosec) / 1000000.0;

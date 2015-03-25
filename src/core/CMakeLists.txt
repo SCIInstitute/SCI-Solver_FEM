@@ -15,7 +15,6 @@ if(CUDA_FOUND AND NOT CUDA_HAVE_GPU)
     # COMPILE_RESULT_VAR is TRUE when compile succeeds
     # RUN_RESULT_VAR is zero when a GPU is found
     if(COMPILE_RESULT_VAR AND NOT RUN_RESULT_VAR)
-        #message(STATUS "worked")
         set(CUDA_HAVE_GPU TRUE CACHE INTERNAL BOOL "Whether CUDA-capable GPU is present")
         set(CUDA_COMPUTE_CAPABILITY ${RUN_OUTPUT_VAR} CACHE STRING "Compute capability of CUDA-capable GPU present")
         set(CUDA_GENERATE_CODE "arch=compute_${CUDA_COMPUTE_CAPABILITY},code=sm_${CUDA_COMPUTE_CAPABILITY}" CACHE STRING "Which GPU architectures to generate code for (each arch/code pair will be passed as --generate-code option to nvcc, separate multiple pairs by ;)")
@@ -76,15 +75,12 @@ ENDIF()
 #END CMAKE SETTING CUDA_NVCC_FLAGS
 ###################
 
-#add_subdirectory(aggmis)
-
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	cycles
 	smoothers
-	aggmis_include 
+	aggmis/include 
 	${METIS_PATH}/Lib
-	${AGGMIS_INCLUDE}
 )
 
 set(CORE_CUDA_SOURCES
@@ -98,8 +94,6 @@ set(CORE_CUDA_SOURCES
 	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/cgcycle.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/allocator.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/ComputePermutationMethods.cu"
-#	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/TriMesh_io.cu"
-#	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/TriMesh_connectivity.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/cutil.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/smoothedMG_amg_level.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/smoother.cu"
@@ -112,21 +106,14 @@ set(CORE_CUDA_SOURCES
 	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/randomizedMIS_GPU.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/setup_solver.cu"
         "${CMAKE_CURRENT_SOURCE_DIR}/cuda/cuda_resources.cu"
-
 	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_Aggregation_CPU.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_Aggregation_GPU.cu"
-#	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_BasicTest.cu"
-#	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_FileIO.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_GraphHelpers.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_IOHelpers.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_MergeSplitConditioner_CPU.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_MergeSplitConditioner.cu"
-#	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_Metrics.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_MIS_CPU.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_MIS_GPU.cu"
-#	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/FractionalTimer.cu"
-#	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/tetmesh.cu"
-#	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/Timer.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/TriMesh_connectivity.cu"
 	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/TriMesh_io.cu"
 )

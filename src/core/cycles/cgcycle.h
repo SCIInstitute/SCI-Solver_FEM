@@ -7,12 +7,6 @@ template <class Matrix, class Vector> class CG_Flex_Cycle;
 #include <amg_level.h>
 #include <types.h>
 
-//template <class Matrix, class Vector>
-//  class CG_Cycle {
-//    public:
-//      CG_Cycle(CycleType next_cycle, int num_iters, AMG_Level<Matrix,Vector> *next, const Vector& b, Vector &x);
-// };
-
 template <class Matrix, class Vector>
   class CG_Flex_Cycle {
     public:
