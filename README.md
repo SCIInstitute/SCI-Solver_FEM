@@ -59,7 +59,7 @@ Using the Library
 A basic usage of the library links to the <code>libFEM_CORE.so</code> library during build and 
 includes the headers needed, which are usually:
 
-<code>
+```c++
 #include <amg_config.h>
 #include <TriMesh.h>
 #include <tetmesh.h>
@@ -69,7 +69,7 @@ includes the headers needed, which are usually:
 #include <amg.h>
 #include <setup_solver.h>
 #include <amg_level.h>
-</code>
+```
 
 Then a program would setup the FEM parameters and call <code>setup_solver</code> to generate
 the answer matrices.
