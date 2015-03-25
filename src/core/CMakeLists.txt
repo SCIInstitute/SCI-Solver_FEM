@@ -77,9 +77,10 @@ ENDIF()
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
-	cycles
-	smoothers
-	aggmis/include 
+	${CMAKE_CURRENT_SOURCE_DIR}/include
+	${CMAKE_CURRENT_SOURCE_DIR}/include/cycles
+	${CMAKE_CURRENT_SOURCE_DIR}/include/smoothers
+	${CMAKE_CURRENT_SOURCE_DIR}/aggmis/include
 	${METIS_PATH}/Lib
 )
 

@@ -1,8 +1,7 @@
 project(Example1)
 
 include_directories(
-	"${CMAKE_SOURCE_DIR}/core"
-	#"${AGGMIS_INCLUDE}"
+	"${CMAKE_SOURCE_DIR}/core/include"
 )
 
 CUDA_ADD_EXECUTABLE(Example1 example1.cu)
