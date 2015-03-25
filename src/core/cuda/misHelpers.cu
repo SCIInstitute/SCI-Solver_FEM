@@ -548,7 +548,6 @@ void misHelpers::aggregateGraph(int minSize, int depth, IdxVector_d &adjIndexes,
   // Figuring out block sizes for kernel call:
   int blockSize = 256;
   int nBlocks = size / blockSize + (size % blockSize == 0 ? 0 : 1);
-  int counter = 0;
 
   while(!complete)
   {
@@ -618,7 +617,7 @@ void misHelpers::aggregateWeightedGraph(int maxSize, int fullSize, int depth, Id
 
   while(!complete)
   {
-		counter++;
+    counter++;
     // Allocating nodes
     allocateNodesKernel << < nBlocks, blockSize >> > (size, adjIndexes_d, adjacency_d, partIn_d, partOut_d, aggregated_d);
 
@@ -663,7 +662,6 @@ void misHelpers::restrictPartitionSize(int maxSize, int fullSize, IdxVector_d &a
 
   // Finding largest part size:
   int largestPart = thrust::reduce(partSizes.begin(), partSizes.end(), (int)0, thrust::maximum<int>());
-  int counter = 0;
   while(largestPart > maxSize)
   {
 		printf("largestPart = %d\n", largestPart);

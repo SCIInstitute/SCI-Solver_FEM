@@ -107,8 +107,8 @@ void AMG_Config::printOptions() {
 void AMG_Config::printAMGConfig() {
       std::cout << "AMG Configuration: "  << std::endl;
       std::cout << "  Cuda Parameters: " << std::endl;
-      std::cout << "    Device Number: " << getString(getParameter<AlgorithmType>("cuda_device_num")) << std::endl;
-      std::cout << "    Max Thread/Block: " << getString(getParameter<AlgorithmType>("max_threads_per_block")) << std::endl;
+      std::cout << "    Device Number: " << getParameter<int>("cuda_device_num") << std::endl;
+      std::cout << "    Max Thread/Block: " << getParameter<int>("max_threads_per_block") << std::endl;
       std::cout << "  Setup Parameters: " << std::endl;
       std::cout << "    Algorithm: " << getString(getParameter<AlgorithmType>("algorithm")) << std::endl;
       std::cout << "    Max Levels: " << getParameter<int>("max_levels") << std::endl;

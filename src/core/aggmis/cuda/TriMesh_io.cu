@@ -107,11 +107,6 @@ static inline void swap_int(int &x)
 	swap_unsigned(* (unsigned *)(&x));
 }
 
-static inline void swap_float(double &x)
-{
-	swap_unsigned(* (unsigned *)(&x));
-}
-
 static inline void swap_double(double &x)
 {
 	unsigned char buf[8];
@@ -659,7 +654,7 @@ static bool read_obj(FILE *f, TriMesh *mesh)
 	while (1) {
 		skip_comments(f);
 		if (feof(f))
-			return true;
+			break;
 		char buf[1024];
 		GET_LINE();
 		if (LINE_IS("v ") || LINE_IS("v\t")) {

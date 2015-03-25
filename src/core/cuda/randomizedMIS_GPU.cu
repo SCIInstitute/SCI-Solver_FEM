@@ -161,7 +161,6 @@ void misHelpers::randomizedMIS(IdxVector_d adjIndexes, IdxVector_d adjacency, Id
     cudaEvent_t s, e;
     cudaEventCreate(&s);
     cudaEventCreate(&e);
-    float cpu_time;
     
     int size = adjIndexes.size() - 1;
     mis.resize(size);

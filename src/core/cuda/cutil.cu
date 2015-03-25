@@ -44,12 +44,6 @@ void __global__ compute_nb_indices_kernel(IndexType* rowoffsets, IndexType* ele_
       IndexType node2 = tri2[jj];
       if(node0 != nidx)
       {
-        int label = -1;
-        for(int i = 0; i < nedges; i++)
-        {
-          if(node0 == column_indices[i])
-            label = i;
-        }
         column_indices[pitch * nedges + nidx] = node0;
         nedges++;
       }

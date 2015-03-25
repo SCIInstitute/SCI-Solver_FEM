@@ -455,8 +455,6 @@ float snorm2(int, float *);
 float sdot(int n, float *, float *);
 void saxpy(int, float, float *, int, float *, int);
 void RandomPermute(int, idxtype *, int);
-double drand48();
-void srand48(long);
 int ispow2(int);
 void InitRandom(int);
 int ilog2(int);

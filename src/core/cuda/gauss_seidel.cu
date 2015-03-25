@@ -61,10 +61,7 @@
 template <class Matrix, class Vector>
 gauss_seidel<Matrix, Vector>::gauss_seidel(AMG_Config &cfg, const Matrix_d& Ainit)
 {
-  //find_diag(Ainit);
   cusp::detail::extract_diagonal(Ainit, this->diag);
-  //	cusp::print(diag);
-  //	cusp::print(diag);
   post_relaxes = cfg.AMG_Config::getParameter<int>("post_relaxes");
   weight = cfg.AMG_Config::getParameter<double>("smoother_weight");
   nPreInnerIter = cfg.AMG_Config::getParameter<int>("PreINNER_iters");
@@ -91,13 +88,13 @@ void gauss_seidel<Matrix_d, Vector_d>::find_diag(const Matrix_ell_d& A)
 
 template<typename IndexType, typename ValueType>
 __global__ void GS_smooth_kernel(const IndexType num_rows,
-                                 const IndexType * Ap,
-                                 const IndexType * Aj,
-                                 const ValueType * Ax,
-                                 const ValueType * diag,
-                                 const ValueType * b,
-                                 const double weight,
-                                 ValueType * x)
+    const IndexType * Ap,
+    const IndexType * Aj,
+    const ValueType * Ax,
+    const ValueType * diag,
+    const ValueType * b,
+    const double weight,
+    ValueType * x)
 
 {
   IndexType tidx = blockDim.x * blockIdx.x + threadIdx.x;
@@ -154,25 +151,24 @@ __global__ void permutation_kernel2(const int n, const IndexType* permutation, V
 
 template<typename IndexType, typename ValueType, int NUMPERROW>
 __global__ void preRRCsr_kernel(const IndexType num_rows,
-                                const IndexType* offsets,
-                                const IndexType* Aj,
-                                const ValueType* Ax,
-                                const ValueType* diag,
-                                const IndexType* aggregateIdx,
-                                const IndexType* partitionIdx,
-                                const IndexType* permutation,
-                                const ValueType* b,
-                                const double weight,
-                                ValueType* x,
-                                ValueType* residual,
-                                int nInnerIter)
+    const IndexType* offsets,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* permutation,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* residual,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   short Ajlocal[NUMPERROW];
 
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -186,8 +182,6 @@ __global__ void preRRCsr_kernel(const IndexType num_rows,
   __shared__ ValueType s_x[1024];
 
   ValueType brow, drow;
-  IndexType tmpidx;
-  IndexType permute;
 
 
   if(row < blockend)
@@ -263,18 +257,18 @@ __global__ void preRRCsr_kernel(const IndexType num_rows,
 
 template<typename IndexType, typename ValueType, int NUMPERROW>
 __global__ void preRRCsrShared_kernel(const IndexType num_rows,
-                                      const IndexType* offsets,
-                                      const IndexType* Aj,
-                                      const ValueType* Ax,
-                                      const ValueType* diag,
-                                      const IndexType* aggregateIdx,
-                                      const IndexType* partitionIdx,
-                                      const IndexType* permutation,
-                                      const ValueType* b,
-                                      const double weight,
-                                      ValueType* x,
-                                      ValueType* residual,
-                                      int nInnerIter)
+    const IndexType* offsets,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* permutation,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* residual,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   extern __shared__ char s_mem[];
@@ -284,7 +278,6 @@ __global__ void preRRCsrShared_kernel(const IndexType num_rows,
 
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -297,8 +290,6 @@ __global__ void preRRCsrShared_kernel(const IndexType num_rows,
   IndexType num_cols_per_row = rowend - rowstart;
 
   ValueType brow, drow;
-  IndexType tmpidx;
-  IndexType permute;
 
   if(row < blockend)
   {
@@ -371,18 +362,18 @@ __global__ void preRRCsrShared_kernel(const IndexType num_rows,
 
 template<>
 void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<IndexType, ValueType, MemorySpace>& AinCsr,
-                                                     const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutCoo,
-                                                     const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
-                                                     const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
-                                                     const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& restrictor,
-                                                     const cusp::array1d<IndexType, MemorySpace>& permutation,
-                                                     cusp::array1d<ValueType, MemorySpace>& b,
-                                                     cusp::array1d<ValueType, MemorySpace>& x,
-                                                     cusp::array1d<ValueType, MemorySpace>& bc,
-                                                     int level_id,
-                                                     int largestblksize,
-                                                     int largestnumentries,
-                                                     int largestnumperrow)
+    const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutCoo,
+    const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
+    const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
+    const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& restrictor,
+    const cusp::array1d<IndexType, MemorySpace>& permutation,
+    cusp::array1d<ValueType, MemorySpace>& b,
+    cusp::array1d<ValueType, MemorySpace>& x,
+    cusp::array1d<ValueType, MemorySpace>& bc,
+    int level_id,
+    int largestblksize,
+    int largestnumentries,
+    int largestnumperrow)
 {
   typedef typename Matrix_d::index_type IndexType;
   typedef typename Matrix_d::value_type ValueType;
@@ -418,36 +409,36 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 9 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                         thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                         thrust::raw_pointer_cast(&diag[0]),
-                                                                                                         thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                         thrust::raw_pointer_cast(&b[0]),
-                                                                                                         weight,
-                                                                                                         thrust::raw_pointer_cast(&x[0]),
-                                                                                                         thrust::raw_pointer_cast(&residual[0]),
-                                                                                                         nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 9 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                       thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                       thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                       thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                       weight,
-                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                       nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
-    
+
 
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -456,34 +447,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 14 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 14 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -492,34 +483,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 19 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 19 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -528,34 +519,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 24 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 24 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -565,34 +556,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 29 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 29 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -601,34 +592,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 34 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 34 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -637,34 +628,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 39 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 39 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -673,34 +664,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 44 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 44 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -709,34 +700,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 49 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 49 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -745,34 +736,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 54 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 54 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -782,34 +773,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 59 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 59 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -819,34 +810,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 64 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 64 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -855,34 +846,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 69 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 69 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -892,34 +883,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 75 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 75 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -928,34 +919,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 79 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 79 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -965,34 +956,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 85 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                          thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                                          weight,
-                                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                                          thrust::raw_pointer_cast(&residual[0]),
-                                                                                                          nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 85 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                        thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                        thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                        weight,
-                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                        nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -1001,34 +992,34 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
     if(useshared)
     {
       preRRCsrShared_kernel<IndexType, ValueType, 220 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                           thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                                           weight,
-                                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                                           thrust::raw_pointer_cast(&residual[0]),
-                                                                                                           nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     else
     {
       preRRCsr_kernel<IndexType, ValueType, 220 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                         thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                         thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                         thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                         thrust::raw_pointer_cast(&diag[0]),
-                                                                                         thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                         thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                         thrust::raw_pointer_cast(&permutation[0]),
-                                                                                         thrust::raw_pointer_cast(&b[0]),
-                                                                                         weight,
-                                                                                         thrust::raw_pointer_cast(&x[0]),
-                                                                                         thrust::raw_pointer_cast(&residual[0]),
-                                                                                         nPreInnerIter);
+          thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+          thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+          thrust::raw_pointer_cast(&AinCsr.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     }
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
@@ -1050,27 +1041,26 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE, int NUMITERS>
 __global__ void preRR_kernel(const IndexType num_rows,
-                             const IndexType num_cols,
-                             const IndexType num_cols_per_row,
-                             const IndexType pitch,
-                             const IndexType* Aj,
-                             const ValueType* Ax,
-                             const ValueType* diag,
-                             const IndexType* aggregateIdx,
-                             const IndexType* partitionIdx,
-                             const IndexType* permutation,
-                             const ValueType* b,
-                             const double weight,
-                             ValueType* x,
-                             ValueType* residual,
-                             int nInnerIter)
+    const IndexType num_cols,
+    const IndexType num_cols_per_row,
+    const IndexType pitch,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* permutation,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* residual,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   short Ajlocal[NUMPERROW];
   const short invalid_index = cusp::ell_matrix<short, ValueType, cusp::device_memory>::invalid_index;
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -1082,7 +1072,6 @@ __global__ void preRR_kernel(const IndexType num_rows,
 
   ValueType brow, drow;
   IndexType tmpidx;
-  IndexType permute;
 
   if(row < blockend)
   {
@@ -1090,7 +1079,7 @@ __global__ void preRR_kernel(const IndexType num_rows,
     drow = diag[row];
     if(fabs(drow) < 1e-9)
       printf("drow is zero!!");
-		
+
     s_x[thread_id] = weight * brow / drow;
   }
 
@@ -1169,20 +1158,20 @@ __global__ void preRR_kernel(const IndexType num_rows,
 
 template<typename IndexType, typename ValueType, int NUMPERROW>
 __global__ void preRRShared_kernel(const IndexType num_rows,
-                                   const IndexType num_cols,
-                                   const IndexType num_cols_per_row,
-                                   const IndexType pitch,
-                                   const IndexType* Aj,
-                                   const ValueType* Ax,
-                                   const ValueType* diag,
-                                   const IndexType* aggregateIdx,
-                                   const IndexType* partitionIdx,
-                                   const IndexType* permutation,
-                                   const ValueType* b,
-                                   const double weight,
-                                   ValueType* x,
-                                   ValueType* residual,
-                                   int nInnerIter)
+    const IndexType num_cols,
+    const IndexType num_cols_per_row,
+    const IndexType pitch,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* permutation,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* residual,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   extern __shared__ char s_mem[];
@@ -1191,7 +1180,6 @@ __global__ void preRRShared_kernel(const IndexType num_rows,
   const short invalid_index = cusp::ell_matrix<short, ValueType, cusp::device_memory>::invalid_index;
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -1201,7 +1189,6 @@ __global__ void preRRShared_kernel(const IndexType num_rows,
 
   ValueType brow, drow;
   IndexType tmpidx;
-  IndexType permute;
 
   if(row < blockend)
   {
@@ -1290,24 +1277,23 @@ __global__ void preRRShared_kernel(const IndexType num_rows,
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE, int NUMITERS>
 __global__ void preRRSym_kernel1(const IndexType num_rows,
-                                 const IndexType num_entries,
-                                 const IndexType* __restrict__ Aj,
-                                 const ValueType* __restrict__ Ax,
-                                 const ValueType* __restrict__ diag,
-                                 const IndexType* __restrict__ aggregateIdx,
-                                 const IndexType* __restrict__ partitionIdx,
-                                 const IndexType* __restrict__ permutation,
-                                 const IndexType* __restrict__ AinBlockIdx,
-                                 const ValueType* __restrict__ b,
-                                 const double weight,
-                                 ValueType* __restrict__ x,
-                                 ValueType* __restrict__ residual,
-                                 int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* __restrict__ Aj,
+    const ValueType* __restrict__ Ax,
+    const ValueType* __restrict__ diag,
+    const IndexType* __restrict__ aggregateIdx,
+    const IndexType* __restrict__ partitionIdx,
+    const IndexType* __restrict__ permutation,
+    const IndexType* __restrict__ AinBlockIdx,
+    const ValueType* __restrict__ b,
+    const double weight,
+    ValueType* __restrict__ x,
+    ValueType* __restrict__ residual,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0}; // assuming that 0 is not valid means (0,0) is not in this array
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -1319,11 +1305,9 @@ __global__ void preRRSym_kernel1(const IndexType num_rows,
 
   __shared__ ValueType s_x[SHAREDSIZE];
   __shared__ ValueType s_Ax[SHAREDSIZE];
-  //	__shared__ ValueType s_b[SHAREDSIZE] = {0};
+  //  __shared__ ValueType s_b[SHAREDSIZE] = {0};
 
   ValueType brow, drow;
-  IndexType tmpidx;
-  IndexType permute;
 
   if(row < blockend)
   {
@@ -1344,7 +1328,6 @@ __global__ void preRRSym_kernel1(const IndexType num_rows,
     }
   }
 
-  ValueType oldx;
   unsigned int Ajreg;
   ValueType Axreg;
 
@@ -1394,24 +1377,23 @@ gotolabel2:
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE, int NUMITERS>
 __global__ void preRRSym_kernel2(const IndexType num_rows,
-                                 const IndexType num_entries,
-                                 const IndexType* Aj,
-                                 const ValueType* Ax,
-                                 const ValueType* diag,
-                                 const IndexType* aggregateIdx,
-                                 const IndexType* partitionIdx,
-                                 const IndexType* permutation,
-                                 const IndexType* AinBlockIdx,
-                                 const ValueType* b,
-                                 const double weight,
-                                 ValueType* x,
-                                 ValueType* residual,
-                                 int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* permutation,
+    const IndexType* AinBlockIdx,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* residual,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0}; // assuming that 0 is not valid means (0,0) is not in this array
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -1425,8 +1407,6 @@ __global__ void preRRSym_kernel2(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
 
   ValueType brow, drow;
-  IndexType tmpidx;
-  IndexType permute;
 
   if(row < blockend)
   {
@@ -1447,7 +1427,6 @@ __global__ void preRRSym_kernel2(const IndexType num_rows,
     }
   }
 
-  ValueType oldx;
   unsigned int Ajreg;
   ValueType Axreg;
 
@@ -1496,24 +1475,23 @@ gotolabel2:
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE, int NUMITERS>
 __global__ void preRRSym_kernel3(const IndexType num_rows,
-                                 const IndexType num_entries,
-                                 const IndexType* Aj,
-                                 const ValueType* Ax,
-                                 const ValueType* diag,
-                                 const IndexType* aggregateIdx,
-                                 const IndexType* partitionIdx,
-                                 const IndexType* permutation,
-                                 const IndexType* AinBlockIdx,
-                                 const ValueType* b,
-                                 const double weight,
-                                 ValueType* x,
-                                 ValueType* residual,
-                                 int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* permutation,
+    const IndexType* AinBlockIdx,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* residual,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0}; // assuming that 0 is not valid means (0,0) is not in this array
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -1527,8 +1505,6 @@ __global__ void preRRSym_kernel3(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
 
   ValueType brow, drow;
-  IndexType tmpidx;
-  IndexType permute;
 
   if(row < blockend)
   {
@@ -1549,7 +1525,6 @@ __global__ void preRRSym_kernel3(const IndexType num_rows,
     }
   }
 
-  ValueType oldx;
   unsigned int Ajreg;
   ValueType Axreg;
 
@@ -1599,24 +1574,23 @@ gotolabel2:
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE, int NUMITERS>
 __global__ void preRRSym_kernel4(const IndexType num_rows,
-                                 const IndexType num_entries,
-                                 const IndexType* Aj,
-                                 const ValueType* Ax,
-                                 const ValueType* diag,
-                                 const IndexType* aggregateIdx,
-                                 const IndexType* partitionIdx,
-                                 const IndexType* permutation,
-                                 const IndexType* AinBlockIdx,
-                                 const ValueType* b,
-                                 const double weight,
-                                 ValueType* x,
-                                 ValueType* residual,
-                                 int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* permutation,
+    const IndexType* AinBlockIdx,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* residual,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0}; // assuming that 0 is not valid means (0,0) is not in this array
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -1630,8 +1604,6 @@ __global__ void preRRSym_kernel4(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
 
   ValueType brow, drow;
-  IndexType tmpidx;
-  IndexType permute;
 
   if(row < blockend)
   {
@@ -1652,7 +1624,6 @@ __global__ void preRRSym_kernel4(const IndexType num_rows,
     }
   }
 
-  ValueType oldx;
   unsigned int Ajreg;
   ValueType Axreg;
 
@@ -1702,24 +1673,23 @@ gotolabel2:
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE, int NUMITERS>
 __global__ void preRRSym_kernel5(const IndexType num_rows,
-                                 const IndexType num_entries,
-                                 const IndexType* Aj,
-                                 const ValueType* Ax,
-                                 const ValueType* diag,
-                                 const IndexType* aggregateIdx,
-                                 const IndexType* partitionIdx,
-                                 const IndexType* permutation,
-                                 const IndexType* AinBlockIdx,
-                                 const ValueType* b,
-                                 const double weight,
-                                 ValueType* x,
-                                 ValueType* residual,
-                                 int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* permutation,
+    const IndexType* AinBlockIdx,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* residual,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0}; // assuming that 0 is not valid means (0,0) is not in this array
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -1733,8 +1703,6 @@ __global__ void preRRSym_kernel5(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
 
   ValueType brow, drow;
-  IndexType tmpidx;
-  IndexType permute;
 
   if(row < blockend)
   {
@@ -1755,7 +1723,6 @@ __global__ void preRRSym_kernel5(const IndexType num_rows,
     }
   }
 
-  ValueType oldx;
   unsigned int Ajreg;
   ValueType Axreg;
 
@@ -1807,24 +1774,23 @@ gotolabel2:
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE, int NUMITERS>
 __global__ void preRRSym_kernel6(const IndexType num_rows,
-                                 const IndexType num_entries,
-                                 const IndexType* Aj,
-                                 const ValueType* Ax,
-                                 const ValueType* diag,
-                                 const IndexType* aggregateIdx,
-                                 const IndexType* partitionIdx,
-                                 const IndexType* permutation,
-                                 const IndexType* AinBlockIdx,
-                                 const ValueType* b,
-                                 const double weight,
-                                 ValueType* x,
-                                 ValueType* residual,
-                                 int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* permutation,
+    const IndexType* AinBlockIdx,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* residual,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0}; // assuming that 0 is not valid means (0,0) is not in this array
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -1838,8 +1804,6 @@ __global__ void preRRSym_kernel6(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
 
   ValueType brow, drow;
-  IndexType tmpidx;
-  IndexType permute;
 
   if(row < blockend)
   {
@@ -1860,7 +1824,6 @@ __global__ void preRRSym_kernel6(const IndexType num_rows,
     }
   }
 
-  ValueType oldx;
   unsigned int Ajreg;
   ValueType Axreg;
 
@@ -1912,24 +1875,23 @@ gotolabel2:
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE, int NUMITERS>
 __global__ void preRRSym_kernel7(const IndexType num_rows,
-                                 const IndexType num_entries,
-                                 const IndexType* Aj,
-                                 const ValueType* Ax,
-                                 const ValueType* diag,
-                                 const IndexType* aggregateIdx,
-                                 const IndexType* partitionIdx,
-                                 const IndexType* permutation,
-                                 const IndexType* AinBlockIdx,
-                                 const ValueType* b,
-                                 const double weight,
-                                 ValueType* x,
-                                 ValueType* residual,
-                                 int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* permutation,
+    const IndexType* AinBlockIdx,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* residual,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0}; // assuming that 0 is not valid means (0,0) is not in this array
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -1943,8 +1905,6 @@ __global__ void preRRSym_kernel7(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
 
   ValueType brow, drow;
-  IndexType tmpidx;
-  IndexType permute;
 
   if(row < blockend)
   {
@@ -1965,7 +1925,6 @@ __global__ void preRRSym_kernel7(const IndexType num_rows,
     }
   }
 
-  ValueType oldx;
   unsigned int Ajreg;
   ValueType Axreg;
 
@@ -2017,21 +1976,21 @@ gotolabel2:
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE, int NUMITERS>
 __global__ void preAout_kernel(const IndexType num_rows,
-                               const IndexType num_entries,
-                               const ValueType* __restrict__ x,
-                               ValueType* __restrict__ r,
-                               const IndexType* __restrict__ Aouti,
-                               const IndexType* __restrict__ Aoutj,
-                               const ValueType* __restrict__ Aoutv,
-                               const IndexType* __restrict__ AoutBlockIdx,
-                               const IndexType* aggregateIdx,
-                               const IndexType* partitionIdx)
+    const IndexType num_entries,
+    const ValueType* __restrict__ x,
+    ValueType* __restrict__ r,
+    const IndexType* __restrict__ Aouti,
+    const IndexType* __restrict__ Aoutj,
+    const ValueType* __restrict__ Aoutv,
+    const IndexType* __restrict__ AoutBlockIdx,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx)
 {
 
   __shared__ ValueType s_r[SHAREDSIZE];
-	IndexType tid = threadIdx.x;
-	s_r[tid] = 0.0;
-	__syncthreads();
+  IndexType tid = threadIdx.x;
+  s_r[tid] = 0.0;
+  __syncthreads();
   //compute AoutX
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
@@ -2048,43 +2007,43 @@ __global__ void preAout_kernel(const IndexType num_rows,
   }
   __syncthreads();
 
-	if(tid < blockend - blockstart)
-	{
-		r[blockstart + tid] -= s_r[tid];
-	}
+  if(tid < blockend - blockstart)
+  {
+    r[blockstart + tid] -= s_r[tid];
+  }
 
 }
 
 template<>
 void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AinSysCoo,
-                                                           const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutSysCoo,
-                                                           const cusp::array1d<IndexType, MemorySpace>& AinBlockIdx,
-                                                           const cusp::array1d<IndexType, MemorySpace>& AoutBlockIdx,
-                                                           const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
-                                                           const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
-                                                           const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& restrictor,
-                                                           const cusp::array1d<IndexType, MemorySpace>& permutation,
-                                                           cusp::array1d<ValueType, MemorySpace>& b,
-                                                           cusp::array1d<ValueType, MemorySpace>& x,
-                                                           cusp::array1d<ValueType, MemorySpace>& bc,
-                                                           int level_id,
-                                                           int largestblksize,
-                                                           int largestnumentries)
+    const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutSysCoo,
+    const cusp::array1d<IndexType, MemorySpace>& AinBlockIdx,
+    const cusp::array1d<IndexType, MemorySpace>& AoutBlockIdx,
+    const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
+    const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
+    const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& restrictor,
+    const cusp::array1d<IndexType, MemorySpace>& permutation,
+    cusp::array1d<ValueType, MemorySpace>& b,
+    cusp::array1d<ValueType, MemorySpace>& x,
+    cusp::array1d<ValueType, MemorySpace>& bc,
+    int level_id,
+    int largestblksize,
+    int largestnumentries)
 {
   typedef typename Matrix_d::index_type IndexType;
   typedef typename Matrix_d::value_type ValueType;
 
 
   const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
-  const size_t NUM_BLOCKS = partitionIdx.size() - 1; 
+  const size_t NUM_BLOCKS = partitionIdx.size() - 1;
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;
 
   const size_t num_entries_per_thread = ceil((double)largestnumentries / THREADS_PER_BLOCK);
-cout << "In preRRRFullSymmetric : ";
-cout << "THREADS_PER_BLOCK = " << THREADS_PER_BLOCK;
-cout << ", NUM_BLOCKS = " << NUM_BLOCKS;
-cout << endl;
+  cout << "In preRRRFullSymmetric : ";
+  cout << "THREADS_PER_BLOCK = " << THREADS_PER_BLOCK;
+  cout << ", NUM_BLOCKS = " << NUM_BLOCKS;
+  cout << endl;
 
   cusp::array1d<ValueType, MemorySpace> residual(x.size(), 0.0);
   cusp::array1d<ValueType, MemorySpace> bout(b.size());
@@ -2101,43 +2060,43 @@ cout << endl;
     cout << "largest block size is larger than shared size!!!" << endl;
     exit(0);
   }
-  
+
   cudaThreadSetCacheConfig(cudaFuncCachePreferL1);
 
   if(num_entries_per_thread < 11)
   {
     preRRSym_kernel1<IndexType, ValueType, 10, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                        AinSysCoo.num_entries,
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                                        weight,
-                                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                                        nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
   else if(num_entries_per_thread < 21)
   {
     preRRSym_kernel2<IndexType, ValueType, 20, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                        AinSysCoo.num_entries,
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                                        weight,
-                                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                                        nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
   }
@@ -2145,19 +2104,19 @@ cout << endl;
   else if(num_entries_per_thread < 31)
   {
     preRRSym_kernel3<IndexType, ValueType, 30, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                        AinSysCoo.num_entries,
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                                        weight,
-                                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                                        nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
   }
@@ -2165,19 +2124,19 @@ cout << endl;
   else if(num_entries_per_thread < 41)
   {
     preRRSym_kernel4<IndexType, ValueType, 40, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                        AinSysCoo.num_entries,
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                                        weight,
-                                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                                        nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
   }
@@ -2185,19 +2144,19 @@ cout << endl;
   else if(num_entries_per_thread < 51)
   {
     preRRSym_kernel5<IndexType, ValueType, 50, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                        AinSysCoo.num_entries,
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                                        weight,
-                                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                                        nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
   }
@@ -2205,19 +2164,19 @@ cout << endl;
   else if(num_entries_per_thread < 61)
   {
     preRRSym_kernel6<IndexType, ValueType, 60, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                        AinSysCoo.num_entries,
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                                        weight,
-                                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                                        nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
   }
@@ -2225,57 +2184,57 @@ cout << endl;
   else if(num_entries_per_thread < 71)
   {
     preRRSym_kernel7<IndexType, ValueType, 70, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                        AinSysCoo.num_entries,
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                                        weight,
-                                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                                        nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
   }
   else if(num_entries_per_thread < 81)
   {
     preRRSym_kernel7<IndexType, ValueType, 80, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                        AinSysCoo.num_entries,
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                                        weight,
-                                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                                        nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
   }
   else if(num_entries_per_thread < 91)
   {
     preRRSym_kernel7<IndexType, ValueType, 90, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                        AinSysCoo.num_entries,
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                                        weight,
-                                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                                        nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
   }
@@ -2286,41 +2245,40 @@ cout << endl;
   }
 
   preAout_kernel<IndexType, ValueType, 90, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> > (AoutSysCoo.num_rows,
-                                                                                                     AoutSysCoo.num_entries,
-                                                                                                     thrust::raw_pointer_cast(&x[0]),
-                                                                                                     thrust::raw_pointer_cast(&residual[0]),
-                                                                                                     thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                     thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                     thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                     thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                     thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                     thrust::raw_pointer_cast(&partitionIdx[0]));
+      AoutSysCoo.num_entries,
+      thrust::raw_pointer_cast(&x[0]),
+      thrust::raw_pointer_cast(&residual[0]),
+      thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+      thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+      thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+      thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+      thrust::raw_pointer_cast(&aggregateIdx[0]),
+      thrust::raw_pointer_cast(&partitionIdx[0]));
 
-    cusp::multiply(restrictor, residual, bc);
+  cusp::multiply(restrictor, residual, bc);
 }
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE, int NUMITERS>
 __global__ void preRRSymSync_kernel(const IndexType num_rows,
-                                    const IndexType num_entries,
-                                    const IndexType* __restrict__ Aj,
-                                    const ValueType* __restrict__ Ax,
-                                    const ValueType* __restrict__ diag,
-                                    const IndexType* __restrict__ aggregateIdx,
-                                    const IndexType* __restrict__ partitionIdx,
-                                    const IndexType* __restrict__ permutation,
-                                    const IndexType* __restrict__ AinBlockIdx,
-                                    const ValueType* __restrict__ b,
-                                    const IndexType* __restrict__ segSyncIdx,
-                                    const IndexType* __restrict__ partSyncIdx,
-                                    const double weight,
-                                    ValueType* __restrict__ x,
-                                    ValueType* __restrict__ residual,
-                                    int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* __restrict__ Aj,
+    const ValueType* __restrict__ Ax,
+    const ValueType* __restrict__ diag,
+    const IndexType* __restrict__ aggregateIdx,
+    const IndexType* __restrict__ partitionIdx,
+    const IndexType* __restrict__ permutation,
+    const IndexType* __restrict__ AinBlockIdx,
+    const ValueType* __restrict__ b,
+    const IndexType* __restrict__ segSyncIdx,
+    const IndexType* __restrict__ partSyncIdx,
+    const double weight,
+    ValueType* __restrict__ x,
+    ValueType* __restrict__ residual,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0}; // assuming that 0 is not valid means (0,0) is not in this array
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -2334,8 +2292,6 @@ __global__ void preRRSymSync_kernel(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
 
   ValueType brow, drow;
-  IndexType tmpidx;
-  IndexType permute;
 
   if(row < blockend)
   {
@@ -2356,7 +2312,6 @@ __global__ void preRRSymSync_kernel(const IndexType num_rows,
     }
   }
 
-  ValueType oldx;
   unsigned int Ajreg;
   ValueType Axreg;
   unsigned int idxi;
@@ -2441,12 +2396,9 @@ __global__ void preRRSymSync_kernel(const IndexType num_rows,
     {
       Ajreg = Ajlocal[n];
       Axreg = Axlocal[n];
-      //			Ajreg = threadIdx.x % 10;
-      //      Axreg = threadIdx.x+1.0;
       idxi = Ajreg >> 16;
       idxj = Ajreg - (idxi << 16);
       s_Ax[idxi] += Axreg * s_x[idxj];
-      //			atomicAdd(&s_Ax[idxi],  Axlocal[n] * s_x[idxj]);  
     }
 
     __syncthreads();
@@ -2454,7 +2406,6 @@ __global__ void preRRSymSync_kernel(const IndexType num_rows,
     if(inside)
     {
       s_Ax[idxj] += Axreg * s_x[idxi];
-      //			atomicAdd(&s_Ax[idxj],  Axlocal[n] * s_x[idxi]);  
       n++;
     }
     __syncthreads();
@@ -2471,31 +2422,30 @@ __global__ void preRRSymSync_kernel(const IndexType num_rows,
 
 template<>
 void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AinSysCoo,
-                                                               const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutSysCoo,
-                                                               const cusp::array1d<IndexType, MemorySpace>& AinBlockIdx,
-                                                               const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
-                                                               const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
-                                                               const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& restrictor,
-                                                               const cusp::array1d<IndexType, MemorySpace>& permutation,
-                                                               cusp::array1d<ValueType, MemorySpace>& b,
-                                                               cusp::array1d<ValueType, MemorySpace>& x,
-                                                               cusp::array1d<ValueType, MemorySpace>& bc,
-                                                               const cusp::array1d<IndexType, MemorySpace>& segSyncIdx,
-                                                               const cusp::array1d<IndexType, MemorySpace>& partSyncIdx,
-                                                               int level_id,
-                                                               int largestblksize,
-                                                               int largestnumentries)
+    const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutSysCoo,
+    const cusp::array1d<IndexType, MemorySpace>& AinBlockIdx,
+    const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
+    const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
+    const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& restrictor,
+    const cusp::array1d<IndexType, MemorySpace>& permutation,
+    cusp::array1d<ValueType, MemorySpace>& b,
+    cusp::array1d<ValueType, MemorySpace>& x,
+    cusp::array1d<ValueType, MemorySpace>& bc,
+    const cusp::array1d<IndexType, MemorySpace>& segSyncIdx,
+    const cusp::array1d<IndexType, MemorySpace>& partSyncIdx,
+    int level_id,
+    int largestblksize,
+    int largestnumentries)
 {
   typedef typename Matrix_d::index_type IndexType;
   typedef typename Matrix_d::value_type ValueType;
 
 
   const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
-  const size_t NUM_BLOCKS = partitionIdx.size() - 1; 
+  const size_t NUM_BLOCKS = partitionIdx.size() - 1;
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;
 
-  const size_t SHAREDSIZE = THREADS_PER_BLOCK;
   const size_t num_entries_per_thread = ceil((double)largestnumentries / THREADS_PER_BLOCK);
 
   cusp::array1d<ValueType, MemorySpace> residual(x.size(), 0.0);
@@ -2517,146 +2467,146 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
   if(num_entries_per_thread < 11)
   {
     preRRSymSync_kernel<IndexType, ValueType, 10, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                           AinSysCoo.num_entries,
-                                                                                                           thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                                           thrust::raw_pointer_cast(&segSyncIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partSyncIdx[0]),
-                                                                                                           weight,
-                                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                                           thrust::raw_pointer_cast(&residual[0]),
-                                                                                                           nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        thrust::raw_pointer_cast(&segSyncIdx[0]),
+        thrust::raw_pointer_cast(&partSyncIdx[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
   else if(num_entries_per_thread < 21)
   {
     preRRSymSync_kernel<IndexType, ValueType, 20, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                           AinSysCoo.num_entries,
-                                                                                                           thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                                           thrust::raw_pointer_cast(&segSyncIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partSyncIdx[0]),
-                                                                                                           weight,
-                                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                                           thrust::raw_pointer_cast(&residual[0]),
-                                                                                                           nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        thrust::raw_pointer_cast(&segSyncIdx[0]),
+        thrust::raw_pointer_cast(&partSyncIdx[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
   }
   else if(num_entries_per_thread < 31)
   {
     preRRSymSync_kernel<IndexType, ValueType, 30, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                           AinSysCoo.num_entries,
-                                                                                                           thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                                           thrust::raw_pointer_cast(&segSyncIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partSyncIdx[0]),
-                                                                                                           weight,
-                                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                                           thrust::raw_pointer_cast(&residual[0]),
-                                                                                                           nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        thrust::raw_pointer_cast(&segSyncIdx[0]),
+        thrust::raw_pointer_cast(&partSyncIdx[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
   }
   else if(num_entries_per_thread < 41)
   {
     preRRSymSync_kernel<IndexType, ValueType, 40, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                           AinSysCoo.num_entries,
-                                                                                                           thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                                           thrust::raw_pointer_cast(&segSyncIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partSyncIdx[0]),
-                                                                                                           weight,
-                                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                                           thrust::raw_pointer_cast(&residual[0]),
-                                                                                                           nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        thrust::raw_pointer_cast(&segSyncIdx[0]),
+        thrust::raw_pointer_cast(&partSyncIdx[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
   }
   else if(num_entries_per_thread < 51)
   {
     preRRSymSync_kernel<IndexType, ValueType, 50, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                           AinSysCoo.num_entries,
-                                                                                                           thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                                           thrust::raw_pointer_cast(&segSyncIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partSyncIdx[0]),
-                                                                                                           weight,
-                                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                                           thrust::raw_pointer_cast(&residual[0]),
-                                                                                                           nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        thrust::raw_pointer_cast(&segSyncIdx[0]),
+        thrust::raw_pointer_cast(&partSyncIdx[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
   }
   else if(num_entries_per_thread < 61)
   {
     preRRSymSync_kernel<IndexType, ValueType, 60, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                           AinSysCoo.num_entries,
-                                                                                                           thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                                           thrust::raw_pointer_cast(&segSyncIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partSyncIdx[0]),
-                                                                                                           weight,
-                                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                                           thrust::raw_pointer_cast(&residual[0]),
-                                                                                                           nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        thrust::raw_pointer_cast(&segSyncIdx[0]),
+        thrust::raw_pointer_cast(&partSyncIdx[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
   }
   else if(num_entries_per_thread < 71)
   {
     preRRSymSync_kernel<IndexType, ValueType, 70, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                           AinSysCoo.num_entries,
-                                                                                                           thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                           thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                                           thrust::raw_pointer_cast(&segSyncIdx[0]),
-                                                                                                           thrust::raw_pointer_cast(&partSyncIdx[0]),
-                                                                                                           weight,
-                                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                                           thrust::raw_pointer_cast(&residual[0]),
-                                                                                                           nPreInnerIter);
+        AinSysCoo.num_entries,
+        thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+        thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+        thrust::raw_pointer_cast(&diag[0]),
+        thrust::raw_pointer_cast(&aggregateIdx[0]),
+        thrust::raw_pointer_cast(&partitionIdx[0]),
+        thrust::raw_pointer_cast(&permutation[0]),
+        thrust::raw_pointer_cast(&AinBlockIdx[0]),
+        thrust::raw_pointer_cast(&b[0]),
+        thrust::raw_pointer_cast(&segSyncIdx[0]),
+        thrust::raw_pointer_cast(&partSyncIdx[0]),
+        weight,
+        thrust::raw_pointer_cast(&x[0]),
+        thrust::raw_pointer_cast(&residual[0]),
+        nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
   }
@@ -2677,22 +2627,22 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
 
 template<>
 void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexType, ValueType, MemorySpace>& AinEll,
-                                                  const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutCoo,
-                                                  const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
-                                                  const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
-                                                  const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& restrictor,
-                                                  const cusp::array1d<IndexType, MemorySpace>& permutation,
-                                                  cusp::array1d<ValueType, MemorySpace>& b,
-                                                  cusp::array1d<ValueType, MemorySpace>& x,
-                                                  cusp::array1d<ValueType, MemorySpace>& bc,
-                                                  int level_id,
-                                                  int largestblksize)
+    const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutCoo,
+    const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
+    const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
+    const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& restrictor,
+    const cusp::array1d<IndexType, MemorySpace>& permutation,
+    cusp::array1d<ValueType, MemorySpace>& b,
+    cusp::array1d<ValueType, MemorySpace>& x,
+    cusp::array1d<ValueType, MemorySpace>& bc,
+    int level_id,
+    int largestblksize)
 {
   typedef typename Matrix_d::index_type IndexType;
   typedef typename Matrix_d::value_type ValueType;
 
   const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
-  const size_t NUM_BLOCKS = partitionIdx.size() - 1; //(int)ceil((double)AinEll.num_rows / (double)THREADS_PER_BLOCK);
+  const size_t NUM_BLOCKS = partitionIdx.size() - 1; 
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;
 
@@ -2727,147 +2677,145 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 9 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
 
     else
       preRR_kernel<IndexType, ValueType, 9, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                     AinEll.num_cols,
-                                                                                                     AinEll.column_indices.num_cols,
-                                                                                                     AinEll.column_indices.pitch,
-                                                                                                     thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                     thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                     thrust::raw_pointer_cast(&diag[0]),
-                                                                                                     thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                     thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                     thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                     thrust::raw_pointer_cast(&b[0]),
-                                                                                                     weight,
-                                                                                                     thrust::raw_pointer_cast(&x[0]),
-                                                                                                     thrust::raw_pointer_cast(&residual[0]),
-                                                                                                     nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
   else if(NUMPERROW < 15)
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 14 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 14, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
   else if(NUMPERROW < 20)
   {
-    //    cout << "Calling preRR_kernel<IndexType, ValueType, 19, shared_size, 10 >" << endl;
-    //    cout << "num of blocks is " << NUM_BLOCKS << endl;
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 19 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 19, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
   else if(NUMPERROW < 25)
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 24 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 24, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
 
@@ -2875,216 +2823,216 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 29 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 29, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
   else if(NUMPERROW < 35)
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 34 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 34, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
   else if(NUMPERROW < 40)
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 39 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 39, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
   else if(NUMPERROW < 45)
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 44 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 44, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
   else if(NUMPERROW < 50)
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 49 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 49, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
   else if(NUMPERROW < 55)
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 54 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 54, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
 
@@ -3092,36 +3040,36 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 59 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 59, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
 
@@ -3129,72 +3077,72 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 64 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 64, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
   else if(NUMPERROW < 70)
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 69 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 69, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
 
@@ -3202,72 +3150,72 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 75 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 75, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
   else if(NUMPERROW < 80)
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 79 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 79, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
 
@@ -3275,36 +3223,36 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 85 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 85, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                      AinEll.num_cols,
-                                                                                                      AinEll.column_indices.num_cols,
-                                                                                                      AinEll.column_indices.pitch,
-                                                                                                      thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                      thrust::raw_pointer_cast(&diag[0]),
-                                                                                                      thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                      thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                      thrust::raw_pointer_cast(&b[0]),
-                                                                                                      weight,
-                                                                                                      thrust::raw_pointer_cast(&x[0]),
-                                                                                                      thrust::raw_pointer_cast(&residual[0]),
-                                                                                                      nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
 
@@ -3312,36 +3260,36 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
   {
     if(useshared)
       preRRShared_kernel<IndexType, ValueType, 220 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                        AinEll.num_cols,
-                                                                                                        AinEll.column_indices.num_cols,
-                                                                                                        AinEll.column_indices.pitch,
-                                                                                                        thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                        thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                        thrust::raw_pointer_cast(&diag[0]),
-                                                                                                        thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                        thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                        thrust::raw_pointer_cast(&b[0]),
-                                                                                                        weight,
-                                                                                                        thrust::raw_pointer_cast(&x[0]),
-                                                                                                        thrust::raw_pointer_cast(&residual[0]),
-                                                                                                        nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     else
       preRR_kernel<IndexType, ValueType, 220, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                                       AinEll.num_cols,
-                                                                                                       AinEll.column_indices.num_cols,
-                                                                                                       AinEll.column_indices.pitch,
-                                                                                                       thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                       thrust::raw_pointer_cast(&diag[0]),
-                                                                                                       thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                       thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                       thrust::raw_pointer_cast(&b[0]),
-                                                                                                       weight,
-                                                                                                       thrust::raw_pointer_cast(&x[0]),
-                                                                                                       thrust::raw_pointer_cast(&residual[0]),
-                                                                                                       nPreInnerIter);
+          AinEll.num_cols,
+          AinEll.column_indices.num_cols,
+          AinEll.column_indices.pitch,
+          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+          thrust::raw_pointer_cast(&AinEll.values.values[0]),
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&permutation[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&residual[0]),
+          nPreInnerIter);
     AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
   }
 
@@ -3361,28 +3309,27 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int NUMITERS, int SHAREDSIZE>
 __global__ void postPC_kernel(const IndexType num_rows,
-                              const IndexType num_cols,
-                              const IndexType num_cols_per_row,
-                              const IndexType pitch,
-                              const IndexType* Aj,
-                              const ValueType* Ax,
-                              const IndexType* Aouti,
-                              const IndexType* Aoutj,
-                              const ValueType* Aoutv,
-                              const IndexType num_entries,
-                              const ValueType* diag,
-                              const IndexType* aggregateIdx,
-                              const IndexType* partitionIdx,
-                              const ValueType* p,
-                              const ValueType* b,
-                              const double weight,
-                              ValueType* x,
-                              ValueType* xc)
+    const IndexType num_cols,
+    const IndexType num_cols_per_row,
+    const IndexType pitch,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const IndexType* Aouti,
+    const IndexType* Aoutj,
+    const ValueType* Aoutv,
+    const IndexType num_entries,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const ValueType* p,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* xc)
 {
   const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::device_memory>::invalid_index;
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -3401,7 +3348,7 @@ __global__ void postPC_kernel(const IndexType num_rows,
   __syncthreads();
 
 
-  //correction 
+  //correction
   unsigned short num_aggregates = aggrend - aggrstart;
   if(thread_id < num_aggregates)
   {
@@ -3428,25 +3375,25 @@ __global__ void postPC_kernel(const IndexType num_rows,
 
 template<typename IndexType, typename ValueType, int NUMPERROW>
 __global__ void postRelax_kernel(const IndexType num_rows,
-                                 const IndexType num_cols,
-                                 const IndexType num_cols_per_row,
-                                 const IndexType pitch,
-                                 const IndexType* Aj,
-                                 const ValueType* Ax,
-                                 const IndexType* Aouti,
-                                 const IndexType* Aoutj,
-                                 const ValueType* Aoutv,
-                                 const IndexType num_entries,
-                                 const IndexType* AoutBlockIdx,
-                                 const ValueType* diag,
-                                 const IndexType* aggregateIdx,
-                                 const IndexType* partitionIdx,
-                                 const IndexType* permutation,
-                                 const ValueType* b,
-                                 const double weight,
-                                 ValueType* x,
-                                 ValueType* xout,
-                                 int nInnerIter)
+    const IndexType num_cols,
+    const IndexType num_cols_per_row,
+    const IndexType pitch,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const IndexType* Aouti,
+    const IndexType* Aoutj,
+    const ValueType* Aoutv,
+    const IndexType num_entries,
+    const IndexType* AoutBlockIdx,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* permutation,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* xout,
+    int nInnerIter)
 {
 
   ValueType Axlocal[NUMPERROW];
@@ -3454,7 +3401,6 @@ __global__ void postRelax_kernel(const IndexType num_rows,
   const short invalid_index = cusp::ell_matrix<short, ValueType, cusp::device_memory>::invalid_index;
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -3465,10 +3411,8 @@ __global__ void postRelax_kernel(const IndexType num_rows,
   IndexType row = thread_id + blockstart;
   IndexType tmpIdx;
 
-  //
   if(row < blockend)
   {
-    //    s_b[thread_id] = b[permutation[row]];
     s_b[thread_id] = b[row];
   }
 
@@ -3503,7 +3447,6 @@ __global__ void postRelax_kernel(const IndexType num_rows,
       if(n < num_cols_per_row)
       {
         Axlocal[n] = Ax[offset];
-        //Ajlocal[n] = offset;
         Ajlocal[n] = invalid_index;
         if((tmpIdx = Aj[offset]) != (IndexType)invalid_index) Ajlocal[n] = (short)(tmpIdx - blockstart);
         offset += pitch;
@@ -3549,25 +3492,25 @@ __global__ void postRelax_kernel(const IndexType num_rows,
 
 template<typename IndexType, typename ValueType, int NUMPERROW>
 __global__ void postRelaxShared_kernel(const IndexType num_rows,
-                                       const IndexType num_cols,
-                                       const IndexType num_cols_per_row,
-                                       const IndexType pitch,
-                                       const IndexType* Aj,
-                                       const ValueType* Ax,
-                                       const IndexType* Aouti,
-                                       const IndexType* Aoutj,
-                                       const ValueType* Aoutv,
-                                       const IndexType num_entries,
-                                       const IndexType* AoutBlockIdx,
-                                       const ValueType* diag,
-                                       const IndexType* aggregateIdx,
-                                       const IndexType* partitionIdx,
-                                       const IndexType* permutation,
-                                       const ValueType* b,
-                                       const double weight,
-                                       ValueType* x,
-                                       ValueType* xout,
-                                       int nInnerIter)
+    const IndexType num_cols,
+    const IndexType num_cols_per_row,
+    const IndexType pitch,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const IndexType* Aouti,
+    const IndexType* Aoutj,
+    const ValueType* Aoutv,
+    const IndexType num_entries,
+    const IndexType* AoutBlockIdx,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* permutation,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* xout,
+    int nInnerIter)
 {
 
   extern char s_mem[];
@@ -3575,7 +3518,6 @@ __global__ void postRelaxShared_kernel(const IndexType num_rows,
   const short invalid_index = cusp::ell_matrix<short, ValueType, cusp::device_memory>::invalid_index;
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -3585,26 +3527,12 @@ __global__ void postRelaxShared_kernel(const IndexType num_rows,
   IndexType row = thread_id + blockstart;
   IndexType tmpIdx;
 
-  //
   if(row < blockend)
   {
-    //    s_b[thread_id] = b[permutation[row]];
     s_b[thread_id] = b[row];
   }
 
   __syncthreads();
-  //add values to b out of this block
-  //  IndexType AoutBlockstart = AoutBlockIdx[blockIdx.x];
-  //  IndexType AoutBlockend = AoutBlockIdx[blockIdx.x + 1];
-  //  for(int i = AoutBlockstart + thread_id; i < AoutBlockend; i += blockDim.x)
-  //  {
-  //    IndexType idxi = Aouti[i];
-  //    IndexType idxj = Aoutj[i];
-  //    ValueType v = Aoutv[i];
-  //    atomicAdd(&s_b[idxi - blockstart], -v * x[idxj]); //assuming ValueType is float
-  //    //		s_b[idxi - blockstart] += -v * x[idxj];
-  //  }
-  //  __syncthreads();
 
   ValueType brow, drow;
   if(row < blockend)
@@ -3637,7 +3565,6 @@ __global__ void postRelaxShared_kernel(const IndexType num_rows,
       {
         IndexType Ajidx = thread_id * num_cols_per_row + n;
         Axlocal[n] = Ax[offset];
-        //Ajlocal[n] = offset;
         s_Ajlocal[Ajidx] = invalid_index;
         if((tmpIdx = Aj[offset]) != (IndexType)invalid_index) s_Ajlocal[Ajidx] = (short)(tmpIdx - blockstart);
         offset += pitch;
@@ -3684,91 +3611,40 @@ __global__ void postRelaxShared_kernel(const IndexType num_rows,
 
 template<>
 void gauss_seidel<Matrix_d, Vector_d>::postPCR(const cusp::ell_matrix<IndexType, ValueType, MemorySpace>& AinEll,
-                                               const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutCoo,
-                                               const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
-                                               const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
-                                               const cusp::array1d<ValueType, MemorySpace>& P,
-                                               const cusp::array1d<ValueType, MemorySpace>& b,
-                                               cusp::array1d<ValueType, MemorySpace>& x,
-                                               cusp::array1d<ValueType, MemorySpace>& xc)
+    const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutCoo,
+    const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
+    const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
+    const cusp::array1d<ValueType, MemorySpace>& P,
+    const cusp::array1d<ValueType, MemorySpace>& b,
+    cusp::array1d<ValueType, MemorySpace>& x,
+    cusp::array1d<ValueType, MemorySpace>& xc)
 {
-  //  typedef typename Matrix_d::index_type IndexType;
-  //  typedef typename Matrix_d::value_type ValueType;
-  //
-  //  const size_t THREADS_PER_BLOCK = 512;
-  //  const size_t NUM_BLOCKS = partitionIdx.size() - 1; //(int)ceil((double)AinEll.num_rows / (double)THREADS_PER_BLOCK);
-  //  //  cout << "num of blocks is: " << NUM_BLOCKS << endl;
-  //  if(NUM_BLOCKS > 65535)
-  //    cout << "Block number larger than 65535!!" << endl;
-  //
-  //  const size_t SHAREDSIZE = THREADS_PER_BLOCK;
-  //  const size_t NUMPERROW = AinEll.column_indices.num_cols;
-  //  const size_t NUMITERS = 10;
-  //  postPC_kernel<IndexType, ValueType, 20, 10, 1024 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-  //                                                                                            AinEll.num_cols,
-  //                                                                                            AinEll.column_indices.num_cols,
-  //                                                                                            AinEll.column_indices.pitch,
-  //                                                                                            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-  //                                                                                            thrust::raw_pointer_cast(&AinEll.values.values[0]),
-  //                                                                                            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-  //                                                                                            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-  //                                                                                            thrust::raw_pointer_cast(&AoutCoo.values[0]),
-  //                                                                                            AoutCoo.num_entries,
-  //                                                                                            thrust::raw_pointer_cast(&diag[0]),
-  //                                                                                            thrust::raw_pointer_cast(&aggregateIdx[0]),
-  //                                                                                            thrust::raw_pointer_cast(&partitionIdx[0]),
-  //                                                                                            thrust::raw_pointer_cast(&P[0]),
-  //                                                                                            thrust::raw_pointer_cast(&b[0]),
-  //                                                                                            weight,
-  //                                                                                            thrust::raw_pointer_cast(&x[0]),
-  //                                                                                            thrust::raw_pointer_cast(&xc[0]));
-  //
-  //  postRelax_kernel<IndexType, ValueType, 20, 10, 512 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-  //                                                                                              AinEll.num_cols,
-  //                                                                                              AinEll.column_indices.num_cols,
-  //                                                                                              AinEll.column_indices.pitch,
-  //                                                                                              thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-  //                                                                                              thrust::raw_pointer_cast(&AinEll.values.values[0]),
-  //                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-  //                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-  //                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-  //                                                                                              AoutCoo.num_entries,
-  //                                                                                              thrust::raw_pointer_cast(&diag[0]),
-  //                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-  //                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-  //                                                                                              thrust::raw_pointer_cast(&b[0]),
-  //                                                                                              weight,
-  //                                                                                              thrust::raw_pointer_cast(&x[0]),
-  //                                                                                              thrust::raw_pointer_cast(&xc[0]),
-  //                                                                                              nInnerIter);
-  //
 }
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE>
 __global__ void postRelaxSym_kernel1(const IndexType num_rows,
-                                     const IndexType num_entries,
-                                     const IndexType* __restrict__ Aj,
-                                     const ValueType* __restrict__ Ax,
-                                     const IndexType* __restrict__ Aouti,
-                                     const IndexType* __restrict__ Aoutj,
-                                     const ValueType* __restrict__ Aoutv,
-                                     const IndexType Aout_num_entries,
-                                     const ValueType* __restrict__ diag,
-                                     const IndexType* __restrict__ aggregateIdx,
-                                     const IndexType* __restrict__ partitionIdx,
-                                     const IndexType* __restrict__ AinBlockIdx,
-                                     const IndexType* __restrict__ AoutBlockIdx,
-                                     const ValueType* __restrict__ b,
-                                     const double weight,
-                                     ValueType* __restrict__ x,
-                                     ValueType* __restrict__ xout,
-                                     int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* __restrict__ Aj,
+    const ValueType* __restrict__ Ax,
+    const IndexType* __restrict__ Aouti,
+    const IndexType* __restrict__ Aoutj,
+    const ValueType* __restrict__ Aoutv,
+    const IndexType Aout_num_entries,
+    const ValueType* __restrict__ diag,
+    const IndexType* __restrict__ aggregateIdx,
+    const IndexType* __restrict__ partitionIdx,
+    const IndexType* __restrict__ AinBlockIdx,
+    const IndexType* __restrict__ AoutBlockIdx,
+    const ValueType* __restrict__ b,
+    const double weight,
+    ValueType* __restrict__ x,
+    ValueType* __restrict__ xout,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0};
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -3782,11 +3658,9 @@ __global__ void postRelaxSym_kernel1(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
   ValueType* s_b = &s_array[0];
   IndexType row = thread_id + blockstart;
-  IndexType tmpIdx;
 
   if(row < blockend)
   {
-    //    s_b[thread_id] = b[permutation[row]];
     s_b[thread_id] = b[row];
   }
 
@@ -3799,7 +3673,6 @@ __global__ void postRelaxSym_kernel1(const IndexType num_rows,
     IndexType idxj = Aoutj[i];
     ValueType v = Aoutv[i];
     atomicAdd(&s_b[idxi - blockstart], -v * x[idxj]); //assuming ValueType is float
-    //    		s_b[idxi - blockstart] += -v * x[idxj];
   }
   __syncthreads();
 
@@ -3828,7 +3701,6 @@ __global__ void postRelaxSym_kernel1(const IndexType num_rows,
     }
   }
 
-  ValueType sum;
   unsigned int Ajreg;
   ValueType Axreg;
 
@@ -3841,20 +3713,6 @@ __global__ void postRelaxSym_kernel1(const IndexType num_rows,
       s_Ax[thread_id] = 0.0;
     }
     __syncthreads();
-    //compute Ax
-    //#pragma unroll
-    //    for(int n = 0; n < NUMPERROW; n++)
-    //    {
-    //      if(Ajlocal[n] > 0)
-    //      {
-    //        unsigned int idxi = Ajlocal[n] >> 16;
-    //        unsigned int idxj = Ajlocal[n] - (idxi << 16);
-    //        atomicAdd(&s_Ax[idxi], Axlocal[n] * s_x[idxj]);
-    //        atomicAdd(&s_Ax[idxj], Axlocal[n] * s_x[idxi]);
-    //        //				s_Ax[idxi] += Axlocal[n] * s_x[idxj];
-    //        //        s_Ax[idxj] += Axlocal[n] * s_x[idxi];
-    //      }
-    //    }
 
     LOOP10_FUNC1();
 
@@ -3877,29 +3735,28 @@ gotolabel:
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE>
 __global__ void postRelaxSym_kernel2(const IndexType num_rows,
-                                     const IndexType num_entries,
-                                     const IndexType* Aj,
-                                     const ValueType* Ax,
-                                     const IndexType* Aouti,
-                                     const IndexType* Aoutj,
-                                     const ValueType* Aoutv,
-                                     const IndexType Aout_num_entries,
-                                     const ValueType* diag,
-                                     const IndexType* aggregateIdx,
-                                     const IndexType* partitionIdx,
-                                     const IndexType* AinBlockIdx,
-                                     const IndexType* AoutBlockIdx,
-                                     const ValueType* b,
-                                     const double weight,
-                                     ValueType* x,
-                                     ValueType* xout,
-                                     int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const IndexType* Aouti,
+    const IndexType* Aoutj,
+    const ValueType* Aoutv,
+    const IndexType Aout_num_entries,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* AinBlockIdx,
+    const IndexType* AoutBlockIdx,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* xout,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0};
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -3913,11 +3770,9 @@ __global__ void postRelaxSym_kernel2(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
   ValueType* s_b = &s_array[0];
   IndexType row = thread_id + blockstart;
-  IndexType tmpIdx;
 
   if(row < blockend)
   {
-    //    s_b[thread_id] = b[permutation[row]];
     s_b[thread_id] = b[row];
   }
 
@@ -3929,7 +3784,6 @@ __global__ void postRelaxSym_kernel2(const IndexType num_rows,
     IndexType idxj = Aoutj[i];
     ValueType v = Aoutv[i];
     atomicAdd(&s_b[idxi - blockstart], -v * x[idxj]); //assuming ValueType is float
-    //    		s_b[idxi - blockstart] += -v * x[idxj];
   }
   __syncthreads();
 
@@ -3958,7 +3812,6 @@ __global__ void postRelaxSym_kernel2(const IndexType num_rows,
     }
   }
 
-  ValueType sum;
   unsigned int Ajreg;
   ValueType Axreg;
 
@@ -3971,20 +3824,6 @@ __global__ void postRelaxSym_kernel2(const IndexType num_rows,
       s_Ax[thread_id] = 0.0;
     }
     __syncthreads();
-    //compute Ax
-    //#pragma unroll
-    //    for(int n = 0; n < NUMPERROW; n++)
-    //    {
-    //      if(Ajlocal[n] > 0)
-    //      {
-    //        unsigned int idxi = Ajlocal[n] >> 16;
-    //        unsigned int idxj = Ajlocal[n] - (idxi << 16);
-    //        atomicAdd(&s_Ax[idxi], Axlocal[n] * s_x[idxj]);
-    //        atomicAdd(&s_Ax[idxj], Axlocal[n] * s_x[idxi]);
-    //        //				s_Ax[idxi] += Axlocal[n] * s_x[idxj];
-    //        //        s_Ax[idxj] += Axlocal[n] * s_x[idxi];
-    //      }
-    //    }
 
     LOOP20_FUNC1();
 
@@ -4007,29 +3846,28 @@ gotolabel:
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE>
 __global__ void postRelaxSym_kernel3(const IndexType num_rows,
-                                     const IndexType num_entries,
-                                     const IndexType* Aj,
-                                     const ValueType* Ax,
-                                     const IndexType* Aouti,
-                                     const IndexType* Aoutj,
-                                     const ValueType* Aoutv,
-                                     const IndexType Aout_num_entries,
-                                     const ValueType* diag,
-                                     const IndexType* aggregateIdx,
-                                     const IndexType* partitionIdx,
-                                     const IndexType* AinBlockIdx,
-                                     const IndexType* AoutBlockIdx,
-                                     const ValueType* b,
-                                     const double weight,
-                                     ValueType* x,
-                                     ValueType* xout,
-                                     int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const IndexType* Aouti,
+    const IndexType* Aoutj,
+    const ValueType* Aoutv,
+    const IndexType Aout_num_entries,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* AinBlockIdx,
+    const IndexType* AoutBlockIdx,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* xout,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0};
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -4043,11 +3881,9 @@ __global__ void postRelaxSym_kernel3(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
   ValueType* s_b = &s_array[0];
   IndexType row = thread_id + blockstart;
-  IndexType tmpIdx;
 
   if(row < blockend)
   {
-    //    s_b[thread_id] = b[permutation[row]];
     s_b[thread_id] = b[row];
   }
 
@@ -4060,7 +3896,6 @@ __global__ void postRelaxSym_kernel3(const IndexType num_rows,
     IndexType idxj = Aoutj[i];
     ValueType v = Aoutv[i];
     atomicAdd(&s_b[idxi - blockstart], -v * x[idxj]); //assuming ValueType is float
-    //    		s_b[idxi - blockstart] += -v * x[idxj];
   }
   __syncthreads();
 
@@ -4089,7 +3924,6 @@ __global__ void postRelaxSym_kernel3(const IndexType num_rows,
     }
   }
 
-  ValueType sum;
   unsigned int Ajreg;
   ValueType Axreg;
 
@@ -4102,20 +3936,6 @@ __global__ void postRelaxSym_kernel3(const IndexType num_rows,
       s_Ax[thread_id] = 0.0;
     }
     __syncthreads();
-    //compute Ax
-    //#pragma unroll
-    //    for(int n = 0; n < NUMPERROW; n++)
-    //    {
-    //      if(Ajlocal[n] > 0)
-    //      {
-    //        unsigned int idxi = Ajlocal[n] >> 16;
-    //        unsigned int idxj = Ajlocal[n] - (idxi << 16);
-    //        atomicAdd(&s_Ax[idxi], Axlocal[n] * s_x[idxj]);
-    //        atomicAdd(&s_Ax[idxj], Axlocal[n] * s_x[idxi]);
-    //        //				s_Ax[idxi] += Axlocal[n] * s_x[idxj];
-    //        //        s_Ax[idxj] += Axlocal[n] * s_x[idxi];
-    //      }
-    //    }
 
     LOOP30_FUNC1();
 
@@ -4138,29 +3958,28 @@ gotolabel:
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE>
 __global__ void postRelaxSym_kernel4(const IndexType num_rows,
-                                     const IndexType num_entries,
-                                     const IndexType* Aj,
-                                     const ValueType* Ax,
-                                     const IndexType* Aouti,
-                                     const IndexType* Aoutj,
-                                     const ValueType* Aoutv,
-                                     const IndexType Aout_num_entries,
-                                     const ValueType* diag,
-                                     const IndexType* aggregateIdx,
-                                     const IndexType* partitionIdx,
-                                     const IndexType* AinBlockIdx,
-                                     const IndexType* AoutBlockIdx,
-                                     const ValueType* b,
-                                     const double weight,
-                                     ValueType* x,
-                                     ValueType* xout,
-                                     int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const IndexType* Aouti,
+    const IndexType* Aoutj,
+    const ValueType* Aoutv,
+    const IndexType Aout_num_entries,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* AinBlockIdx,
+    const IndexType* AoutBlockIdx,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* xout,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0};
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -4174,11 +3993,9 @@ __global__ void postRelaxSym_kernel4(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
   ValueType* s_b = &s_array[0];
   IndexType row = thread_id + blockstart;
-  IndexType tmpIdx;
 
   if(row < blockend)
   {
-    //    s_b[thread_id] = b[permutation[row]];
     s_b[thread_id] = b[row];
   }
 
@@ -4191,7 +4008,6 @@ __global__ void postRelaxSym_kernel4(const IndexType num_rows,
     IndexType idxj = Aoutj[i];
     ValueType v = Aoutv[i];
     atomicAdd(&s_b[idxi - blockstart], -v * x[idxj]); //assuming ValueType is float
-    //    		s_b[idxi - blockstart] += -v * x[idxj];
   }
   __syncthreads();
 
@@ -4220,7 +4036,6 @@ __global__ void postRelaxSym_kernel4(const IndexType num_rows,
     }
   }
 
-  ValueType sum;
   unsigned int Ajreg;
   ValueType Axreg;
 
@@ -4233,20 +4048,6 @@ __global__ void postRelaxSym_kernel4(const IndexType num_rows,
       s_Ax[thread_id] = 0.0;
     }
     __syncthreads();
-    //compute Ax
-    //#pragma unroll
-    //    for(int n = 0; n < NUMPERROW; n++)
-    //    {
-    //      if(Ajlocal[n] > 0)
-    //      {
-    //        unsigned int idxi = Ajlocal[n] >> 16;
-    //        unsigned int idxj = Ajlocal[n] - (idxi << 16);
-    //        atomicAdd(&s_Ax[idxi], Axlocal[n] * s_x[idxj]);
-    //        atomicAdd(&s_Ax[idxj], Axlocal[n] * s_x[idxi]);
-    //        //				s_Ax[idxi] += Axlocal[n] * s_x[idxj];
-    //        //        s_Ax[idxj] += Axlocal[n] * s_x[idxi];
-    //      }
-    //    }
 
     LOOP40_FUNC1();
 
@@ -4269,29 +4070,28 @@ gotolabel:
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE>
 __global__ void postRelaxSym_kernel5(const IndexType num_rows,
-                                     const IndexType num_entries,
-                                     const IndexType* Aj,
-                                     const ValueType* Ax,
-                                     const IndexType* Aouti,
-                                     const IndexType* Aoutj,
-                                     const ValueType* Aoutv,
-                                     const IndexType Aout_num_entries,
-                                     const ValueType* diag,
-                                     const IndexType* aggregateIdx,
-                                     const IndexType* partitionIdx,
-                                     const IndexType* AinBlockIdx,
-                                     const IndexType* AoutBlockIdx,
-                                     const ValueType* b,
-                                     const double weight,
-                                     ValueType* x,
-                                     ValueType* xout,
-                                     int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const IndexType* Aouti,
+    const IndexType* Aoutj,
+    const ValueType* Aoutv,
+    const IndexType Aout_num_entries,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* AinBlockIdx,
+    const IndexType* AoutBlockIdx,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* xout,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0};
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -4305,11 +4105,9 @@ __global__ void postRelaxSym_kernel5(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
   ValueType* s_b = &s_array[0];
   IndexType row = thread_id + blockstart;
-  IndexType tmpIdx;
 
   if(row < blockend)
   {
-    //    s_b[thread_id] = b[permutation[row]];
     s_b[thread_id] = b[row];
   }
 
@@ -4322,7 +4120,6 @@ __global__ void postRelaxSym_kernel5(const IndexType num_rows,
     IndexType idxj = Aoutj[i];
     ValueType v = Aoutv[i];
     atomicAdd(&s_b[idxi - blockstart], -v * x[idxj]); //assuming ValueType is float
-    //    		s_b[idxi - blockstart] += -v * x[idxj];
   }
   __syncthreads();
 
@@ -4351,7 +4148,6 @@ __global__ void postRelaxSym_kernel5(const IndexType num_rows,
     }
   }
 
-  ValueType sum;
   unsigned int Ajreg;
   ValueType Axreg;
 
@@ -4364,20 +4160,6 @@ __global__ void postRelaxSym_kernel5(const IndexType num_rows,
       s_Ax[thread_id] = 0.0;
     }
     __syncthreads();
-    //compute Ax
-    //#pragma unroll
-    //    for(int n = 0; n < NUMPERROW; n++)
-    //    {
-    //      if(Ajlocal[n] > 0)
-    //      {
-    //        unsigned int idxi = Ajlocal[n] >> 16;
-    //        unsigned int idxj = Ajlocal[n] - (idxi << 16);
-    //        atomicAdd(&s_Ax[idxi], Axlocal[n] * s_x[idxj]);
-    //        atomicAdd(&s_Ax[idxj], Axlocal[n] * s_x[idxi]);
-    //        //				s_Ax[idxi] += Axlocal[n] * s_x[idxj];
-    //        //        s_Ax[idxj] += Axlocal[n] * s_x[idxi];
-    //      }
-    //    }
 
     LOOP50_FUNC1();
 
@@ -4400,29 +4182,28 @@ gotolabel:
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE>
 __global__ void postRelaxSym_kernel6(const IndexType num_rows,
-                                     const IndexType num_entries,
-                                     const IndexType* Aj,
-                                     const ValueType* Ax,
-                                     const IndexType* Aouti,
-                                     const IndexType* Aoutj,
-                                     const ValueType* Aoutv,
-                                     const IndexType Aout_num_entries,
-                                     const ValueType* diag,
-                                     const IndexType* aggregateIdx,
-                                     const IndexType* partitionIdx,
-                                     const IndexType* AinBlockIdx,
-                                     const IndexType* AoutBlockIdx,
-                                     const ValueType* b,
-                                     const double weight,
-                                     ValueType* x,
-                                     ValueType* xout,
-                                     int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const IndexType* Aouti,
+    const IndexType* Aoutj,
+    const ValueType* Aoutv,
+    const IndexType Aout_num_entries,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* AinBlockIdx,
+    const IndexType* AoutBlockIdx,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* xout,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0};
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -4436,24 +4217,20 @@ __global__ void postRelaxSym_kernel6(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
   ValueType* s_b = &s_array[0];
   IndexType row = thread_id + blockstart;
-  IndexType tmpIdx;
 
   if(row < blockend)
   {
-    //    s_b[thread_id] = b[permutation[row]];
     s_b[thread_id] = b[row];
   }
 
   __syncthreads();
   //add values to b out of this block
-  //
   for(int i = AoutBlockstart + thread_id; i < AoutBlockend; i += blockDim.x)
   {
     IndexType idxi = Aouti[i];
     IndexType idxj = Aoutj[i];
     ValueType v = Aoutv[i];
     atomicAdd(&s_b[idxi - blockstart], -v * x[idxj]); //assuming ValueType is float
-    //    		s_b[idxi - blockstart] += -v * x[idxj];
   }
   __syncthreads();
 
@@ -4482,7 +4259,6 @@ __global__ void postRelaxSym_kernel6(const IndexType num_rows,
     }
   }
 
-  ValueType sum;
   unsigned int Ajreg;
   ValueType Axreg;
 
@@ -4495,20 +4271,6 @@ __global__ void postRelaxSym_kernel6(const IndexType num_rows,
       s_Ax[thread_id] = 0.0;
     }
     __syncthreads();
-    //compute Ax
-    //#pragma unroll
-    //    for(int n = 0; n < NUMPERROW; n++)
-    //    {
-    //      if(Ajlocal[n] > 0)
-    //      {
-    //        unsigned int idxi = Ajlocal[n] >> 16;
-    //        unsigned int idxj = Ajlocal[n] - (idxi << 16);
-    //        atomicAdd(&s_Ax[idxi], Axlocal[n] * s_x[idxj]);
-    //        atomicAdd(&s_Ax[idxj], Axlocal[n] * s_x[idxi]);
-    //        //				s_Ax[idxi] += Axlocal[n] * s_x[idxj];
-    //        //        s_Ax[idxj] += Axlocal[n] * s_x[idxi];
-    //      }
-    //    }
 
     LOOP60_FUNC1();
 
@@ -4531,29 +4293,28 @@ gotolabel:
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE>
 __global__ void postRelaxSym_kernel7(const IndexType num_rows,
-                                     const IndexType num_entries,
-                                     const IndexType* Aj,
-                                     const ValueType* Ax,
-                                     const IndexType* Aouti,
-                                     const IndexType* Aoutj,
-                                     const ValueType* Aoutv,
-                                     const IndexType Aout_num_entries,
-                                     const ValueType* diag,
-                                     const IndexType* aggregateIdx,
-                                     const IndexType* partitionIdx,
-                                     const IndexType* AinBlockIdx,
-                                     const IndexType* AoutBlockIdx,
-                                     const ValueType* b,
-                                     const double weight,
-                                     ValueType* x,
-                                     ValueType* xout,
-                                     int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const IndexType* Aouti,
+    const IndexType* Aoutj,
+    const ValueType* Aoutv,
+    const IndexType Aout_num_entries,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* AinBlockIdx,
+    const IndexType* AoutBlockIdx,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* xout,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0};
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -4567,11 +4328,9 @@ __global__ void postRelaxSym_kernel7(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
   ValueType* s_b = &s_array[0];
   IndexType row = thread_id + blockstart;
-  IndexType tmpIdx;
 
   if(row < blockend)
   {
-    //    s_b[thread_id] = b[permutation[row]];
     s_b[thread_id] = b[row];
   }
 
@@ -4584,7 +4343,6 @@ __global__ void postRelaxSym_kernel7(const IndexType num_rows,
     IndexType idxj = Aoutj[i];
     ValueType v = Aoutv[i];
     atomicAdd(&s_b[idxi - blockstart], -v * x[idxj]); //assuming ValueType is float
-    //    		s_b[idxi - blockstart] += -v * x[idxj];
   }
   __syncthreads();
 
@@ -4613,7 +4371,6 @@ __global__ void postRelaxSym_kernel7(const IndexType num_rows,
     }
   }
 
-  ValueType sum;
   unsigned int Ajreg;
   ValueType Axreg;
 
@@ -4626,20 +4383,6 @@ __global__ void postRelaxSym_kernel7(const IndexType num_rows,
       s_Ax[thread_id] = 0.0;
     }
     __syncthreads();
-    //compute Ax
-    //#pragma unroll
-    //    for(int n = 0; n < NUMPERROW; n++)
-    //    {
-    //      if(Ajlocal[n] > 0)
-    //      {
-    //        unsigned int idxi = Ajlocal[n] >> 16;
-    //        unsigned int idxj = Ajlocal[n] - (idxi << 16);
-    //        atomicAdd(&s_Ax[idxi], Axlocal[n] * s_x[idxj]);
-    //        atomicAdd(&s_Ax[idxj], Axlocal[n] * s_x[idxi]);
-    //        //				s_Ax[idxi] += Axlocal[n] * s_x[idxj];
-    //        //        s_Ax[idxj] += Axlocal[n] * s_x[idxi];
-    //      }
-    //    }
 
     LOOP70_FUNC1();
 
@@ -4662,19 +4405,19 @@ gotolabel:
 
 template<>
 void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AinSysCoo,
-                                                            const cusp::array1d<IndexType, MemorySpace>& AinBlockIdx,
-                                                            const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutSysCoo,
-                                                            const cusp::array1d<IndexType, MemorySpace>& AoutBlockIdx,
-                                                            const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
-                                                            const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
-                                                            const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& prolongator,
-                                                            const cusp::array1d<IndexType, MemorySpace>& permutation,
-                                                            const cusp::array1d<ValueType, MemorySpace>& b,
-                                                            cusp::array1d<ValueType, MemorySpace>& x,
-                                                            cusp::array1d<ValueType, MemorySpace>& xc,
-                                                            int level_id,
-                                                            int largestblksize,
-                                                            int largestnumentries)
+    const cusp::array1d<IndexType, MemorySpace>& AinBlockIdx,
+    const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutSysCoo,
+    const cusp::array1d<IndexType, MemorySpace>& AoutBlockIdx,
+    const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
+    const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
+    const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& prolongator,
+    const cusp::array1d<IndexType, MemorySpace>& permutation,
+    const cusp::array1d<ValueType, MemorySpace>& b,
+    cusp::array1d<ValueType, MemorySpace>& x,
+    cusp::array1d<ValueType, MemorySpace>& xc,
+    int level_id,
+    int largestblksize,
+    int largestnumentries)
 {
 
   Vector_d deltax(x.size());
@@ -4682,7 +4425,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
   cusp::blas::axpby(x, deltax, x, ValueType(1.0), ValueType(1.0)); // x = x + e
 
   const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
-  const size_t NUM_BLOCKS = partitionIdx.size() - 1; 
+  const size_t NUM_BLOCKS = partitionIdx.size() - 1;
   const size_t num_entries_per_thread = ceil((double)largestnumentries / THREADS_PER_BLOCK);
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;
@@ -4697,205 +4440,204 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
     if(num_entries_per_thread < 11)
     {
       postRelaxSym_kernel1<IndexType, ValueType, 10, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                         AinSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                         AoutSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&diag[0]),
-                                                                                                         thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&b[0]),
-                                                                                                         weight,
-                                                                                                         thrust::raw_pointer_cast(&x[0]),
-                                                                                                         thrust::raw_pointer_cast(&xout[0]),
-                                                                                                         nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(num_entries_per_thread < 21)
     {
       postRelaxSym_kernel2<IndexType, ValueType, 20, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                         AinSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                         AoutSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&diag[0]),
-                                                                                                         thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&b[0]),
-                                                                                                         weight,
-                                                                                                         thrust::raw_pointer_cast(&x[0]),
-                                                                                                         thrust::raw_pointer_cast(&xout[0]),
-                                                                                                         nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
 
-      //			printf("block size is: %d\n", THREADS_PER_BLOCK);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(num_entries_per_thread < 31)
     {
       postRelaxSym_kernel3<IndexType, ValueType, 30, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                         AinSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                         AoutSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&diag[0]),
-                                                                                                         thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&b[0]),
-                                                                                                         weight,
-                                                                                                         thrust::raw_pointer_cast(&x[0]),
-                                                                                                         thrust::raw_pointer_cast(&xout[0]),
-                                                                                                         nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
 
     else if(num_entries_per_thread < 41)
     {
       postRelaxSym_kernel4<IndexType, ValueType, 40, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                         AinSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                         AoutSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&diag[0]),
-                                                                                                         thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&b[0]),
-                                                                                                         weight,
-                                                                                                         thrust::raw_pointer_cast(&x[0]),
-                                                                                                         thrust::raw_pointer_cast(&xout[0]),
-                                                                                                         nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(num_entries_per_thread < 51)
     {
       postRelaxSym_kernel5<IndexType, ValueType, 50, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                         AinSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                         AoutSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&diag[0]),
-                                                                                                         thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&b[0]),
-                                                                                                         weight,
-                                                                                                         thrust::raw_pointer_cast(&x[0]),
-                                                                                                         thrust::raw_pointer_cast(&xout[0]),
-                                                                                                         nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(num_entries_per_thread < 61)
     {
       postRelaxSym_kernel6<IndexType, ValueType, 60, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                         AinSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                         AoutSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&diag[0]),
-                                                                                                         thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&b[0]),
-                                                                                                         weight,
-                                                                                                         thrust::raw_pointer_cast(&x[0]),
-                                                                                                         thrust::raw_pointer_cast(&xout[0]),
-                                                                                                         nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
 
     else if(num_entries_per_thread < 71)
     {
       postRelaxSym_kernel7<IndexType, ValueType, 70, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                         AinSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                         AoutSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&diag[0]),
-                                                                                                         thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&b[0]),
-                                                                                                         weight,
-                                                                                                         thrust::raw_pointer_cast(&x[0]),
-                                                                                                         thrust::raw_pointer_cast(&xout[0]),
-                                                                                                         nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
 
     else if(num_entries_per_thread < 81)
     {
       postRelaxSym_kernel7<IndexType, ValueType, 80, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                         AinSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                         AoutSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&diag[0]),
-                                                                                                         thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&b[0]),
-                                                                                                         weight,
-                                                                                                         thrust::raw_pointer_cast(&x[0]),
-                                                                                                         thrust::raw_pointer_cast(&xout[0]),
-                                                                                                         nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
 
     else if(num_entries_per_thread < 91)
     {
       postRelaxSym_kernel7<IndexType, ValueType, 90, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                         AinSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                         AoutSysCoo.num_entries,
-                                                                                                         thrust::raw_pointer_cast(&diag[0]),
-                                                                                                         thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                         thrust::raw_pointer_cast(&b[0]),
-                                                                                                         weight,
-                                                                                                         thrust::raw_pointer_cast(&x[0]),
-                                                                                                         thrust::raw_pointer_cast(&xout[0]),
-                                                                                                         nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
 
@@ -4913,44 +4655,40 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
 
     permutation_kernel2<IndexType, ValueType> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(x.size(), thrust::raw_pointer_cast(&permutation[0]), thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&xout[0]));
     x.swap(xout);
-    //    		x=xout;
   }
 
 }
 
 template<typename IndexType, typename ValueType, int NUMPERROW, int SHAREDSIZE>
 __global__ void postRelaxSymSync_kernel(const IndexType num_rows,
-                                        const IndexType num_entries,
-                                        const IndexType* __restrict__ Aj,
-                                        const ValueType* __restrict__ Ax,
-                                        const IndexType* __restrict__ Aouti,
-                                        const IndexType* __restrict__ Aoutj,
-                                        const ValueType* __restrict__ Aoutv,
-                                        const IndexType Aout_num_entries,
-                                        const ValueType* __restrict__ diag,
-                                        const IndexType* __restrict__ aggregateIdx,
-                                        const IndexType* __restrict__ partitionIdx,
-                                        const IndexType* __restrict__ AinBlockIdx,
-                                        const IndexType* __restrict__ AoutBlockIdx,
-                                        const ValueType* __restrict__ b,
-                                        const IndexType* __restrict__ segSyncIdx,
-                                        const IndexType* __restrict__ partSyncIdx,
-                                        const double weight,
-                                        ValueType* __restrict__ x,
-                                        ValueType* __restrict__ xout,
-                                        int nInnerIter)
+    const IndexType num_entries,
+    const IndexType* __restrict__ Aj,
+    const ValueType* __restrict__ Ax,
+    const IndexType* __restrict__ Aouti,
+    const IndexType* __restrict__ Aoutj,
+    const ValueType* __restrict__ Aoutv,
+    const IndexType Aout_num_entries,
+    const ValueType* __restrict__ diag,
+    const IndexType* __restrict__ aggregateIdx,
+    const IndexType* __restrict__ partitionIdx,
+    const IndexType* __restrict__ AinBlockIdx,
+    const IndexType* __restrict__ AoutBlockIdx,
+    const ValueType* __restrict__ b,
+    const IndexType* __restrict__ segSyncIdx,
+    const IndexType* __restrict__ partSyncIdx,
+    const double weight,
+    ValueType* __restrict__ x,
+    ValueType* __restrict__ xout,
+    int nInnerIter)
 {
   ValueType Axlocal[NUMPERROW];
   unsigned int Ajlocal[NUMPERROW] = {0};
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
   const IndexType blockend = aggregateIdx[aggrend];
-  //  IndexType AoutBlockstart = AoutBlockIdx[blockIdx.x];
-  //  IndexType AoutBlockend = AoutBlockIdx[blockIdx.x + 1];
   IndexType AinBlockstart = AinBlockIdx[blockIdx.x];
   IndexType AinBlockend = AinBlockIdx[blockIdx.x + 1];
 
@@ -4958,26 +4696,13 @@ __global__ void postRelaxSymSync_kernel(const IndexType num_rows,
   __shared__ ValueType s_Ax[SHAREDSIZE];
   ValueType* s_b = &s_array[0];
   IndexType row = thread_id + blockstart;
-  IndexType tmpIdx;
 
   if(row < blockend)
   {
-    //    s_b[thread_id] = b[permutation[row]];
     s_b[thread_id] = b[row];
   }
 
   __syncthreads();
-  //add values to b out of this block
-  //
-  //  for(int i = AoutBlockstart + thread_id; i < AoutBlockend; i += blockDim.x)
-  //  {
-  //    IndexType idxi = Aouti[i];
-  //    IndexType idxj = Aoutj[i];
-  //    ValueType v = Aoutv[i];
-  //    atomicAdd(&s_b[idxi - blockstart], -v * x[idxj]); //assuming ValueType is float
-  //    //    		s_b[idxi - blockstart] += -v * x[idxj];
-  //  }
-  //  __syncthreads();
 
   ValueType brow, drow;
   if(row < blockend)
@@ -5004,7 +4729,6 @@ __global__ void postRelaxSymSync_kernel(const IndexType num_rows,
     }
   }
 
-  ValueType sum;
   unsigned int Ajreg;
   ValueType Axreg;
   unsigned int idxi;
@@ -5038,12 +4762,9 @@ __global__ void postRelaxSymSync_kernel(const IndexType num_rows,
       {
         Ajreg = Ajlocal[n];
         Axreg = Axlocal[n];
-        //				Ajreg = threadIdx.x % 10;
-        //        Axreg = threadIdx.x+1.0;
         idxi = Ajreg >> 16;
         idxj = Ajreg - (idxi << 16);
         s_Ax[idxi] += Axreg * s_x[idxj];
-        //				atomicAdd(&s_Ax[idxi],  Axlocal[n] * s_x[idxj]);  
       }
 
       __syncthreads();
@@ -5051,35 +4772,10 @@ __global__ void postRelaxSymSync_kernel(const IndexType num_rows,
       if(inside)
       {
         s_Ax[idxj] += Axreg * s_x[idxi];
-        //				atomicAdd(&s_Ax[idxj],  Axlocal[n] * s_x[idxi]);  
         n++;
       }
       __syncthreads();
 
-      //      IndexType segSyncStart = segSyncIdx[partSyncStart + segIdx];
-      //      IndexType segSyncEnd = segSyncIdx[partSyncStart + segIdx + 1];
-      //      bool inside = (cooidx >= segSyncStart && cooidx < segSyncEnd);
-      //      cooidx = AinBlockstart + n * blockDim.x + threadIdx.x;
-      //
-      //      if(inside)
-      //      {
-      //        Ajreg = Ajlocal[n];
-      //        Axreg = Axlocal[n];
-      //        //        Ajreg = threadIdx.x % 10;
-      //        //        Axreg = threadIdx.x+1.0;
-      //        idxi = Ajreg >> 16;
-      //        idxj = Ajreg - (idxi << 16);
-      //        s_Ax[idxi] += Axreg * s_x[idxj];
-      //      }
-      //
-      //      __syncthreads();
-      //
-      //      if(inside)
-      //      {
-      //        s_Ax[idxj] += Axreg * s_x[idxi];
-      //        n++;
-      //      }
-      //      __syncthreads();
     }
 
     if(row < blockend)
@@ -5100,21 +4796,21 @@ __global__ void postRelaxSymSync_kernel(const IndexType num_rows,
 
 template<>
 void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AinSysCoo,
-                                                                const cusp::array1d<IndexType, MemorySpace>& AinBlockIdx,
-                                                                const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutSysCoo,
-                                                                const cusp::array1d<IndexType, MemorySpace>& AoutBlockIdx,
-                                                                const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
-                                                                const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
-                                                                const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& prolongator,
-                                                                const cusp::array1d<IndexType, MemorySpace>& permutation,
-                                                                const cusp::array1d<ValueType, MemorySpace>& origb,
-                                                                cusp::array1d<ValueType, MemorySpace>& x,
-                                                                cusp::array1d<ValueType, MemorySpace>& xc,
-                                                                const cusp::array1d<IndexType, MemorySpace>& segSyncIdx,
-                                                                const cusp::array1d<IndexType, MemorySpace>& partSyncIdx,
-                                                                int level_id,
-                                                                int largestblksize,
-                                                                int largestnumentries)
+    const cusp::array1d<IndexType, MemorySpace>& AinBlockIdx,
+    const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutSysCoo,
+    const cusp::array1d<IndexType, MemorySpace>& AoutBlockIdx,
+    const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
+    const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
+    const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& prolongator,
+    const cusp::array1d<IndexType, MemorySpace>& permutation,
+    const cusp::array1d<ValueType, MemorySpace>& origb,
+    cusp::array1d<ValueType, MemorySpace>& x,
+    cusp::array1d<ValueType, MemorySpace>& xc,
+    const cusp::array1d<IndexType, MemorySpace>& segSyncIdx,
+    const cusp::array1d<IndexType, MemorySpace>& partSyncIdx,
+    int level_id,
+    int largestblksize,
+    int largestnumentries)
 {
   Vector_d deltax(x.size());
   cusp::multiply(prolongator, xc, deltax);
@@ -5124,7 +4820,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
   cusp::blas::axpby(origb, deltax, b, ValueType(1.0), ValueType(-1.0)); // b = b - b'
 
   const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
-  const size_t NUM_BLOCKS = partitionIdx.size() - 1; 
+  const size_t NUM_BLOCKS = partitionIdx.size() - 1;
   const size_t num_entries_per_thread = ceil((double)largestnumentries / THREADS_PER_BLOCK);
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;
@@ -5137,174 +4833,174 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
     if(num_entries_per_thread < 11)
     {
       postRelaxSymSync_kernel<IndexType, ValueType, 10, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                            AinSysCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                            AoutSysCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&diag[0]),
-                                                                                                            thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&b[0]),
-                                                                                                            thrust::raw_pointer_cast(&segSyncIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partSyncIdx[0]),
-                                                                                                            weight,
-                                                                                                            thrust::raw_pointer_cast(&x[0]),
-                                                                                                            thrust::raw_pointer_cast(&xout[0]),
-                                                                                                            nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          thrust::raw_pointer_cast(&segSyncIdx[0]),
+          thrust::raw_pointer_cast(&partSyncIdx[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(num_entries_per_thread < 21)
     {
       postRelaxSymSync_kernel<IndexType, ValueType, 20, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                            AinSysCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                            AoutSysCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&diag[0]),
-                                                                                                            thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&b[0]),
-                                                                                                            thrust::raw_pointer_cast(&segSyncIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partSyncIdx[0]),
-                                                                                                            weight,
-                                                                                                            thrust::raw_pointer_cast(&x[0]),
-                                                                                                            thrust::raw_pointer_cast(&xout[0]),
-                                                                                                            nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          thrust::raw_pointer_cast(&segSyncIdx[0]),
+          thrust::raw_pointer_cast(&partSyncIdx[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
     }
     else if(num_entries_per_thread < 31)
     {
       postRelaxSymSync_kernel<IndexType, ValueType, 30, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                            AinSysCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                            AoutSysCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&diag[0]),
-                                                                                                            thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&b[0]),
-                                                                                                            thrust::raw_pointer_cast(&segSyncIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partSyncIdx[0]),
-                                                                                                            weight,
-                                                                                                            thrust::raw_pointer_cast(&x[0]),
-                                                                                                            thrust::raw_pointer_cast(&xout[0]),
-                                                                                                            nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          thrust::raw_pointer_cast(&segSyncIdx[0]),
+          thrust::raw_pointer_cast(&partSyncIdx[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
     }
     else if(num_entries_per_thread < 41)
     {
       postRelaxSymSync_kernel<IndexType, ValueType, 40, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                            AinSysCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                            AoutSysCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&diag[0]),
-                                                                                                            thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&b[0]),
-                                                                                                            thrust::raw_pointer_cast(&segSyncIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partSyncIdx[0]),
-                                                                                                            weight,
-                                                                                                            thrust::raw_pointer_cast(&x[0]),
-                                                                                                            thrust::raw_pointer_cast(&xout[0]),
-                                                                                                            nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          thrust::raw_pointer_cast(&segSyncIdx[0]),
+          thrust::raw_pointer_cast(&partSyncIdx[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
     }
     else if(num_entries_per_thread < 51)
     {
       postRelaxSymSync_kernel<IndexType, ValueType, 50, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                            AinSysCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                            AoutSysCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&diag[0]),
-                                                                                                            thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&b[0]),
-                                                                                                            thrust::raw_pointer_cast(&segSyncIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partSyncIdx[0]),
-                                                                                                            weight,
-                                                                                                            thrust::raw_pointer_cast(&x[0]),
-                                                                                                            thrust::raw_pointer_cast(&xout[0]),
-                                                                                                            nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          thrust::raw_pointer_cast(&segSyncIdx[0]),
+          thrust::raw_pointer_cast(&partSyncIdx[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
     }
     else if(num_entries_per_thread < 61)
     {
       postRelaxSymSync_kernel<IndexType, ValueType, 60, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                            AinSysCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                            AoutSysCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&diag[0]),
-                                                                                                            thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&b[0]),
-                                                                                                            thrust::raw_pointer_cast(&segSyncIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partSyncIdx[0]),
-                                                                                                            weight,
-                                                                                                            thrust::raw_pointer_cast(&x[0]),
-                                                                                                            thrust::raw_pointer_cast(&xout[0]),
-                                                                                                            nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          thrust::raw_pointer_cast(&segSyncIdx[0]),
+          thrust::raw_pointer_cast(&partSyncIdx[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
     }
     else if(num_entries_per_thread < 71)
     {
       postRelaxSymSync_kernel<IndexType, ValueType, 70, shared_size> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinSysCoo.num_rows,
-                                                                                                            AinSysCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinSysCoo.values[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
-                                                                                                            AoutSysCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&diag[0]),
-                                                                                                            thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&b[0]),
-                                                                                                            thrust::raw_pointer_cast(&segSyncIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partSyncIdx[0]),
-                                                                                                            weight,
-                                                                                                            thrust::raw_pointer_cast(&x[0]),
-                                                                                                            thrust::raw_pointer_cast(&xout[0]),
-                                                                                                            nPostInnerIter);
+          AinSysCoo.num_entries,
+          thrust::raw_pointer_cast(&AinSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AinSysCoo.values[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.row_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.column_indices[0]),
+          thrust::raw_pointer_cast(&AoutSysCoo.values[0]),
+          AoutSysCoo.num_entries,
+          thrust::raw_pointer_cast(&diag[0]),
+          thrust::raw_pointer_cast(&aggregateIdx[0]),
+          thrust::raw_pointer_cast(&partitionIdx[0]),
+          thrust::raw_pointer_cast(&AinBlockIdx[0]),
+          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+          thrust::raw_pointer_cast(&b[0]),
+          thrust::raw_pointer_cast(&segSyncIdx[0]),
+          thrust::raw_pointer_cast(&partSyncIdx[0]),
+          weight,
+          thrust::raw_pointer_cast(&x[0]),
+          thrust::raw_pointer_cast(&xout[0]),
+          nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
     }
@@ -5323,7 +5019,6 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
 
     permutation_kernel2<IndexType, ValueType> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(x.size(), thrust::raw_pointer_cast(&permutation[0]), thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&xout[0]));
     x.swap(xout);
-    //    		x=xout;
   }
 
 
@@ -5332,17 +5027,17 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
 
 template<>
 void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexType, ValueType, MemorySpace>& AinEll,
-                                                   const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutCoo,
-                                                   const cusp::array1d<IndexType, MemorySpace>& AoutBlockIdx,
-                                                   const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
-                                                   const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
-                                                   const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& prolongator,
-                                                   const cusp::array1d<IndexType, MemorySpace>& permutation,
-                                                   const cusp::array1d<ValueType, MemorySpace>& origb,
-                                                   cusp::array1d<ValueType, MemorySpace>& x,
-                                                   cusp::array1d<ValueType, MemorySpace>& xc,
-                                                   int level_id,
-                                                   int largestblksize)
+    const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutCoo,
+    const cusp::array1d<IndexType, MemorySpace>& AoutBlockIdx,
+    const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
+    const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
+    const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& prolongator,
+    const cusp::array1d<IndexType, MemorySpace>& permutation,
+    const cusp::array1d<ValueType, MemorySpace>& origb,
+    cusp::array1d<ValueType, MemorySpace>& x,
+    cusp::array1d<ValueType, MemorySpace>& xc,
+    int level_id,
+    int largestblksize)
 {
   Vector_d deltax(x.size());
   cusp::multiply(prolongator, xc, deltax);
@@ -5353,8 +5048,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
   cusp::blas::axpby(origb, deltax, b, ValueType(1.0), ValueType(-1.0)); // b = b - b'
 
   const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
-  const size_t NUM_BLOCKS = partitionIdx.size() - 1; //(int)ceil((double)AinEll.num_rows / (double)THREADS_PER_BLOCK);
-  //  cout << "num of blocks is: " << NUM_BLOCKS << endl;
+  const size_t NUM_BLOCKS = partitionIdx.size() - 1; 
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;
 
@@ -5380,611 +5074,611 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 9 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                            AinEll.num_cols,
-                                                                                                            AinEll.column_indices.num_cols,
-                                                                                                            AinEll.column_indices.pitch,
-                                                                                                            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                            thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                            thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                            AoutCoo.num_entries,
-                                                                                                            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&diag[0]),
-                                                                                                            thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                            thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                            thrust::raw_pointer_cast(&b[0]),
-                                                                                                            weight,
-                                                                                                            thrust::raw_pointer_cast(&x[0]),
-                                                                                                            thrust::raw_pointer_cast(&xout[0]),
-                                                                                                            nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 9 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                          AinEll.num_cols,
-                                                                                          AinEll.column_indices.num_cols,
-                                                                                          AinEll.column_indices.pitch,
-                                                                                          thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                          thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                          thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                          thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                          thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                          AoutCoo.num_entries,
-                                                                                          thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                          thrust::raw_pointer_cast(&diag[0]),
-                                                                                          thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                          thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                          thrust::raw_pointer_cast(&permutation[0]),
-                                                                                          thrust::raw_pointer_cast(&b[0]),
-                                                                                          weight,
-                                                                                          thrust::raw_pointer_cast(&x[0]),
-                                                                                          thrust::raw_pointer_cast(&xout[0]),
-                                                                                          nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 15)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 14 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 14 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 20)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 19 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 19 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 25)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 24 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 24 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 30)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 29 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 29 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 35)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 34 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 34 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 40)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 39 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 39 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 45)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 44 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 44 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 50)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 49 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 49 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 55)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 54 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 54 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 60)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 59 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 59 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 65)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 64 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 64 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 70)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 69 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 69 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
 
@@ -5992,188 +5686,188 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 75 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 75 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 80)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 79 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 79 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 86)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 85 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                             AinEll.num_cols,
-                                                                                                             AinEll.column_indices.num_cols,
-                                                                                                             AinEll.column_indices.pitch,
-                                                                                                             thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                             AoutCoo.num_entries,
-                                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                                             weight,
-                                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                                             nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 85 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                           AinEll.num_cols,
-                                                                                           AinEll.column_indices.num_cols,
-                                                                                           AinEll.column_indices.pitch,
-                                                                                           thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                           thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                           AoutCoo.num_entries,
-                                                                                           thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&diag[0]),
-                                                                                           thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                           thrust::raw_pointer_cast(&permutation[0]),
-                                                                                           thrust::raw_pointer_cast(&b[0]),
-                                                                                           weight,
-                                                                                           thrust::raw_pointer_cast(&x[0]),
-                                                                                           thrust::raw_pointer_cast(&xout[0]),
-                                                                                           nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else if(NUMPERROW < 221)
     {
       if(useshared)
         postRelaxShared_kernel<IndexType, ValueType, 220 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinEll.num_rows,
-                                                                                                              AinEll.num_cols,
-                                                                                                              AinEll.column_indices.num_cols,
-                                                                                                              AinEll.column_indices.pitch,
-                                                                                                              thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                                              thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                              AoutCoo.num_entries,
-                                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                                              weight,
-                                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                                              nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       else
         postRelax_kernel<IndexType, ValueType, 220 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
-                                                                                            AinEll.num_cols,
-                                                                                            AinEll.column_indices.num_cols,
-                                                                                            AinEll.column_indices.pitch,
-                                                                                            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
-                                                                                            thrust::raw_pointer_cast(&AinEll.values.values[0]),
-                                                                                            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                            thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                            AoutCoo.num_entries,
-                                                                                            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                            thrust::raw_pointer_cast(&diag[0]),
-                                                                                            thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                            thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                            thrust::raw_pointer_cast(&permutation[0]),
-                                                                                            thrust::raw_pointer_cast(&b[0]),
-                                                                                            weight,
-                                                                                            thrust::raw_pointer_cast(&x[0]),
-                                                                                            thrust::raw_pointer_cast(&xout[0]),
-                                                                                            nPostInnerIter);
+            AinEll.num_cols,
+            AinEll.column_indices.num_cols,
+            AinEll.column_indices.pitch,
+            thrust::raw_pointer_cast(&AinEll.column_indices.values[0]),
+            thrust::raw_pointer_cast(&AinEll.values.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
     else
@@ -6184,7 +5878,6 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
 
 
     x.swap(xout);
-    //    x = xout;
   }
 
   cudaThreadSetCacheConfig(cudaFuncCachePreferL1);
@@ -6194,37 +5887,35 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
 
     permutation_kernel2<IndexType, ValueType> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(x.size(), thrust::raw_pointer_cast(&permutation[0]), thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&xout[0]));
     x.swap(xout);
-    //    		x=xout;
   }
 
 }
 
 template<typename IndexType, typename ValueType, int NUMPERROW>
 __global__ void postRelaxCsr_kernel(const IndexType num_rows,
-                                    const IndexType* offsets,
-                                    const IndexType* Aj,
-                                    const ValueType* Ax,
-                                    const IndexType* Aouti,
-                                    const IndexType* Aoutj,
-                                    const ValueType* Aoutv,
-                                    const IndexType num_entries,
-                                    const IndexType* AoutBlockIdx,
-                                    const ValueType* diag,
-                                    const IndexType* aggregateIdx,
-                                    const IndexType* partitionIdx,
-                                    const IndexType* permutation,
-                                    const ValueType* b,
-                                    const double weight,
-                                    ValueType* x,
-                                    ValueType* xout,
-                                    int nInnerIter)
+    const IndexType* offsets,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const IndexType* Aouti,
+    const IndexType* Aoutj,
+    const ValueType* Aoutv,
+    const IndexType num_entries,
+    const IndexType* AoutBlockIdx,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* permutation,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* xout,
+    int nInnerIter)
 {
 
   ValueType Axlocal[NUMPERROW];
   short Ajlocal[NUMPERROW];
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -6233,27 +5924,13 @@ __global__ void postRelaxCsr_kernel(const IndexType num_rows,
   __shared__ ValueType s_array[1024];
   ValueType* s_b = &s_array[0];
   IndexType row = thread_id + blockstart;
-  IndexType tmpIdx;
 
-  //
   if(row < blockend)
   {
     s_b[thread_id] = b[row];
   }
 
   __syncthreads();
-  //add values to b out of this block
-  //  IndexType AoutBlockstart = AoutBlockIdx[blockIdx.x];
-  //  IndexType AoutBlockend = AoutBlockIdx[blockIdx.x + 1];
-  //  for(int i = AoutBlockstart + thread_id; i < AoutBlockend; i += blockDim.x)
-  //  {
-  //    IndexType idxi = Aouti[i];
-  //    IndexType idxj = Aoutj[i];
-  //    ValueType v = Aoutv[i];
-  //    atomicAdd(&s_b[idxi - blockstart], -v * x[idxj]); //assuming ValueType is float
-  //    //		s_b[idxi - blockstart] += -v * x[idxj];
-  //  }
-  //  __syncthreads();
 
   IndexType rowstart = offsets[row];
   IndexType rowend = offsets[row + 1];
@@ -6322,30 +5999,29 @@ __global__ void postRelaxCsr_kernel(const IndexType num_rows,
 
 template<typename IndexType, typename ValueType, int NUMPERROW>
 __global__ void postRelaxCsrShared_kernel(const IndexType num_rows,
-                                          const IndexType* offsets,
-                                          const IndexType* Aj,
-                                          const ValueType* Ax,
-                                          const IndexType* Aouti,
-                                          const IndexType* Aoutj,
-                                          const ValueType* Aoutv,
-                                          const IndexType num_entries,
-                                          const IndexType* AoutBlockIdx,
-                                          const ValueType* diag,
-                                          const IndexType* aggregateIdx,
-                                          const IndexType* partitionIdx,
-                                          const IndexType* permutation,
-                                          const ValueType* b,
-                                          const double weight,
-                                          ValueType* x,
-                                          ValueType* xout,
-                                          int nInnerIter)
+    const IndexType* offsets,
+    const IndexType* Aj,
+    const ValueType* Ax,
+    const IndexType* Aouti,
+    const IndexType* Aoutj,
+    const ValueType* Aoutv,
+    const IndexType num_entries,
+    const IndexType* AoutBlockIdx,
+    const ValueType* diag,
+    const IndexType* aggregateIdx,
+    const IndexType* partitionIdx,
+    const IndexType* permutation,
+    const ValueType* b,
+    const double weight,
+    ValueType* x,
+    ValueType* xout,
+    int nInnerIter)
 {
   extern __shared__ char s_mem[];
   ValueType Axlocal[NUMPERROW];
   ushort* s_Ajlocal;
 
   const IndexType thread_id = threadIdx.x;
-  const IndexType grid_size = gridDim.x * blockDim.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
   IndexType aggrend = partitionIdx[blockIdx.x + 1];
   const IndexType blockstart = aggregateIdx[aggrstart];
@@ -6354,7 +6030,6 @@ __global__ void postRelaxCsrShared_kernel(const IndexType num_rows,
 
   ValueType* s_b = (ValueType*)s_mem;
   IndexType row = thread_id + blockstart;
-  IndexType tmpIdx;
 
   //
   if(row < blockend)
@@ -6363,18 +6038,6 @@ __global__ void postRelaxCsrShared_kernel(const IndexType num_rows,
   }
 
   __syncthreads();
-  //add values to b out of this block
-  //  IndexType AoutBlockstart = AoutBlockIdx[blockIdx.x];
-  //  IndexType AoutBlockend = AoutBlockIdx[blockIdx.x + 1];
-  //  for(int i = AoutBlockstart + thread_id; i < AoutBlockend; i += blockDim.x)
-  //  {
-  //    IndexType idxi = Aouti[i];
-  //    IndexType idxj = Aoutj[i];
-  //    ValueType v = Aoutv[i];
-  //    atomicAdd(&s_b[idxi - blockstart], -v * x[idxj]); //assuming ValueType is float
-  //    //		s_b[idxi - blockstart] += -v * x[idxj];
-  //  }
-  //  __syncthreads();
 
   ValueType brow, drow;
   if(row < blockend)
@@ -6430,7 +6093,6 @@ __global__ void postRelaxCsrShared_kernel(const IndexType num_rows,
       {
         if(n < num_cols_per_row)
         {
-          //          sum += Axlocal[n] * s_x[Ajlocal[n]];
           sum += Axlocal[n] * s_x[s_Ajlocal[rowstart + n - colidxstart]];
         }
       }
@@ -6450,19 +6112,19 @@ __global__ void postRelaxCsrShared_kernel(const IndexType num_rows,
 
 template<>
 void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<IndexType, ValueType, MemorySpace>& AinCsr,
-                                                      const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutCoo,
-                                                      const cusp::array1d<IndexType, MemorySpace>& AoutBlockIdx,
-                                                      const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
-                                                      const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
-                                                      const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& prolongator,
-                                                      const cusp::array1d<IndexType, MemorySpace>& permutation,
-                                                      const cusp::array1d<ValueType, MemorySpace>& origb,
-                                                      cusp::array1d<ValueType, MemorySpace>& x,
-                                                      cusp::array1d<ValueType, MemorySpace>& xc,
-                                                      int level_id,
-                                                      int largestblksize,
-                                                      int largestnumentries,
-                                                      int largestnumperrow)
+    const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutCoo,
+    const cusp::array1d<IndexType, MemorySpace>& AoutBlockIdx,
+    const cusp::array1d<IndexType, MemorySpace>& aggregateIdx,
+    const cusp::array1d<IndexType, MemorySpace>& partitionIdx,
+    const cusp::hyb_matrix<IndexType, ValueType, MemorySpace>& prolongator,
+    const cusp::array1d<IndexType, MemorySpace>& permutation,
+    const cusp::array1d<ValueType, MemorySpace>& origb,
+    cusp::array1d<ValueType, MemorySpace>& x,
+    cusp::array1d<ValueType, MemorySpace>& xc,
+    int level_id,
+    int largestblksize,
+    int largestnumentries,
+    int largestnumperrow)
 {
   Vector_d deltax(x.size());
   cusp::multiply(prolongator, xc, deltax);
@@ -6473,8 +6135,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
   cusp::blas::axpby(origb, deltax, b, ValueType(1.0), ValueType(-1.0)); // b = b - b'
 
   const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
-  const size_t NUM_BLOCKS = partitionIdx.size() - 1; //(int)ceil((double)AinEll.num_rows / (double)THREADS_PER_BLOCK);
-  //  cout << "num of blocks is: " << NUM_BLOCKS << endl;
+  const size_t NUM_BLOCKS = partitionIdx.size() - 1;
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;
 
@@ -6499,45 +6160,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 9 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                               thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                               thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                               thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                               thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                               thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                               thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                               AoutCoo.num_entries,
-                                                                                                               thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                               thrust::raw_pointer_cast(&diag[0]),
-                                                                                                               thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                               thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                               thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                               thrust::raw_pointer_cast(&b[0]),
-                                                                                                               weight,
-                                                                                                               thrust::raw_pointer_cast(&x[0]),
-                                                                                                               thrust::raw_pointer_cast(&xout[0]),
-                                                                                                               nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 9 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                             thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                             thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                             thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                             thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                             thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                             thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                             AoutCoo.num_entries,
-                                                                                             thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                             thrust::raw_pointer_cast(&diag[0]),
-                                                                                             thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                             thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                             thrust::raw_pointer_cast(&permutation[0]),
-                                                                                             thrust::raw_pointer_cast(&b[0]),
-                                                                                             weight,
-                                                                                             thrust::raw_pointer_cast(&x[0]),
-                                                                                             thrust::raw_pointer_cast(&xout[0]),
-                                                                                             nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -6546,45 +6207,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 14 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 14 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -6593,45 +6254,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 19 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 19 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -6640,45 +6301,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 24 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 24 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -6687,45 +6348,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 29 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 29 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -6734,45 +6395,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 34 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 34 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -6781,45 +6442,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 39 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 39 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -6828,45 +6489,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 44 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 44 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -6875,45 +6536,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 49 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 49 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -6922,45 +6583,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 54 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 54 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -6969,45 +6630,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 59 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 59 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -7016,45 +6677,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 64 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 64 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -7063,45 +6724,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 69 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 69 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -7111,45 +6772,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 75 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 75 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -7158,45 +6819,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 79 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 79 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -7205,45 +6866,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 85 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                AoutCoo.num_entries,
-                                                                                                                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                thrust::raw_pointer_cast(&b[0]),
-                                                                                                                weight,
-                                                                                                                thrust::raw_pointer_cast(&x[0]),
-                                                                                                                thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 85 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                              thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                              thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                              AoutCoo.num_entries,
-                                                                                              thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&diag[0]),
-                                                                                              thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                              thrust::raw_pointer_cast(&permutation[0]),
-                                                                                              thrust::raw_pointer_cast(&b[0]),
-                                                                                              weight,
-                                                                                              thrust::raw_pointer_cast(&x[0]),
-                                                                                              thrust::raw_pointer_cast(&xout[0]),
-                                                                                              nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -7252,45 +6913,45 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
       if(useshared)
       {
         postRelaxCsrShared_kernel<IndexType, ValueType, 220 > << <NUM_BLOCKS, THREADS_PER_BLOCK, SHAREDSIZE >> >(AinCsr.num_rows,
-                                                                                                                 thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                                                 thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                                                 thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                                                 thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                                                 thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                                                 thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                                                 AoutCoo.num_entries,
-                                                                                                                 thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                                                 thrust::raw_pointer_cast(&diag[0]),
-                                                                                                                 thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                                                 thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                                                 thrust::raw_pointer_cast(&permutation[0]),
-                                                                                                                 thrust::raw_pointer_cast(&b[0]),
-                                                                                                                 weight,
-                                                                                                                 thrust::raw_pointer_cast(&x[0]),
-                                                                                                                 thrust::raw_pointer_cast(&xout[0]),
-                                                                                                                 nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
 
       }
       else
       {
         postRelaxCsr_kernel<IndexType, ValueType, 220 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinCsr.num_rows,
-                                                                                               thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
-                                                                                               thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
-                                                                                               thrust::raw_pointer_cast(&AinCsr.values[0]),
-                                                                                               thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
-                                                                                               thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
-                                                                                               thrust::raw_pointer_cast(&AoutCoo.values[0]),
-                                                                                               AoutCoo.num_entries,
-                                                                                               thrust::raw_pointer_cast(&AoutBlockIdx[0]),
-                                                                                               thrust::raw_pointer_cast(&diag[0]),
-                                                                                               thrust::raw_pointer_cast(&aggregateIdx[0]),
-                                                                                               thrust::raw_pointer_cast(&partitionIdx[0]),
-                                                                                               thrust::raw_pointer_cast(&permutation[0]),
-                                                                                               thrust::raw_pointer_cast(&b[0]),
-                                                                                               weight,
-                                                                                               thrust::raw_pointer_cast(&x[0]),
-                                                                                               thrust::raw_pointer_cast(&xout[0]),
-                                                                                               nPostInnerIter);
+            thrust::raw_pointer_cast(&AinCsr.row_offsets[0]),
+            thrust::raw_pointer_cast(&AinCsr.column_indices[0]),
+            thrust::raw_pointer_cast(&AinCsr.values[0]),
+            thrust::raw_pointer_cast(&AoutCoo.row_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.column_indices[0]),
+            thrust::raw_pointer_cast(&AoutCoo.values[0]),
+            AoutCoo.num_entries,
+            thrust::raw_pointer_cast(&AoutBlockIdx[0]),
+            thrust::raw_pointer_cast(&diag[0]),
+            thrust::raw_pointer_cast(&aggregateIdx[0]),
+            thrust::raw_pointer_cast(&partitionIdx[0]),
+            thrust::raw_pointer_cast(&permutation[0]),
+            thrust::raw_pointer_cast(&b[0]),
+            weight,
+            thrust::raw_pointer_cast(&x[0]),
+            thrust::raw_pointer_cast(&xout[0]),
+            nPostInnerIter);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
     }
@@ -7301,7 +6962,6 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
     }
 
     x.swap(xout);
-    //    x = xout;
   }
 
   cudaThreadSetCacheConfig(cudaFuncCachePreferL1);
@@ -7310,7 +6970,6 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
   {
     permutation_kernel2<IndexType, ValueType> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(x.size(), thrust::raw_pointer_cast(&permutation[0]), thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&xout[0]));
     x.swap(xout);
-    //    		x=xout;
   }
 
 
@@ -7319,5 +6978,4 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
 /****************************************
  * Explict instantiations
  ***************************************/
-//template class gauss_seidel<Matrix_h, Vector_h>;
 template class gauss_seidel<Matrix_d, Vector_d>;

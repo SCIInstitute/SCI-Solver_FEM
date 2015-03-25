@@ -296,12 +296,10 @@ __global__ void element_loop_kernel(size_t nv, ValueType *d_nx, ValueType *d_ny,
   IndexType ids[3];
   ValueType x[3];
   ValueType y[3];
-  ValueType z[3];
 
   for (int eleidx = blockIdx.x * blockDim.x + threadIdx.x; eleidx < ne; eleidx += blockDim.x * gridDim.x)
   {
-    IndexType idx0, idx1, idx2;
-    ValueType x0, y0, x1, y1, x2, y2, Ax, Ay, Az, Bx, By, Bz, Cx, Cy, Cz;
+    ValueType Ax, Ay, Az, Bx, By, Bz, Cx, Cy, Cz;
     ValueType AB0, AB1, AB2, AC0, AC1, AC2, r0, r1, r2, a, b, c;
 
     ids[0] = d_tri0[eleidx];
@@ -564,7 +562,6 @@ __global__ void assemble2csr_kernel(const IndexType* __restrict__ column_indices
     int start = vert_indices[vidx];
     int end = vert_indices[vidx + 1];
     int rowstart = csr_row_offsets[vidx];
-    int rowend = csr_row_offsets[vidx + 1];
 
     int cnt = 0;
     csr_values[rowstart] += values[start];
@@ -641,9 +638,6 @@ void perform_element_loop_2d_coo(Vector_d_CG &nx, Vector_d_CG &ny, IdxVector_d &
   int* keytmp = thrust::raw_pointer_cast(&keyoutput[0]);
   int* valtmp = thrust::raw_pointer_cast(&valoutput[0]);
   int* rtmp = thrust::raw_pointer_cast(&Aout.row_indices[0]);
-//  thrust::reduce_by_key(rtmp, rtmp + 6 * ne, flagtmp, keytmp, valtmp);
-	thrust::equal_to<int> binary_pred;
-  thrust::plus<int> binary_op;
 	thrust::reduce_by_key(Aout.row_indices.begin(), Aout.row_indices.end(), flags.begin(), keyoutput.begin(), valoutput.begin()); 
   keyoutput.resize(nv + 1);
 	

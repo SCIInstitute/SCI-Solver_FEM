@@ -1094,7 +1094,6 @@ void RandMIS_Aggregator<Matrix, Vector>::extendedMIS(int n, int partSize, int *a
     {
       endtime = clock();
       double duration = (double)(endtime - starttime) * 1000 / CLOCKS_PER_SEC;
-      long clockTicks = CLOCKS_PER_SEC;
       printf("Finished with a call to extendedMIS in %f ms\n", duration);
       printf("\t%d nodes aggregated to depth: %d \n\n", n, partSize);
     }

@@ -394,7 +394,7 @@ void MIS_Aggregator<Matrix, Vector>::aggregateGraphMIS(int n, int *adjIndexes, i
                         // Checking against distance one
                         for (int ii = adjIndexes[i]; ii < adjIndexes[i+1]; ii++) {
                                 if (adjacency[ii] == vertex) {
-                                        tooClose == true;
+                                        tooClose = true;
                                         break;
                                 }
                         }
