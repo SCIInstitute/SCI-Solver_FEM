@@ -66,7 +66,6 @@ gauss_seidel<Matrix, Vector>::gauss_seidel(AMG_Config &cfg, const Matrix_d& Aini
   weight = cfg.AMG_Config::getParameter<double>("smoother_weight");
   nPreInnerIter = cfg.AMG_Config::getParameter<int>("PreINNER_iters");
   nPostInnerIter = cfg.AMG_Config::getParameter<int>("PostINNER_iters");
-  max_threads_per_block_ = cfg.AMG_Config::getParameter<int>("max_threads_per_block");
 }
 
 template<>
@@ -75,7 +74,7 @@ void gauss_seidel<Matrix_d, Vector_d>::find_diag(const Matrix_ell_d& A)
   typedef typename Matrix_d::index_type IndexType;
   typedef typename Matrix_d::value_type ValueType;
 
-  const size_t THREADS_PER_BLOCK = max_threads_per_block_;
+  const size_t THREADS_PER_BLOCK = 256;
   const size_t NUM_BLOCKS = min(65535, (int)ceil((double)A.num_rows / (double)THREADS_PER_BLOCK));
   diag.resize(A.num_rows);
 
@@ -120,7 +119,7 @@ void gauss_seidel<Matrix_d, Vector_d>::smooth(const Matrix_d &A, const Vector_d 
   typedef typename Matrix_d::index_type IndexType;
   typedef typename Matrix_d::value_type ValueType;
 
-  const size_t THREADS_PER_BLOCK = max_threads_per_block_;
+  const size_t THREADS_PER_BLOCK = 256;
   const size_t NUM_BLOCKS = min(65535, (int)ceil((double)A.num_rows / (double)THREADS_PER_BLOCK));
   GS_smooth_kernel<IndexType, ValueType> << <NUM_BLOCKS, THREADS_PER_BLOCK >> >
     (A.num_rows,
@@ -378,7 +377,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
   typedef typename Matrix_d::index_type IndexType;
   typedef typename Matrix_d::value_type ValueType;
 
-  const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
+  const size_t THREADS_PER_BLOCK = largestblksize;
   const size_t NUM_BLOCKS = partitionIdx.size() - 1; //(int)ceil((double)AinEll.num_rows / (double)THREADS_PER_BLOCK);
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;
@@ -2034,7 +2033,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
   typedef typename Matrix_d::value_type ValueType;
 
 
-  const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
+  const size_t THREADS_PER_BLOCK = largestblksize;
   const size_t NUM_BLOCKS = partitionIdx.size() - 1;
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;
@@ -2441,7 +2440,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
   typedef typename Matrix_d::value_type ValueType;
 
 
-  const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
+  const size_t THREADS_PER_BLOCK = largestblksize;
   const size_t NUM_BLOCKS = partitionIdx.size() - 1;
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;
@@ -2641,7 +2640,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
   typedef typename Matrix_d::index_type IndexType;
   typedef typename Matrix_d::value_type ValueType;
 
-  const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
+  const size_t THREADS_PER_BLOCK = largestblksize;
   const size_t NUM_BLOCKS = partitionIdx.size() - 1; 
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;
@@ -4424,7 +4423,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
   cusp::multiply(prolongator, xc, deltax); // e = P * x
   cusp::blas::axpby(x, deltax, x, ValueType(1.0), ValueType(1.0)); // x = x + e
 
-  const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
+  const size_t THREADS_PER_BLOCK = largestblksize;
   const size_t NUM_BLOCKS = partitionIdx.size() - 1;
   const size_t num_entries_per_thread = ceil((double)largestnumentries / THREADS_PER_BLOCK);
   if(NUM_BLOCKS > 65535)
@@ -4819,7 +4818,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
   cusp::array1d<ValueType, MemorySpace> b(x.size());
   cusp::blas::axpby(origb, deltax, b, ValueType(1.0), ValueType(-1.0)); // b = b - b'
 
-  const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
+  const size_t THREADS_PER_BLOCK = largestblksize;
   const size_t NUM_BLOCKS = partitionIdx.size() - 1;
   const size_t num_entries_per_thread = ceil((double)largestnumentries / THREADS_PER_BLOCK);
   if(NUM_BLOCKS > 65535)
@@ -5047,7 +5046,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
   cusp::array1d<ValueType, MemorySpace> b(x.size());
   cusp::blas::axpby(origb, deltax, b, ValueType(1.0), ValueType(-1.0)); // b = b - b'
 
-  const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
+  const size_t THREADS_PER_BLOCK = largestblksize;
   const size_t NUM_BLOCKS = partitionIdx.size() - 1; 
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;
@@ -6134,7 +6133,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
   cusp::array1d<ValueType, MemorySpace> b(x.size());
   cusp::blas::axpby(origb, deltax, b, ValueType(1.0), ValueType(-1.0)); // b = b - b'
 
-  const size_t THREADS_PER_BLOCK = std::min(max_threads_per_block_,largestblksize);
+  const size_t THREADS_PER_BLOCK = largestblksize;
   const size_t NUM_BLOCKS = partitionIdx.size() - 1;
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;

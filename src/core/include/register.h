@@ -23,10 +23,7 @@ inline void registerParameters()
   AMG_Config::registerParameter<int>("mesh_type", "tri mesh (0) or tet mesh (1)", 0);
   AMG_Config::registerParameter<int>("part_max_size", "set maximum partition size", 600);
   AMG_Config::registerParameter<int>("aggregator_type", "aggregator metis (0) mis (1)", 0);
-//  AMG_Config::registerParameter<double>("rescale_size", "mesh the rescale size", 0.0);
   AMG_Config::registerParameter<int>("cuda_device_num", "set the CUDA device number", 0);
-  AMG_Config::registerParameter<int>("max_threads_per_block", "Manually select the maximum threads allowed per block.", 512);
-//  AMG_Config::registerParameter<NormType > ("norm", "the norm used for convergence testing <L1|L2|LMAX>", L2);
   AMG_Config::registerParameter<ConvergenceType > ("convergence", "the convergence tolerance algorithm <absolute|relative>", ABSOLUTE);
   AMG_Config::registerParameter<double>("tolerance", "the convergence tolerance", 1e-6);
   AMG_Config::registerParameter<CycleType > ("cycle", "the cycle algorithm <V|W|F|KCG|PCGV|PCGW|PCGF>", V_CYCLE);
