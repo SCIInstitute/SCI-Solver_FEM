@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __FCYCLE_H__
+#define __FCYCLE_H__
 template <class Matrix, class Vector>
 class F_Cycle {
   public:
@@ -11,3 +12,4 @@ class F_Cycle {
     }
   }
 };
+#endif

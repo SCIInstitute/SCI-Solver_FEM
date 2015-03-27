@@ -1,4 +1,6 @@
-#pragma once
+#ifndef __CYCLE_H__
+#define __CYCLE_H__
+
 enum CycleType {V_CYCLE,W_CYCLE,F_CYCLE,K_CYCLE};
 
 #include <getvalue.h>
@@ -68,4 +70,4 @@ void dispatch_cycle(int num_iters, CycleType cycle, AMG_Level<Matrix,Vector> *le
   }
 }
 
-  
+#endif 

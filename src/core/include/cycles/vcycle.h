@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __VCYCLE_H__
+#define __VCYCLE_H__
 
 #include <cycles/cycle.h>
 template <class Matrix, class Vector>
@@ -8,4 +9,4 @@ class V_Cycle {
     next->cycle(V_CYCLE,b,x);
   }
 };
-
+#endif

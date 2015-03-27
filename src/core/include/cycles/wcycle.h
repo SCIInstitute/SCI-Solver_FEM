@@ -1,4 +1,6 @@
-#pragma once
+#ifndef __WCYCLE_H__
+#define __WCYCLE_H__
+
 
 template <class Matrix, class Vector>
 class W_Cycle {
@@ -13,4 +15,4 @@ class W_Cycle {
   }
 };
 
-  
+#endif 
