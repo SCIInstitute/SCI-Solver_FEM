@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __GET_VALUE_H__
+#define __GET_VALUE_H__
 
 template <class T> 
 inline T getValue(const char* name);
@@ -17,3 +18,4 @@ template <>
 inline double getValue<double>(const char* name) {
   return atof(name);
 }
+#endif

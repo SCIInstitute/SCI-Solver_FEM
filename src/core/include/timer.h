@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef __TIMER_H__
+#define __TIMER_H__
 #ifdef __MACH__
 #include <mach/mach_time.h>
 #define CLOCK_REALTIME 0
@@ -116,4 +116,4 @@ class levelProfile {
 #endif
     }
 };
-
+#endif

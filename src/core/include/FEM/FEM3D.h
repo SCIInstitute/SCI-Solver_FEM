@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __FEM3D_H__
+#define __FEM3D_H__
 
 #include <tetmesh.h>
 #include <types.h>
@@ -37,4 +38,4 @@ public:
   int nv;
   int ne;
 };
-
+#endif

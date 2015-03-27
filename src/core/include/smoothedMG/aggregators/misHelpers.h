@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __MIS_HELPERS_H__
+#define __MIS_HELPERS_H__
 
 #include <thrust/device_vector.h>
 #include <thrust/functional.h>
@@ -285,3 +286,4 @@ namespace misHelpers {
                          std::string prefix);
    }
 }
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __AMG_H__
+#define __AMG_H__
 template <class Matrix, class Vector> class AMG;
 
 enum SolverType {AMG_SOLVER,PCG_SOLVER};
@@ -94,3 +95,4 @@ class AMG
   double solve_start, solve_stop;
   double setup_start, setup_stop;
 };
+#endif

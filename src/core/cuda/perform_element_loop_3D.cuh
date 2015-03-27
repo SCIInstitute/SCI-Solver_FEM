@@ -5,7 +5,8 @@
  * Created on November 5, 2011, 1:48 PM
  */
 
-#pragma once
+#ifndef __PERFORM_ELEMENT_LOOP_3D_H__
+#define __PERFORM_ELEMENT_LOOP_3D_H__
 
 #include <types.h>
 #include <cutil.h>
@@ -844,3 +845,4 @@ void perform_element_loop_3d(Vector_d_CG &nx, Vector_d_CG &ny, Vector_d_CG &nz, 
     printf("data transfer time in host assemble is: %f\n", copy1 + copy2);
   }
 }
+#endif

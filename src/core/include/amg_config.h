@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __AMG_CONFIG_H__
+#define __AMG_CONFIG_H__
 
 #include <map>
 #include <string>
@@ -111,3 +112,4 @@ class AMG_Config {
     static SignalHandler sh;  //install the signal handlers here
     static bool registered;
 };
+#endif

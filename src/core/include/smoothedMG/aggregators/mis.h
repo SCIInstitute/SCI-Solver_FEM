@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __MIS_H__
+#define __MIS_H__
 
 #include <TriMesh.h>
 #include "types.h"
@@ -44,17 +45,4 @@ class RandMIS_Aggregator : public Aggregator<Matrix, Vector>
     private:
         void extendedMIS(int n, int depth, int *adjIndexes, int *adjacency, int *partition, int *partCount);    
 };
-
-//template <class Matrix, class Vector>
-//class RefineMIS_Aggregator : public Aggregator<Matrix, Vector>
-//{
-//    typedef typename Matrix::value_type ValueType;
-//    public:
-//        void computePermutation(TriMesh* meshPtr, IdxVector_h &permutation, IdxVector_h &ipermutation, IdxVector_h &aggregateIdx, IdxVector_h &partitionIdx, int* partitionlabel, int* nnout, int* &xadjout, int* &adjncyout, int metissize);
-//        void computePermutation(TetMesh* meshPtr, IdxVector_h &permutation, IdxVector_h &ipermutation, IdxVector_h &aggregateIdx, IdxVector_h &partitionIdx, int* partitonlabel, int* nnout, int* &xadjout, int* &adjncyout, int metissize);
-//        void computePermutation(int nn, int* xadj, int* adjncy, IdxVector_h &permutation, IdxVector_h &ipermutation, IdxVector_h &aggregateIdx, IdxVector_h &partitionIdx, int* partitionlabel, int* nnout, int* &xadjout, int* &adjncyout, int metissize);
-//    private:
-//        void extendedMIS(int n, int depth, int *adjIndexes, int *adjacency, int *partition, int *partCount);
-//        void refineGraph(int n, int * adjIndexes, int *adjacency, int* nnout, int* &adjIndexesOut, int* &adjacencyOut);
-//};
-
+#endif

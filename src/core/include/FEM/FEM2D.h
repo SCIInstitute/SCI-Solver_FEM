@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __FEM2D_H__
+#define __FEM2D_H__
 
 #include <TriMesh.h>
 #include <types.h>
@@ -33,3 +34,4 @@ public:
   int nv;
   int ne;
 };
+#endif

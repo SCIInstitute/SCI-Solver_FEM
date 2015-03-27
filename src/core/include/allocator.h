@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ALLOCATOR_H__
+#define __ALLOCATOR_H__
 
 #include <stack>
 #include <map>
@@ -22,3 +23,4 @@ class Allocator {
   private:
     static FreeMap free_vars;  //a map of vector lists
 };
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __AMG_LEVEL_H__
+#define __AMG_LEVEL_H__
 template <class Matrix, class Vector> class AMG_Level;
 
 enum AlgorithmType
@@ -185,3 +186,4 @@ protected:
   int level_id;
   bool init; //marks if the x vector needs to be initialized
 };
+#endif

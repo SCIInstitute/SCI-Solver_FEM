@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __AGGREGATOR_H__
+#define __AGGREGATOR_H__
 template <class Matrix, class Vector> class Aggregator;
 
 #include <getvalue.h>
@@ -13,7 +14,7 @@ class Aggregator
 {
   typedef typename Matrix::value_type ValueType;
 
-public:
+  public:
   virtual void computePermutation(TriMesh* meshPtr, IdxVector_h &permutation, IdxVector_h &ipermutation, IdxVector_h &aggregateIdx, IdxVector_h &partitionIdx, int* partitonlabel, int* nnout, int* &xadjout, int* &adjncyout, int metissize) = 0;
   virtual void computePermutation(TetMesh* meshPtr, IdxVector_h &permutation, IdxVector_h &ipermutation, IdxVector_h &aggregateIdx, IdxVector_h &partitionIdx, int* partitonlabel, int* nnout, int* &xadjout, int* &adjncyout, int metissize) = 0;
   virtual void computePermutation(int nn, int* xadj, int* adjncy, IdxVector_h &permutation, IdxVector_h &ipermutation, IdxVector_h &aggregateIdx, IdxVector_h &partitionIdx, int* partitionlabel, int* nnout, int* &xadjout, int* &adjncyout, int metissize) = 0;
@@ -27,4 +28,4 @@ public:
   static Aggregator<Matrix, Vector>* allocate(AMG_Config &cfg);
 
 };
-
+#endif
