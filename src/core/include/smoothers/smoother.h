@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __SMOOTHER_H__
+#define __SMOOTHER_H__
 template <class Matrix, class Vector> class Smoother;
 
 enum SmootherType
@@ -193,4 +194,4 @@ public:
   static Smoother<Matrix, Vector>* allocate(AMG_Config& cfg, const Matrix_d& A);
 	Vector diag;
 };
-
+#endif

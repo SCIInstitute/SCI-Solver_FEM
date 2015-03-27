@@ -1,86 +1,70 @@
-#include <stdio.h>
-#include <iostream>
-#include <signal.h>
-#include <exception>
-
-#include <amg_config.h>
-#include <types.h>
-#include <TriMesh.h>
-#include <tetmesh.h>
-#include <cutil.h>
-#include <FEM/FEM2D.h>
-#include <FEM/FEM3D.h>
-#include <timer.h>
-#include <amg.h>
-#include <setup_solver.h>
-#include <amg_level.h>
+#include <cstdlib>
+#include <cstdio>
+#include "setup_solver.h"
 #include "cuda_resources.h"
-
-using namespace std;
 
 int main(int argc, char** argv)
 {
-  bool verbose_output = true;
-
-  AMG_Config cfg;
-  Matrix_d A;
-  TriMesh* meshPtr;
-  TetMesh* tetmeshPtr;
-  FEM2D* fem2d = new FEM2D;
-  FEM3D* fem3d = new FEM3D;
-
-  cfg.setParameter("cuda_device_num", 0);
-  cfg.setParameter("algorithm", CLASSICAL);
-  // Make sure part_max_size is representative of harware limits by default
-  cfg.setParameter("part_max_size", getMaxThreads(64,0));
-
-  try {
-    for (int i = 1; i < argc; i++) {
-      if (strncmp(argv[i], "-matrixtri", 100) == 0 || strncmp(argv[i], "-mtri", 100) == 0) {
-        cfg.setParameter("mesh_type", 0);
-        // load a matrix stored in MatrixMarket format
-        i++;
-        string meshfile = string(argv[i]) + string(".ply");
-        meshPtr = TriMesh::read(meshfile.c_str());
-
-      } else if (strncmp(argv[i], "-matrixtet", 100) == 0 || strncmp(argv[i], "-mtet", 100) == 0) {
-        cfg.setParameter("mesh_type", 1);
-        // load a matrix stored in MatrixMarket format
-        i++;
-        string nodefile = string(argv[i]) + string(".node");
-        string elefile = string(argv[i]) + string(".ele");
-        tetmeshPtr = TetMesh::read(nodefile.c_str(), elefile.c_str());
-
-      } else if (strncmp(argv[i], "-amg", 100) == 0) {
-        i++;
-        cfg.parseParameterString(argv[i]);
-      } else if (strncmp(argv[i], "-c", 100) == 0) {
-        i++;
-        cfg.parseFile(argv[i]);
-      }
+  bool verbose = false;
+  for (int i = 0; i < argc; i++)
+    if (strcmp(argv[i],"-v") == 0) {
+      verbose = true;
+      break;
     }
-
-    Vector_d_CG b_d;
-    Vector_d_CG x_d;
-    setup_solver(cfg, meshPtr, tetmeshPtr, fem2d, fem3d,
-        &A, &b_d, &x_d, verbose_output);
-
-    /* Use the output somehow
-       if( verbose_output )
-       {
-       cusp::print(A);
-       cusp::print(x_d);
-       cusp::print(b_d);
-       } */
-  }
-  catch (const invalid_argument& e) {
-    cerr << "Invalid argument: " << e.what() << endl;
-    return 1;
-  }
-  catch (...) {
-    throw;
-  }
-
-  delete fem2d;
-  delete fem3d;
+  //Our main configuration object. We will set aspects where the
+  // default values are not what we desire.
+  AMG_Config cfg;
+  //assuming our device is zero...
+  int dev_num = 0;
+  cfg.setParameter("cuda_device_num", dev_num);
+  // Make sure part_max_size is representative of harware limits by default
+  // when compiling the library, up to 64 registers were seen to be used on the
+  // device. We can set our max allocation based on that number
+  int max_registers_used = 64;
+  cfg.setParameter("part_max_size", getMaxThreads(max_registers_used,dev_num));
+  //set the desired algorithm
+  cfg.setParameter("algorithm", /*(AlgorithmType::)*/CLASSICAL);
+  //set the convergence tolerance
+  cfg.setParameter("tolerance", 1e-8);
+  //set the weight parameter used in a smoother
+  cfg.setParameter("smoother_weight", 0.7);
+  //set the weight parameter used in a prolongator smoother
+  cfg.setParameter("pro_omega", 0.7);
+  //set the maximum solve iterations
+  cfg.setParameter("max_iters", 10);
+  //set the pre inner iterations for GSINNER
+  cfg.setParameter("PreINNER_iters", 2);
+  //set the post inner iterations for GSINNER
+  cfg.setParameter("PostINNER_iters", 3);
+  //set the Aggregator METIS (0) or MIS (1)
+  cfg.setParameter("aggregator_type", 1);
+  //set the Max size of coarsest level
+  cfg.setParameter("metis_size", 90102);
+  //set the solving algorithm
+  cfg.setParameter("solver", /*(SolverType::)*/PCG_SOLVER);
+  //set the cycle algorithm
+  cfg.setParameter("cycle", /*(CycleType::)*/V_CYCLE);
+  //set the convergence tolerance algorithm
+  cfg.setParameter("convergence", /*(ConvergenceType::)*/ABSOLUTE);
+  //set the smoothing algorithm
+  cfg.setParameter("smoother", /*(SmootherType::)*/GAUSSSEIDEL);
+  //Now we read in the mesh of choice
+  //TriMesh* meshPtr = TriMesh::read("mesh.ply"); //-----if we were reading a Triangle mesh
+  //read in the Tetmesh
+  std::string filename("../example_data/CubeMesh_size256step16");
+  TetMesh* tetmeshPtr = TetMesh::read(
+      (filename + ".node").c_str(),
+      (filename + ".ele").c_str());
+  cfg.setParameter("mesh_type",1); //0 is Trimesh, 1 is Tetmesh
+  //All of the required variables to run the solver.
+  Matrix_d A;
+  FEM2D fem2d;
+  FEM3D fem3d;
+  Vector_d_CG b_d;
+  Vector_d_CG x_d;
+  //The final call to the solver
+  setup_solver(cfg, NULL, tetmeshPtr, &fem2d, &fem3d, &A, &b_d, &x_d, verbose);
+  //At this point, you can do what you need with the matrices.
+  // DO Something....
+  return 0;
 }
