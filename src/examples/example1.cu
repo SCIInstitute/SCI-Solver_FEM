@@ -3,8 +3,19 @@
 #include "setup_solver.h"
 #include "cuda_resources.h"
 
+/**
+ * SCI-Solver_FEM :: Example 1
+ * This example is the basic steps for running the solver:
+ *  1. We define our main AMG_Config object.
+ *  2. We set all of the parameters we want. (Otherwise defaults used.)
+ *  3. We read in our input data mesh.
+ *  4. We declare all the variables we need for the solver (matrices).
+ *  5. We invoke the "setup_solver" call, which does all of the work.
+ */
+
 int main(int argc, char** argv)
 {
+  //Verbose option
   bool verbose = false;
   for (int i = 0; i < argc; i++)
     if (strcmp(argv[i],"-v") == 0) {

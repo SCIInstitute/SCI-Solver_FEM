@@ -6,4 +6,6 @@ include_directories(
 
 CUDA_ADD_EXECUTABLE(Example1 example1.cu)
 TARGET_LINK_LIBRARIES(Example1 FEM_CORE)
-TARGET_LINK_LIBRARIES(Example1 pthread) 
+
+CUDA_ADD_EXECUTABLE(Example2 example2.cu)
+TARGET_LINK_LIBRARIES(Example2 FEM_CORE)
