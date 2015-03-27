@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __SMOOTHEDMG_AMG_LEVEL_H__
+#define __SMOOTHEDMG_AMG_LEVEL_H__
 
 template <class Matrix, class Vector> class SmoothedMG_AMG_Level;
 
@@ -84,4 +85,4 @@ protected:
   //IndexType* aggregateIdx;
   //IndexType* partitionIdx;
 };
-
+#endif

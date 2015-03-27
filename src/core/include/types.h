@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef __TYPES_H__
+#define __TYPES_H__
 #include <cusp/csr_matrix.h>
 #include <cusp/hyb_matrix.h>
 #include <cusp/array1d.h>
@@ -56,4 +56,4 @@ typedef cusp::coo_matrix<int, AMGType, cusp::host_memory> Matrix_coo_h;
 typedef cusp::hyb_matrix<int, AMGType, cusp::device_memory> Matrix_hyb_d;
 typedef cusp::hyb_matrix<int, AMGType, cusp::host_memory> Matrix_hyb_h;
 
-
+#endif

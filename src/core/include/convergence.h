@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __CONVERGENCE_H__
+#define __CONVERGENCE_H__
 #include <getvalue.h>
 
 enum ConvergenceType {ABSOLUTE,RELATIVE};
@@ -25,4 +26,4 @@ inline ConvergenceType getValue<ConvergenceType>(const char* name) {
   sprintf(error,"ConvergenceType '%s' is not defined",name);
   FatalError(error);
 }
-
+#endif

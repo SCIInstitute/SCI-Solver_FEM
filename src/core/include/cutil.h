@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef __CUTIL_H__
+#define __CUTIL_H__
 
 #include <TriMesh.h>
 #include <tetmesh.h>
@@ -154,4 +154,4 @@ void tetmesh2ell(TetMesh* meshPtr, Matrix &A);
 
 
 void convertSym2gen(Matrix_d_CG &Acsr, Matrix_coo_d_CG &Aout);
-
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __GAUSSSEIDEL_H__
+#define __GAUSSSEIDEL_H__
 
 #include <string>
 #include <smoothers/smoother.h>
@@ -154,3 +155,4 @@ public:
   int post_relaxes;
   
 };
+#endif

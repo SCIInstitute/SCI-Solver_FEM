@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __MYUTIL_H__
+#define __MYUTIL_H__
 
 #include <iostream>
 #include <iomanip>
@@ -61,7 +62,4 @@ void printMatrix(const Matrix& A, char* fname)
   }
   fout.close();
 }
-
-
-
-
+#endif

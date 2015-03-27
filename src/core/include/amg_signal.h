@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __AMG_SIGNAL_H__
+#define __AMG_SIGNAL_H__
 
 /*****************************************
  * A class that will install all signal
@@ -8,4 +9,4 @@ class SignalHandler {
   public:
     SignalHandler();
 };
-
+#endif

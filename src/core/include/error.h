@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __MYERROR_H__
+#define __MYERROR_H__
 #ifndef WIN32
 #include <execinfo.h>
 #include <dlfcn.h>
@@ -52,4 +53,4 @@ inline void printStackTrace() {
   printf("Fatal error '%s' at %s:%d\n",s,__FILE__,__LINE__);        \
   printStackTrace();                                                \
   exit(1);
-
+#endif

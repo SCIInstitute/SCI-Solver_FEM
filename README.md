@@ -57,19 +57,13 @@ Using the Library
 ==============
 
 A basic usage of the library links to the <code>libFEM_CORE.so</code> library during build and 
-includes the headers needed, which are usually:
+includes the headers needed, which are usually no more than:
 
 ```c++
-#include <amg_config.h>
-#include <TriMesh.h>
-#include <tetmesh.h>
-#include <cutil.h>
-#include <FEM/FEM2D.h>
-#include <FEM/FEM3D.h>
-#include <amg.h>
-#include <setup_solver.h>
-#include <amg_level.h>
+#include "setup_solver.h"
+#include "cuda_resources.h"
 ```
 
-Then a program would setup the FEM parameters and call <code>setup_solver</code> to generate
+Then a program would setup the FEM parameters using the 
+<code>AMG_Config</code> object and call <code>setup_solver()</code> to generate
 the answer matrices.
