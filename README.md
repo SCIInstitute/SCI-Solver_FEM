@@ -42,12 +42,13 @@ Requirements
  * This project has been tested on OpenSuse 12.3 (Dartmouth) on NVidia GeForce GTX 570 HD, Windows 7 on NVidia GeForce GTX 775M, and OSX 10.10 on NVidia GeForce GTX 775M. 
  * If you have a CUDA compatible card with the above operating systems, and are experiencing issues, please contact the repository owners.
  * Windows: You will need Microsoft Visual Studio 2013 build tools. This document describes the "NMake" process.
+ * Git, CMake (3.0+ recommended), and the standard system build environment tools.
 
 Building
 ==============
 Instructions for building the library:
 
-<h3>Unix</h3>
+<h3>Unix / OSX</h3>
 ```c++
 cd SCI-SOLVER_FEM/build
 cmake ../src
@@ -61,6 +62,14 @@ make
 ```
 (Assuming this is the location).
 
+
+**Note:** If you have compile errors such as <code>undefined reference: atomicAdd</code>, it is likely you need to set your compute capability manually. A known capability is 2.0.
+
+```c++
+cmake -DCUDA_COMPUTE_CAPABILITY=20 ../src
+make
+```
+
 <h3>Windows</h3>
 Open a Visual Studio (32 or 64 bit) Native Tools Command Prompt. 
 Follow these commands:
@@ -68,20 +77,6 @@ Follow these commands:
 cd C:\Path\To\SCI-Solver_FEM\build
 cmake -G "NMake Makefiles" ..\src
 nmake
-```
-
-<h3>OSX</h3>
-```c++
-cd SCI-SOLVER_FEM/build
-cmake ../src
-make
-```
-
-If you have compile errors such as <code>undefined reference: atomicAdd</code>, it is likely you need to set your compute capability manually. A known capability is 2.0.
-
-```c++
-cmake -DCUDA_COMPUTE_CAPABILITY=20 ../src
-make
 ```
 
 Running Examples
