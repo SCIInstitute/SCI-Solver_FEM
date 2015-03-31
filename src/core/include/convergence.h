@@ -8,7 +8,7 @@ inline const char* getString(ConvergenceType p) {
   {
   case ABSOLUTE_CONVERGENCE:
       return "ABSOLUTE";
-    case RELATIVE:
+    case RELATIVE_CONVERGENCE:
       return "RELATIVE";
     default:
       return "UNKNOWN";

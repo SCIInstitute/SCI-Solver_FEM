@@ -10,7 +10,7 @@
 #include <cutil.h>
 #include <FEM/FEM2D.h>
 #include <FEM/FEM3D.h>
-#include <timer.h>
+#include <my_timer.h>
 #include <amg.h>
 #include <string>
 

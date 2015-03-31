@@ -4,7 +4,7 @@
 #include <string>
 #include <smoothers/smoother.h>
 #include <cusp/multiply.h>
-#include <timer.h>
+#include <my_timer.h>
 using namespace std;
 
 /*****************************************************
