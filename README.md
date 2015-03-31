@@ -34,29 +34,68 @@ up to 51× versus use of a comparable state-of-the-art serial CPU linear system
 solver. Furthermore, the method compares favorably with other GPU-based,
 sparse, linear solvers.
 
+Requirements
+==============
+
+ * You will need a CUDA Compatible Graphics card. See <a href="https://developer.nvidia.com/cuda-gpus">here</a>.
+ * SCI-Solver_FEM is compatible with the latest CUDA toolkit (7.0). Download <a href="https://developer.nvidia.com/cuda-downloads">here</a>.
+ * This project has been tested on OpenSuse 12.3 (Dartmouth) on NVidia GeForce GTX 570 HD, Windows 7 on NVidia GeForce GTX 775M, and OSX 10.9 on NVidia GeForce 8800 GS 512 MB. 
+ * If you have a CUDA compatible card with the above operating systems, and are experiencing issues, please contact the repository owners.
+ * Windows: You will need Microsoft Visual Studio 2013 build tools. This document describes the "NMake" process.
+
 Building
 ==============
 Instructions for building the library:
 
-<code>cd SCI-SOLVER_FEM/build</code>
-<code>cmake ../src</code>
-<code>make</code>
+<h3>Unix / OSX 10.9</h3>
+```c++
+cd SCI-SOLVER_FEM/build
+cmake ../src
+make
+```
 
-**Note:** You may need to specify your <code>CUDA_TOOLKIT_ROOT_DIR</code> using <code>ccmake ../src</code>
+**Note:** You may need to specify your CUDA toolkit location:
+```c++
+cmake -DCUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda" ../src
+make
+```
+(Assuming this is the location).
+
+<h3>Windows</h3>
+Open a Visual Studio (32 or 64 bit) Native Tools Command Prompt. 
+Follow these commands:
+```c++
+cd C:\Path\To\SCI-Solver_FEM\build
+cmake -G "NMake Makefiles" ..\src
+nmake
+```
 
 Running Examples
 ==============
 
-You will need to enable <code>BUILD_FEM_SOLVER_EXAMPLES</code> when configuring in <code>ccmake ../src</code>
+You will need to enable examples in your build to compile and run them
+
+```c++
+cmake -DBUILD_FEM_SOLVER_EXAMPLES=ON ../src
+make
+```
 
 You will find the example binaries built in the <code>build/examples</code> directory.
+
+Run the examples in the build directory:
+
+```c++
+examples/Example1
+examples/Example2
+...
+```
 
 Follow the example source code in <code>src/examples</code> to learn how to use the library.
 
 Using the Library
 ==============
 
-A basic usage of the library links to the <code>libFEM_CORE.so</code> library during build and 
+A basic usage of the library links to the <code>libFEM_CORE</code> library during build and 
 includes the headers needed, which are usually no more than:
 
 ```c++
@@ -67,3 +106,5 @@ includes the headers needed, which are usually no more than:
 Then a program would setup the FEM parameters using the 
 <code>AMG_Config</code> object and call <code>setup_solver()</code> to generate
 the answer matrices.
+
+You will need to make sure your CMake/Makfile/Build setup knows where to point for the library and header files. See the examples and their CMakeLists.txt.
