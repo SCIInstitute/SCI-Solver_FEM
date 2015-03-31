@@ -36,7 +36,7 @@ class Parameter {
 class ParameterDescription {
   public:
     ParameterDescription() : type(0) {}
-    ParameterDescription(const ParameterDescription &p) : type(p.type), name(p.name), description(p.description), default_value(default_value) {}
+    ParameterDescription(const ParameterDescription &p) : type(p.type), name(p.name), description(p.description), default_value(p.default_value) {}
     ParameterDescription(const std::type_info *type, const std::string &name, const std::string &description, const Parameter& default_value) : type(type), name(name), description(description), default_value(default_value) {}
     const std::type_info *type;   //the type of the parameter
     std::string name;             //the name of the parameter

@@ -37,14 +37,14 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, TetMesh* tetmeshPtr,
     Vector_d_CG* x_d, Vector_d_CG* b_d, const bool verbose)
 {
   srand48(0);
-  char charBuffer[100];
   ostringstream strCout;
 
   int cudaDeviceNumber = cfg.getParameter<int>("cuda_device_num");
   cudaSetDevice(cudaDeviceNumber);
   if (cudaDeviceReset() != cudaSuccess) {
-    sprintf(charBuffer, "CUDA device %d is no available on this system.", cudaDeviceNumber);
-    exit(1);
+    std::cout << "CUDA device " << cudaDeviceNumber << 
+		" is not available on this system." << std::endl;
+    return 1;
   } else if( verbose ) {
     cudaDeviceProp deviceProp;
     cudaGetDeviceProperties(&deviceProp, cudaDeviceNumber);
