@@ -272,7 +272,7 @@ __global__ void preRRCsrShared_kernel(const IndexType num_rows,
   ValueType Axlocal[NUMPERROW];
   extern __shared__ char s_mem[];
   ValueType* s_x = (ValueType*)s_mem;
-  ushort* s_Ajlocal = (ushort*) & s_x[blockDim.x];
+  unsigned short* s_Ajlocal = (unsigned short*)& s_x[blockDim.x];
 
 
 
@@ -382,7 +382,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;
 
-  const size_t SHAREDSIZE = THREADS_PER_BLOCK * sizeof(ValueType) + largestnumentries * sizeof(ushort);
+  const size_t SHAREDSIZE = THREADS_PER_BLOCK * sizeof(ValueType)+largestnumentries * sizeof(unsigned short);
   const bool useshared = (SHAREDSIZE <= 48 * 1024);
   const size_t NUMPERROW = largestnumperrow;
   cusp::array1d<ValueType, MemorySpace> residual(x.size(), 0.0);
@@ -6018,7 +6018,7 @@ __global__ void postRelaxCsrShared_kernel(const IndexType num_rows,
 {
   extern __shared__ char s_mem[];
   ValueType Axlocal[NUMPERROW];
-  ushort* s_Ajlocal;
+  unsigned short* s_Ajlocal;
 
   const IndexType thread_id = threadIdx.x;
   IndexType aggrstart = partitionIdx[blockIdx.x];
@@ -6052,7 +6052,7 @@ __global__ void postRelaxCsrShared_kernel(const IndexType num_rows,
 
   __syncthreads();
 
-  s_Ajlocal = (ushort*) & s_x[blockDim.x];
+  s_Ajlocal = (unsigned short*)& s_x[blockDim.x];
   IndexType rowstart = offsets[row];
   IndexType rowend = offsets[row + 1];
   IndexType num_cols_per_row = rowend - rowstart;
@@ -6138,7 +6138,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
   if(NUM_BLOCKS > 65535)
     cout << "Block number larger than 65535!!" << endl;
 
-  const size_t SHAREDSIZE = THREADS_PER_BLOCK * sizeof(ValueType) + largestnumentries * sizeof(ushort);
+  const size_t SHAREDSIZE = THREADS_PER_BLOCK * sizeof(ValueType)+largestnumentries * sizeof(unsigned short);
   const size_t NUMPERROW = largestnumperrow;
   const bool useshared = (SHAREDSIZE <= 48 * 1024);
   if(SHAREDSIZE <= 16 * 1024)

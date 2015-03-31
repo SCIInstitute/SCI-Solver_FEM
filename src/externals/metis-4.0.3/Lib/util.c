@@ -14,7 +14,7 @@
 #include <metis.h>
 
 #ifdef WIN32
-#include <cstdlib>
+#include <stdlib.h>
 #define srand48 srand
 #endif
 

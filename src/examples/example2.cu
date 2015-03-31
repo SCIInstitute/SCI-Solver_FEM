@@ -22,7 +22,7 @@ int main(int argc, char** argv)
   // default values are not what we desire.
   AMG_Config cfg;
   //This example uses a difference data set and loads a config file
-  cfg.parseFile("../src/configs/PCGV");
+  cfg.parseFile("../configs/PCGV");
   //Now we read in the mesh of choice
   //read in the Tetmesh
   std::string filename("../example_data/CubeMesh_size256step16_correct");

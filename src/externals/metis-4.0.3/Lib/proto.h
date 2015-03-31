@@ -432,7 +432,9 @@ int *ismalloc(int, int, char *);
 idxtype *idxsmalloc(int, idxtype, char *);
 void *GKmalloc(int, char *);
 #endif
-/*void GKfree(void **,...); */
+#ifdef WIN32
+void GKfree(void **,...); 
+#endif
 int *iset(int n, int val, int *x);
 idxtype *idxset(int n, idxtype val, idxtype *x);
 float *sset(int n, float val, float *x);

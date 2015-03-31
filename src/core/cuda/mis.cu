@@ -498,8 +498,8 @@ void MIS_Aggregator<Matrix, Vector>::aggregateGraphMIS(int n, int *adjIndexes, i
         for (int i = 0; i < n; i++) {
             if (partition[i] == -1) {
                 int adjSize = adjIndexes[i + 1] - adjIndexes[i];
-                int adjParts[ adjSize ];
-                int adjRootDist[ adjSize ];
+                int * adjParts = new int[ adjSize ];
+                int * adjRootDist = new int[ adjSize ];
 
                 // Getting adjacent partitions:
                 for (int j = 0; j < adjSize; j++) {
@@ -545,6 +545,8 @@ void MIS_Aggregator<Matrix, Vector>::aggregateGraphMIS(int n, int *adjIndexes, i
                 // Adding the node to best part found:
                 partition[i] = addToPart;
                 rootDistance[i] = smallestDistance + 1;
+				delete adjParts;
+				delete adjRootDist;
             }
         }
         // If there are unassigned nodes set the first one as a new root

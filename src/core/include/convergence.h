@@ -2,11 +2,11 @@
 #define __CONVERGENCE_H__
 #include <getvalue.h>
 
-enum ConvergenceType {ABSOLUTE,RELATIVE};
+enum ConvergenceType {ABSOLUTE_CONVERGENCE,RELATIVE_CONVERGENCE};
 inline const char* getString(ConvergenceType p) {
   switch(p)
   {
-    case ABSOLUTE:
+  case ABSOLUTE_CONVERGENCE:
       return "ABSOLUTE";
     case RELATIVE:
       return "RELATIVE";
@@ -18,9 +18,9 @@ inline const char* getString(ConvergenceType p) {
 template <>
 inline ConvergenceType getValue<ConvergenceType>(const char* name) {
   if(strncmp(name,"ABSOLUTE",100)==0) 
-    return ABSOLUTE;
+	  return ABSOLUTE_CONVERGENCE;
   else if(strncmp(name,"RELATIVE",100)==0) 
-    return RELATIVE;
+	  return RELATIVE_CONVERGENCE;
   
   char error[100];
   sprintf(error,"ConvergenceType '%s' is not defined",name);

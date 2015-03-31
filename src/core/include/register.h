@@ -24,7 +24,7 @@ inline void registerParameters()
   AMG_Config::registerParameter<int>("part_max_size", "set maximum partition size", 512);
   AMG_Config::registerParameter<int>("aggregator_type", "aggregator metis (0) mis (1)", 1);
   AMG_Config::registerParameter<int>("cuda_device_num", "set the CUDA device number", 0);
-  AMG_Config::registerParameter<ConvergenceType > ("convergence", "the convergence tolerance algorithm <absolute|relative>", ABSOLUTE);
+  AMG_Config::registerParameter<ConvergenceType > ("convergence", "the convergence tolerance algorithm <absolute|relative>", ABSOLUTE_CONVERGENCE);
   AMG_Config::registerParameter<double>("tolerance", "the convergence tolerance", 1e-6);
   AMG_Config::registerParameter<CycleType > ("cycle", "the cycle algorithm <V|W|F|KCG|PCGV|PCGW|PCGF>", V_CYCLE);
   AMG_Config::registerParameter<SmootherType > ("smoother", "the smoothing algorithm <GAUSSSEIDEL>", GAUSSSEIDEL);

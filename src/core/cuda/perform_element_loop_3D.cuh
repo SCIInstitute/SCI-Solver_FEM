@@ -12,7 +12,7 @@
 #include <cutil.h>
 #include <error.h>
 #include <cusp/print.h>
-#include <timer.h>
+#include <my_timer.h>
 
 __device__ __constant__ CGType c_w_x_3d[DEGREE];
 __device__ __constant__ CGType c_w_y_3d[DEGREE];

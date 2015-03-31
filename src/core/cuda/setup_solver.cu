@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <iostream>
-#include <pthread.h>
 #include <signal.h>
 #include <exception>
 

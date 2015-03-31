@@ -56,7 +56,7 @@ int main(int argc, char** argv)
   //set the cycle algorithm
   cfg.setParameter("cycle", /*(CycleType::)*/V_CYCLE);
   //set the convergence tolerance algorithm
-  cfg.setParameter("convergence", /*(ConvergenceType::)*/ABSOLUTE);
+  cfg.setParameter("convergence", /*(ConvergenceType::)*/ABSOLUTE_CONVERGENCE);
   //set the smoothing algorithm
   cfg.setParameter("smoother", /*(SmootherType::)*/GAUSSSEIDEL);
   //Now we read in the mesh of choice

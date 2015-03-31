@@ -17,11 +17,7 @@
 * The following macro returns a random number in the specified range
 **************************************************************************/
 #ifdef WIN32
-#define _CRT_RAND_S
 #include <stdlib.h>
-#define drand48 rand_s
-#endif
-#ifdef __VC__
 #define RandomInRange(u) ((rand()>>3)%(u))
 #define RandomInRangeFast(u) ((rand()>>3)%(u))
 #else

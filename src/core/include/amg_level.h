@@ -22,7 +22,7 @@ inline const char* getString(AlgorithmType p)
 #include <smoothers/smoother.h>
 #include <cycles/cycle.h>
 #include <amg_config.h>
-#include <timer.h>
+#include <my_timer.h>
 #include <vector>
 #include <types.h>
 #include "TriMesh.h"

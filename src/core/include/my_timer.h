@@ -1,5 +1,5 @@
-#ifndef __TIMER_H__
-#define __TIMER_H__
+#ifndef __MY_TIMER_H__
+#define __MY_TIMER_H__
 #ifdef __MACH__
 #include <mach/mach_time.h>
 #define CLOCK_REALTIME 0
@@ -24,9 +24,16 @@ int clock_gettime(int clk_id, struct timespec *t){
  * A simple high resolution timer
  *********************************************/
 double inline CLOCK() {
+#ifdef WIN32
+#include <windows.h>
+	SYSTEMTIME st;
+	GetSystemTime(&st);
+	return ((st.wDay * 24. + st.wHour) * 60. + st.wMinute) * 60. + st.wSecond + st.wMilliseconds / 1000.;
+#else
   timespec ts;
   clock_gettime(CLOCK_REALTIME,&ts);
   return ts.tv_sec+ts.tv_nsec*1e-9;
+#endif
 }
 
 

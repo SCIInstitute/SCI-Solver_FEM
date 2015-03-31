@@ -12,10 +12,12 @@
 #include "thrust/sort.h"
 #include "thrust/functional.h"
 #include "thrust/unique.h"
+#include "my_timer.h"
 #include <time.h>
 #include <string>
 #include <sstream>
 #include <vector>
+
 namespace AggMIS {
   bool CheckCudaError(cudaError_t code, const char *file, int line);
   namespace Types {
@@ -50,7 +52,8 @@ namespace AggMIS {
         double getElapsedTimeInSec(bool host);
         double getElapsedTimeInMilliSec(bool host);
       private:
-        timespec startTimeHost, endTimeHost;
+
+        double startTimeHost, endTimeHost;
         cudaEvent_t startTimeCuda, endTimeCuda;
         bool started, stopped;
         float elapsedCudaTime;

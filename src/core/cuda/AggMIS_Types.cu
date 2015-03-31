@@ -30,13 +30,12 @@ namespace AggMIS {
       cudaEventCreate(&endTimeCuda);
       started = false;
       stopped = false;
-      startTimeHost.tv_sec = startTimeHost.tv_nsec = 0;
-      endTimeHost.tv_sec = endTimeHost.tv_nsec = 0;
+	  startTimeHost = endTimeHost = 0.;
     }
     JTimer::~JTimer() {}
     void JTimer::start() {
       cudaEventRecord(startTimeCuda, 0);
-      clock_gettime(CLOCK_REALTIME, &startTimeHost);
+	  startTimeHost = CLOCK();
       started = true;
       stopped = false;
     }
@@ -44,7 +43,7 @@ namespace AggMIS {
       if (started && !stopped) {
         cudaEventRecord(endTimeCuda, 0);
         cudaEventSynchronize(endTimeCuda);
-        clock_gettime(CLOCK_REALTIME, &endTimeHost);
+		endTimeHost = CLOCK();
         stopped = true;
       }
     }
@@ -53,33 +52,13 @@ namespace AggMIS {
         printf("Error: elapsed time requested when not valid.\n");
         return -1.0;
       }
-      if (host) {
-        // Check if we need to carry some nanoseconds
-        if (endTimeHost.tv_nsec < startTimeHost.tv_nsec) {
-          endTimeHost.tv_nsec += 1000000000;
-          endTimeHost.tv_sec -= 1;
-        }
-        long timeInMicrosec = ((endTimeHost.tv_sec - startTimeHost.tv_sec) * 1000000)
-          + ((endTimeHost.tv_nsec - startTimeHost.tv_nsec) / 1000);
-        return (double)(timeInMicrosec) / 1000000.0;
-      }
-      else {
+      if (!host) {
         cudaEventElapsedTime(&elapsedCudaTime, startTimeCuda, endTimeCuda);
         return (double) elapsedCudaTime / 1000.0;
       }
     }
     double JTimer::getElapsedTimeInMilliSec(bool host) {
-      if (host) {
-        // Check if we need to carry some nanoseconds
-        if (endTimeHost.tv_nsec < startTimeHost.tv_nsec) {
-          endTimeHost.tv_nsec += 1000000000;
-          endTimeHost.tv_sec -= 1;
-        }
-        long timeInMicrosec = ((endTimeHost.tv_sec - startTimeHost.tv_sec) * 1000)
-          + ((endTimeHost.tv_nsec - startTimeHost.tv_nsec) / 1000);
-        return (double)(timeInMicrosec) / 1000.0;
-      }
-      else {
+      if (!host) {
         cudaEventElapsedTime(&elapsedCudaTime, startTimeCuda, endTimeCuda);
         return (double) elapsedCudaTime;
       }

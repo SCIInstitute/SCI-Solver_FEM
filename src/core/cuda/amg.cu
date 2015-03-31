@@ -9,6 +9,7 @@
 #include <amg_level.h>
 #include <cycles/cgcycle.h>
 #include <allocator.h>
+#include <my_timer.h>
 
 template<class Matrix, class Vector>
 AMG<Matrix, Vector>::AMG(AMG_Config cfg) : fine(0), cfg(cfg)
@@ -40,7 +41,7 @@ bool AMG<Matrix, Vector>::converged(const Vector &r, ValueType &nrm)
 //  nrm = get_norm(r, norm);
 
 	nrm = cusp::blas::nrm2(r);
-  if(convergence == ABSOLUTE)
+  if(convergence == ABSOLUTE_CONVERGENCE)
   {
     return nrm <= tolerance;
   }
@@ -166,8 +167,8 @@ void AMG<Matrix, Vector>::solve(const Vector_d_CG &b_d, Vector_d_CG &x_d)
   std::cout << std::setw(15) << "iter" << std::setw(15) << "time(s)" << std::setw(15) << "residual" << std::setw(15) << "rate" << std::setw(15) << std::endl;
   std::cout << "         ----------------------------------------------------\n";
   
-	solve_start = CLOCK();
-	bool done = false;
+  solve_start = CLOCK();
+  bool done = false;
   do
   {
     //    iter_start = CLOCK();
