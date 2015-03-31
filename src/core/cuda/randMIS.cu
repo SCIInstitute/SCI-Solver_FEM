@@ -1002,7 +1002,7 @@ void RandMIS_Aggregator<Matrix, Vector>::extendedMIS(int n, int partSize, int *a
           {
             double sizeScore = 1.0 / (adjSizes[j] - smallestSize + 1);
             double distScore = ((double)smallestDistance + 1) / (adjRootDist[j] + 1);
-            double adjScore = pow(0.75, 4 - adjCounts[j]);
+            double adjScore = std::pow(0.75, 4. - static_cast<double>(adjCounts[j]));
             double totalScore = (sizeScore + distScore) * adjScore;
             if(totalScore > highestScore)
             {
