@@ -40,10 +40,10 @@ Requirements
  * Git, CMake (3.0+ recommended), and the standard system build environment tools.
  * You will need a CUDA Compatible Graphics card. See <a href="https://developer.nvidia.com/cuda-gpus">here</a>.
  * SCI-Solver_FEM is compatible with the latest CUDA toolkit (7.0). Download <a href="https://developer.nvidia.com/cuda-downloads">here</a>.
- * This project has been tested on OpenSuse 12.3 (Dartmouth) on NVidia GeForce GTX 570 HD, Windows 7 on NVidia GeForce GTX 775M, OSX 10.9 on NVidia GeForce 8800 GS 512 MB, and OSX 10.10 on NVidia GeForce GTX 775M. 
+ * This project has been tested on OpenSuse 12.3 (Dartmouth) on NVidia GeForce GTX 570 HD, Windows 7 on NVidia GeForce GTX 775M, and OSX 10.10 on NVidia GeForce GTX 775M. 
  * If you have a CUDA compatible card with the above operating systems, and are experiencing issues, please contact the repository owners.
  * Windows: You will need Microsoft Visual Studio 2013 build tools. This document describes the "NMake" process.
- * OSX: Please be sure to follow setup for CUDA <a href="http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-mac-os-x/#axzz3W4nXNNin">here</a>.
+ * OSX: Please be sure to follow setup for CUDA <a href="http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-mac-os-x/#axzz3W4nXNNin">here</a>. There are several compatability requirements for different MAC machines, including using a different version of CUDA (ie. 5.5).
 
 Building
 ==============
