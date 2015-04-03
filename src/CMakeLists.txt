@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 project(FEM_Solver)
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
+
+
 SET(BUILD_FEM_SOLVER_EXAMPLES false CACHE BOOL "Checking this will build sample executables that demonstrate FEM Solver usage")
 
 find_package(CUDA REQUIRED)

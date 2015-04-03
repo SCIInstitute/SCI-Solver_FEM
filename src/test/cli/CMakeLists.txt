@@ -8,3 +8,13 @@ add_definitions(-DTEST_DATA_DIR="${FEM_Solver_SOURCE_DIR}/test/test_data/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test/bin)
 #cli
 cxx_test(cli_basic gtest_main)
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+  add_custom_command(TARGET cli_basic POST_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E copy
+                     ${FEM_Solver_BINARY_DIR}/externals/gtest/gtest_main.dll 
+                     ${FEM_Solver_BINARY_DIR}/test/bin)
+  add_custom_command(TARGET cli_basic POST_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E copy
+                     ${FEM_Solver_BINARY_DIR}/externals/gtest/gtest.dll 
+                     ${FEM_Solver_BINARY_DIR}/test/bin)
+endif()
