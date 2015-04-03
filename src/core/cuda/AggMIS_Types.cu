@@ -56,12 +56,14 @@ namespace AggMIS {
         cudaEventElapsedTime(&elapsedCudaTime, startTimeCuda, endTimeCuda);
         return (double) elapsedCudaTime / 1000.0;
       }
+      return 0.;
     }
     double JTimer::getElapsedTimeInMilliSec(bool host) {
       if (!host) {
         cudaEventElapsedTime(&elapsedCudaTime, startTimeCuda, endTimeCuda);
         return (double) elapsedCudaTime;
       }
+      return 0.;
     }
 
     // Graph_d members
