@@ -117,3 +117,18 @@ Then a program would setup the FEM parameters using the
 the answer matrices.
 
 You will need to make sure your CMake/Makfile/Build setup knows where to point for the library and header files. See the examples and their CMakeLists.txt.
+
+Testing
+==============
+The repo comes with a set of regression tests to see if recent changes break expected results. To build the tests, you will need to set <code>BUILD_TESTING</code> to "ON" in either <code>ccmake</code> or when calling CMake:
+
+```c++
+cmake -DBUILD_TESTING=ON ../src
+```
+<h4>Windows</h4>
+The gtest library included in the repo needs to be build with forced shared libraries on Windows, so use the following:
+
+```c++
+cmake -DBUILD_TESTING=ON -Dgtest_forced_shared_crt=ON ../src
+```
+Be sure to include all other necessary CMake definitions as annotated above.
