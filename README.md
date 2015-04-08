@@ -51,6 +51,7 @@ Building
 <h3>Unix / OSX</h3>
 In a terminal:
 ```c++
+mkdir SCI-SOLVER_FEM/build
 cd SCI-SOLVER_FEM/build
 cmake ../src
 make
@@ -60,6 +61,7 @@ make
 Open a Visual Studio (32 or 64 bit) Native Tools Command Prompt. 
 Follow these commands:
 ```c++
+mkdir C:\Path\To\SCI-Solver_FEM\build
 cd C:\Path\To\SCI-Solver_FEM\build
 cmake -G "NMake Makefiles" ..\src
 nmake
