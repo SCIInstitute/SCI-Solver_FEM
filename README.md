@@ -126,7 +126,7 @@ The repo comes with a set of regression tests to see if recent changes break exp
 cmake -DBUILD_TESTING=ON ../src
 ```
 <h4>Windows</h4>
-The gtest library included in the repo needs to be build with forced shared libraries on Windows, so use the following:
+The gtest library included in the repo needs to be built with forced shared libraries on Windows, so use the following:
 
 ```c++
 cmake -DBUILD_TESTING=ON -Dgtest_forced_shared_crt=ON ../src
