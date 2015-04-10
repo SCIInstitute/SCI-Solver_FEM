@@ -69,12 +69,10 @@ int main(int argc, char** argv)
   cfg.setParameter("mesh_type",1); //0 is Trimesh, 1 is Tetmesh
   //All of the required variables to run the solver.
   Matrix_d A;
-  FEM2D fem2d;
-  FEM3D fem3d;
   Vector_d_CG b_d;
   Vector_d_CG x_d;
   //The final call to the solver
-  setup_solver(cfg, NULL, tetmeshPtr, &fem2d, &fem3d, &A, &b_d, &x_d, verbose);
+  setup_solver(cfg, tetmeshPtr, &A, &b_d, &x_d, verbose);
   //At this point, you can do what you need with the matrices.
   // DO Something....
   return 0;
