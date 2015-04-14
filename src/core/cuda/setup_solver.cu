@@ -21,7 +21,6 @@
 #define srand48 srand
 #endif
 
-using namespace std;
 
 void displayCudaDevices (bool verbose)
 {
@@ -44,10 +43,9 @@ void verifyThatCudaDeviceIsValid(AMG_Config& cfg, bool verbose)
     char charBuffer[100];
     cudaSetDevice(cudaDeviceNumber);
     if (cudaDeviceReset() != cudaSuccess) {
-        //exit(0);
         sprintf(charBuffer, "CUDA device %d is no available on this system.", cudaDeviceNumber);
-     	string error = string(charBuffer);
-       	throw invalid_argument(error);
+		std::string error = std::string(charBuffer);
+		throw std::invalid_argument(error);
     } else if( verbose ) {
         cudaDeviceProp deviceProp;
         cudaGetDeviceProperties(&deviceProp, 1);
@@ -60,146 +58,109 @@ void checkMatrixForValidContents(Matrix_d* A, const bool verbose)
     if( verbose ) {
       printf("Error no matrix specified\n");
     }
-    string error = "Error no matrix specified";
-    throw invalid_argument(error);
+	std::string error = "Error no matrix specified";
+	throw std::invalid_argument(error);
   }
 }
 
-template <>
-int setup_solver<TriMesh>(AMG_Config& cfg, TriMesh* meshPtr, Matrix_d* A,
-                 Vector_d_CG* x_d, Vector_d_CG* b_d, const bool verbose)
-{
-  srand48(0);
-  ostringstream strCout;
+void getMatrixFromMesh(AMG_Config& cfg, TriMesh* meshPtr, Matrix_d* A, const bool verbose) {
 
-  cfg.setParameter<int>("mesh_type", 0);
+	srand48(0);
 
-  if( verbose ) {
-    displayCudaDevices(verbose);
-  }
+	cfg.setParameter<int>("mesh_type", 0);
 
-  verifyThatCudaDeviceIsValid(cfg, verbose);
+	if (verbose)
+		displayCudaDevices(verbose);
+	verifyThatCudaDeviceIsValid(cfg, verbose);
 
-  //double Assemblestart, Assemblestop;
-  //double neednbstart, neednbstop;
-  //double prepAssemstart, prepAssemstop;
+	FEM2D* fem2d = new FEM2D;
 
-  FEM2D* fem2d = new FEM2D;
+	meshPtr->rescale(4.0);
+	meshPtr->need_neighbors();
+	meshPtr->need_meshquality();
 
-  meshPtr->rescale(4.0);
-  //neednbstart = CLOCK();
-  meshPtr->need_neighbors();
-  meshPtr->need_meshquality();
-  //neednbstop = CLOCK();
+	Matrix_ell_d_CG Aell_d;
+	Vector_d_CG RHS(meshPtr->vertices.size(), 0.0);
 
-  Matrix_ell_d_CG Aell_d;
-  Vector_d_CG RHS(meshPtr->vertices.size(), 0.0);
+	trimesh2ell<Matrix_ell_d_CG >(meshPtr, Aell_d);
+	cudaThreadSynchronize();
 
-  // prepAssemstart = CLOCK();
-  trimesh2ell<Matrix_ell_d_CG > (meshPtr, Aell_d);
-  cudaThreadSynchronize();
-  //prepAssemstop = CLOCK();
+	fem2d->initializeWithTriMesh(meshPtr);
+	fem2d->assemble(meshPtr, Aell_d, RHS);
+	delete fem2d;
 
-  //Assemblestart = CLOCK();
-  fem2d->initializeWithTriMesh(meshPtr);
-  fem2d->assemble(meshPtr, Aell_d, RHS);
+	cudaThreadSynchronize();
+	*A = Aell_d;
+}
 
-  cudaThreadSynchronize();
-  //Assemblestop = CLOCK();
-
-  *A = Aell_d;
-  Aell_d.resize(0, 0, 0, 0);
-
+int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_d* A,
+                 Vector_h_CG* x_d, Vector_h_CG* b_d, const bool verbose) {
   checkMatrixForValidContents(A, verbose);
 
-  Vector_h_CG b(A->num_rows, 1.0);
-  Vector_h_CG x(A->num_rows, 0.0); //initial
-  *x_d = x;
-  *b_d = b;
+  if( verbose ) cfg.printAMGConfig();
 
-  if( verbose ) {
-    cfg.printAMGConfig();
-  }
   AMG<Matrix_h, Vector_h> amg(cfg);
+
   amg.setup(*A, meshPtr, NULL);
-  if( verbose ) {
-    amg.printGridStatistics();
-  }
-  amg.solve(*b_d, *x_d);
-  if( !verbose ) {
-    cout << strCout.str()<< endl;
-  }
-  delete fem2d;
+
+  if( verbose ) amg.printGridStatistics();
+
+  Vector_d_CG my_x = *x_d;
+  Vector_d_CG my_b = *b_d;
+  amg.solve(my_b, my_x);
+  *x_d = my_x;
+  *b_d = my_b;
+
   return 0;
 }
 
-template <>
-int setup_solver<TetMesh>(AMG_Config& cfg, TetMesh* meshPtr, Matrix_d* A,
-                 Vector_d_CG* x_d, Vector_d_CG* b_d, const bool verbose)
-{
-  srand48(0);
-  ostringstream strCout;
+void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_d* A, const bool verbose) {
 
-  cfg.setParameter<int>("mesh_type", 1);
+	srand48(0);
 
-  if( verbose ) {
-    displayCudaDevices(verbose);
-  }
+	cfg.setParameter<int>("mesh_type", 1);
 
-  verifyThatCudaDeviceIsValid(cfg, verbose);
+	if (verbose) 
+		displayCudaDevices(verbose);
+	verifyThatCudaDeviceIsValid(cfg, verbose);
 
-  //double Assemblestart, Assemblestop;
-  //double neednbstart, neednbstop;
-  //double prepAssemstart, prepAssemstop;
+	FEM3D* fem3d = new FEM3D;
 
-  FEM3D* fem3d = new FEM3D;
+	meshPtr->need_neighbors();
+	meshPtr->need_meshquality();
+	meshPtr->rescale(1.0);
 
-  //neednbstart = CLOCK();
-  meshPtr->need_neighbors();
-  meshPtr->need_meshquality();
-  meshPtr->rescale(1.0);
-  //neednbstop = CLOCK();
+	Matrix_ell_d_CG Aell_d;
+	Vector_d_CG RHS(meshPtr->vertices.size(), 0.0);
 
-  Matrix_ell_d_CG Aell_d;
-  Vector_d_CG RHS(meshPtr->vertices.size(), 0.0);
+	tetmesh2ell<Matrix_ell_d_CG >(meshPtr, Aell_d);
+	cudaThreadSynchronize();
 
-  //prepAssemstart = CLOCK();
-  tetmesh2ell<Matrix_ell_d_CG > (meshPtr, Aell_d);
-  cudaThreadSynchronize();
-  //prepAssemstop = CLOCK();
+	fem3d->initializeWithTetMesh(meshPtr);
+	fem3d->assemble(meshPtr, Aell_d, RHS, true);
+	delete fem3d;
 
-  //Assemblestart = CLOCK();
-  fem3d->initializeWithTetMesh(meshPtr);
-  fem3d->assemble(meshPtr, Aell_d, RHS, true);
+	cudaThreadSynchronize();
+	*A = Aell_d;
+}
 
-  cudaThreadSynchronize();
-  //Assemblestop = CLOCK();
-  //            cusp::print(Aell_d);
-  *A = Aell_d;
-  Aell_d.resize(0, 0, 0, 0);
-
+int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_d* A,
+                 Vector_h_CG* x_d, Vector_h_CG* b_d, const bool verbose) {
   checkMatrixForValidContents(A, verbose);
 
-  Vector_h_CG b(A->num_rows, 1.0);
-  Vector_h_CG x(A->num_rows, 0.0); //initial
-  *x_d = x;
-  *b_d = b;
+  if( verbose ) cfg.printAMGConfig();
 
-  if( verbose ) {
-    cfg.printAMGConfig();
-  }
   AMG<Matrix_h, Vector_h> amg(cfg);
 
   amg.setup(*A, NULL, meshPtr);
 
-  if( verbose ) {
-    amg.printGridStatistics();
-  }
-  amg.solve(*b_d, *x_d);
-  if( !verbose ) {
-    cout << strCout.str()<< endl;
-  }
+  if( verbose ) amg.printGridStatistics();
+  
+  Vector_d_CG my_x = *x_d;
+  Vector_d_CG my_b = *b_d;
+  amg.solve(my_b, my_x);
+  *x_d = my_x;
+  *b_d = my_b;
 
-  delete fem3d;
   return 0;
 }
