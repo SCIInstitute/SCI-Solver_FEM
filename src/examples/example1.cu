@@ -81,10 +81,16 @@ int main(int argc, char** argv)
 	  identity.values(i, 0) = 1;
   }
   //multiply the mesh matrix by the stiffness properties matrix.
-  cusp::ell_matrix<int, float, cusp::host_memory> out;
+  cusp::ell_matrix<int, float, cusp::host_memory> out, test;
   cusp::ell_matrix<int, float, cusp::host_memory> my_A = A;
   cusp::multiply(identity, my_A, out);
   A = out;
+
+  if(readMatlabFile("/home/sci/brig/Documents/Data/FEM_testing/mysparse.mat",&test)) {
+    std::cerr << "failed to read matlab file." << std::endl;
+  } else {
+    cusp::print(test);
+  }
   //************************ DEBUG*/
   //The final call to the solver
   setup_solver(cfg, tetmeshPtr, &A, &b_d, &x_d, verbose);

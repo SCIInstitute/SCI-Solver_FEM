@@ -10,27 +10,41 @@
 #include <amg.h>
 #include <cusp/linear_operator.h>
 #include <cusp/print.h>
+#include <cstring>
 
 /*setup_solver functions for 2D and 3D meshes use the following parameters:
   cfg - This AMG_Config object contains the configuration parameters used to
-        define how the solver will run.
-  *meshPtr - points to the mesh object, which is either a TriMesh (2D) or
-             TetMesh (3D) object defined in the trimesh library written by
-             Szymon Rusinkiewicz.
-  *A   - Stiffness matrix A, stored in Matrix_d
-  *x_d - Solution vector x, stored in Vector_d_CG
-  *b_d - RHS vector b, stored in Vector_d_CG
-  verbose - bool for verbose output from the solver
-*/
+  define how the solver will run.
+ *meshPtr - points to the mesh object, which is either a TriMesh (2D) or
+ TetMesh (3D) object defined in the trimesh library written by
+ Szymon Rusinkiewicz.
+ *A   - Stiffness matrix A, stored in Matrix_d
+ *x_d - Solution vector x, stored in Vector_d_CG
+ *b_d - RHS vector b, stored in Vector_d_CG
+ verbose - bool for verbose output from the solver
+ */
 
 
 int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_d* A,
-	Vector_h_CG* x_d, Vector_h_CG* b_d, const bool verbose);
+    Vector_h_CG* x_d, Vector_h_CG* b_d, const bool verbose);
 
 int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_d* A,
-	Vector_h_CG* x_d, Vector_h_CG* b_d, const bool verbose);
+    Vector_h_CG* x_d, Vector_h_CG* b_d, const bool verbose);
 
 void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_d* A, const bool verbose);
 void getMatrixFromMesh(AMG_Config& cfg, TriMesh* meshPtr, Matrix_d* A, const bool verbose);
+
+class SparseEntry_t {
+  public:
+    int32_t row_;
+    int32_t col_;
+    float   val_;
+    SparseEntry_t(int32_t r, int32_t c, int32_t v) : row_(r), col_(c), val_(v) {}
+    ~SparseEntry_t() {}
+};
+
+bool compare_sparse_entry(SparseEntry_t a, SparseEntry_t b);
+
+int readMatlabFile(std::string file, cusp::ell_matrix<int,float,cusp::host_memory> *mat);
 
 #endif
