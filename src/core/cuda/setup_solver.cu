@@ -168,9 +168,9 @@ bool compare_sparse_entry(SparseEntry_t a, SparseEntry_t b) {
   return ((a.row_ != b.row_) ? (a.row_ < b.row_) : (a.col_ < b.col_));
 }
 
-int readMatlabSparseMatrix(std::string file, Matrix_ell_h *A_h) {
+int readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h *A_h) {
   //read in the description header
-  std::ifstream in(file.c_str());
+  std::ifstream in(filename.c_str());
   char buffer[256];
   in.read(buffer,128);
   int32_t type;
@@ -180,7 +180,7 @@ int readMatlabSparseMatrix(std::string file, Matrix_ell_h *A_h) {
     in.close();
     return 1;
   } else if (type != 14) {
-    std::cerr << file << " is not a matlab matrix." << std::endl;
+    std::cerr << filename << " is not a matlab matrix." << std::endl;
     in.close();
     return 1;
   }
@@ -319,7 +319,7 @@ int readMatlabSparseMatrix(std::string file, Matrix_ell_h *A_h) {
   return 0;
 }
 
-int writeMatlabArray(std::string filename, Vector_h_CG x_h) {
+int writeMatlabArray(const std::string &filename, const Vector_h_CG &array) {
 
 	//read in the description header
 	std::ofstream file(filename.c_str(), std::ios::out | std::ios::binary);
@@ -354,7 +354,7 @@ int writeMatlabArray(std::string filename, Vector_h_CG x_h) {
 	//write dimensions
 	int32_t dimensionsType = 5;
 	int32_t dimensionsSize = 8;
-	int32_t dim_x = (int32_t)x_h.size();
+	int32_t dim_x = (int32_t)array.size();
 	int32_t dim_y = 1;
 	file.write((char*)&dimensionsType, sizeof(int32_t));
 	file.write((char*)&dimensionsSize, sizeof(int32_t));
@@ -373,11 +373,8 @@ int writeMatlabArray(std::string filename, Vector_h_CG x_h) {
 	file.write((char*)&arrayType, sizeof(int32_t));
 	file.write((char*)&arraySize, sizeof(int32_t));
 	//finally write the data.
-	for (size_t i = 0; i < x_h.size(); i++) {
-		double val = static_cast <double> (x_h[i]);
-		if (val != 0.) {
-			int x = 0;
-		}
+	for (size_t i = 0; i < array.size(); i++) {
+		double val = static_cast <double> (array[i]);
 		file.write((char*)&val, sizeof(double));
 	}
 	//now write back the size to the main header.

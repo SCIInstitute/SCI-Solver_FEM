@@ -45,8 +45,8 @@ class SparseEntry_t {
 
 bool compare_sparse_entry(SparseEntry_t a, SparseEntry_t b);
 
-int readMatlabSparseMatrix(std::string file, Matrix_ell_h *A_h);
+int readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h *A_h);
 
-int writeMatlabArray(std::string file, Vector_h_CG x_h);
+int writeMatlabArray(const std::string &filename, const Vector_h_CG &array);
 
 #endif
