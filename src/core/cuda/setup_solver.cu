@@ -302,13 +302,15 @@ int readMatlabSparseMatrix(std::string file, Matrix_ell_h *A_h) {
 	A.column_indices(current_row, row_count) = sparse_entries[i].col_;
 	A.values(current_row, row_count) = sparse_entries[i].val_;
 	row_count++;
-	if ((i+1 < sparse_entries.size()) && (current_row != sparse_entries[i+1].row_)) {
+	if (((i+1 < sparse_entries.size()) && (current_row != sparse_entries[i+1].row_)) 
+		|| (i+1 == sparse_entries.size())) {
 		while (row_count < max_row) {
 			A.column_indices(current_row, row_count) = bad_entry;
-			A.values(current_row, row_count) = 0;
+			A.values(current_row, row_count) = 0.f;
 			row_count++;
 		}
-		current_row = sparse_entries[i+1].row_;
+		if (i+1 < sparse_entries.size())
+			current_row = sparse_entries[i+1].row_;
 		row_count = 0;
 	}
   }
