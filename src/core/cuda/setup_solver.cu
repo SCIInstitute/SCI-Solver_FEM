@@ -51,9 +51,9 @@ void verifyThatCudaDeviceIsValid(AMG_Config& cfg, bool verbose)
   }
 }
 
-void checkMatrixForValidContents(Matrix_d* A, const bool verbose)
+void checkMatrixForValidContents(Matrix_ell_h* A_h, const bool verbose)
 {
-  if (A->num_rows == 0) {
+  if (A_h->num_rows == 0) {
     if( verbose ) {
       printf("Error no matrix specified\n");
     }
@@ -62,105 +62,105 @@ void checkMatrixForValidContents(Matrix_d* A, const bool verbose)
   }
 }
 
-void getMatrixFromMesh(AMG_Config& cfg, TriMesh* meshPtr, Matrix_d* A, const bool verbose) {
-
+void getMatrixFromMesh(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_h, const bool verbose) {
   srand48(0);
-
+  //type is triangle mesh
   cfg.setParameter<int>("mesh_type", 0);
-
-  if (verbose)
-    displayCudaDevices(verbose);
+  // print the device info
+  if (verbose) displayCudaDevices(verbose);
   verifyThatCudaDeviceIsValid(cfg, verbose);
-
+  // 2D fem solving object
   FEM2D* fem2d = new FEM2D;
-
   meshPtr->rescale(4.0);
   meshPtr->need_neighbors();
   meshPtr->need_meshquality();
-
+  // create the initial A and b
   Matrix_ell_d_CG Aell_d;
   Vector_d_CG RHS(meshPtr->vertices.size(), 0.0);
-
+  //generate the unit constant mesh stiffness matrix
   trimesh2ell<Matrix_ell_d_CG >(meshPtr, Aell_d);
   cudaThreadSynchronize();
-
+  //assembly step
   fem2d->initializeWithTriMesh(meshPtr);
   fem2d->assemble(meshPtr, Aell_d, RHS);
   delete fem2d;
-
+  //copy back to the host
   cudaThreadSynchronize();
-  *A = Aell_d;
+  *A_h = Matrix_ell_h(Aell_d);
 }
 
-int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_d* A,
-    Vector_h_CG* x_d, Vector_h_CG* b_d, const bool verbose) {
-  checkMatrixForValidContents(A, verbose);
-
+int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_h,
+    Vector_h_CG* x_h, Vector_h_CG* b_h, const bool verbose) {
+  checkMatrixForValidContents(A_h, verbose);
+  //print info
   if( verbose ) cfg.printAMGConfig();
-
+  //register configuration parameters
   AMG<Matrix_h, Vector_h> amg(cfg);
-
-  amg.setup(*A, meshPtr, NULL);
-
+  //copy to device
+  Matrix_d A_d(*A_h);
+  //setup device
+  amg.setup(A_d, meshPtr, NULL);
+  //print info
   if( verbose ) amg.printGridStatistics();
-
-  Vector_d_CG my_x = *x_d;
-  Vector_d_CG my_b = *b_d;
-  amg.solve(my_b, my_x);
-  *x_d = my_x;
-  *b_d = my_b;
-
+  //copy to device
+  Vector_d_CG x_d(*x_h);
+  Vector_d_CG b_d(*b_h);
+  //run solver
+  amg.solve(b_d, x_d);
+  //copy back to host
+  *x_h = Vector_h_CG(x_d);
+  *b_h = Vector_h_CG(b_d);
   return 0;
 }
 
-void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_d* A, const bool verbose) {
-
+void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h, const bool verbose) {
   srand48(0);
-
+  //type is tet mesh
   cfg.setParameter<int>("mesh_type", 1);
-
-  if (verbose)
-    displayCudaDevices(verbose);
+  // print the device info
+  if (verbose) displayCudaDevices(verbose);
   verifyThatCudaDeviceIsValid(cfg, verbose);
-
+  // 3D fem solving object
   FEM3D* fem3d = new FEM3D;
-
   meshPtr->need_neighbors();
   meshPtr->need_meshquality();
   meshPtr->rescale(1.0);
-
+  // create the initial A and b
   Matrix_ell_d_CG Aell_d;
   Vector_d_CG RHS(meshPtr->vertices.size(), 0.0);
-
+  //generate the unit constant mesh stiffness matrix
   tetmesh2ell<Matrix_ell_d_CG >(meshPtr, Aell_d);
   cudaThreadSynchronize();
-
+  //assembly step
   fem3d->initializeWithTetMesh(meshPtr);
   fem3d->assemble(meshPtr, Aell_d, RHS, true);
   delete fem3d;
-
+  //copy back to the host
   cudaThreadSynchronize();
-  *A = Aell_d;
+  *A_h = Matrix_ell_h(Aell_d);
 }
 
-int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_d* A,
-    Vector_h_CG* x_d, Vector_h_CG* b_d, const bool verbose) {
-  checkMatrixForValidContents(A, verbose);
-
+int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h,
+    Vector_h_CG* x_h, Vector_h_CG* b_h, const bool verbose) {
+  checkMatrixForValidContents(A_h, verbose);
+  //print info
   if( verbose ) cfg.printAMGConfig();
-
+  //register configuration properties
   AMG<Matrix_h, Vector_h> amg(cfg);
-
-  amg.setup(*A, NULL, meshPtr);
-
-  if( verbose ) amg.printGridStatistics();
-
-  Vector_d_CG my_x = *x_d;
-  Vector_d_CG my_b = *b_d;
-  amg.solve(my_b, my_x);
-  *x_d = my_x;
-  *b_d = my_b;
-
+  //copy to device
+  Matrix_d A_d(*A_h);
+  //setup device
+  amg.setup(A_d, NULL, meshPtr);
+  //print info
+  if (verbose) amg.printGridStatistics();
+  //copy to device
+  Vector_d_CG x_d(*x_h);
+  Vector_d_CG b_d(*b_h);
+  //run solver
+  amg.solve(b_d, x_d);
+  //copy back to host
+  *x_h = Vector_h_CG(x_d);
+  *b_h = Vector_h_CG(b_d);
   return 0;
 }
 
@@ -168,8 +168,7 @@ bool compare_sparse_entry(SparseEntry_t a, SparseEntry_t b) {
   return ((a.row_ != b.row_) ? (a.row_ < b.row_) : (a.col_ < b.col_));
 }
 
-int readMatlabFile(std::string file,
-    cusp::ell_matrix<int,float,cusp::host_memory> *mat) {
+int readMatlabSparseMatrix(std::string file, Matrix_ell_h *A_h) {
   //read in the description header
   std::ifstream in(file.c_str());
   char buffer[256];
@@ -286,7 +285,7 @@ int readMatlabFile(std::string file,
             static_cast<float>(double_vals[j])));
     }
   }
-  //TODO now set up the ell matrix.
+  //now set up the ell matrix.
   //sort the sparse entries
   std::sort(sparse_entries.begin(),sparse_entries.end(),compare_sparse_entry);
   //determine the max nonzeros per row
@@ -294,25 +293,97 @@ int readMatlabFile(std::string file,
   for(size_t i = 0; i < row_max.size(); i++)
     max_row = std::max(max_row,row_max[i]);
   //set up the matrix
-  mat->resize(x_dim,y_dim,num_entries,max_row);
+  Matrix_ell_h A(x_dim, y_dim, num_entries, max_row);
   //iterate through to add values.
   // X is used to fill unused entries in the matrix
-  const int bad_entry = cusp::ell_matrix<int,float,cusp::host_memory>::invalid_index;
+  const int bad_entry = Matrix_ell_h::invalid_index;
   int32_t current_row = 0, row_count = 0;
   for(size_t i = 0; i < sparse_entries.size(); i++) {
-    if (current_row != sparse_entries[i].row_) {
-      while(row_count < max_row) {
-        mat->column_indices(current_row,row_count) = bad_entry;
-        mat->values(current_row,row_count) = 0;
-        row_count++;
-      }
-      current_row = sparse_entries[i].row_;
-      row_count = 0;
-    }
-    mat->column_indices(current_row,row_count) = sparse_entries[i].col_;
-    mat->values(current_row,row_count) = sparse_entries[i].val_;
-    row_count++;
+	A.column_indices(current_row, row_count) = sparse_entries[i].col_;
+	A.values(current_row, row_count) = sparse_entries[i].val_;
+	row_count++;
+	if ((i+1 < sparse_entries.size()) && (current_row != sparse_entries[i+1].row_)) {
+		while (row_count < max_row) {
+			A.column_indices(current_row, row_count) = bad_entry;
+			A.values(current_row, row_count) = 0;
+			row_count++;
+		}
+		current_row = sparse_entries[i+1].row_;
+		row_count = 0;
+	}
   }
   in.close();
+  *A_h = Matrix_ell_h(A);
   return 0;
+}
+
+int writeMatlabArray(std::string filename, Vector_h_CG x_h) {
+
+	//read in the description header
+	std::ofstream file(filename.c_str(), std::ios::out | std::ios::binary);
+	//write description
+	std::string desc = "MATLAB 5.0 MAT-file, Platform: GLNXA64, Created by SCI-Solver_FEM.";
+	desc.resize(116, ' ');
+	file.write((char*)desc.c_str(), desc.length());
+	//write offset
+	char zeros[32] = { 0 };
+	file.write(zeros, 8);
+	int16_t version = 0x0100;
+	file.write((char*)&version, sizeof(int16_t));
+	//write endian
+	char endian[2] = { 'I', 'M' };
+	file.write(endian, sizeof(int16_t));
+	//write the matrix header and size.
+	int32_t type = 14;
+	file.write((char*)&type, sizeof(int32_t));
+	int32_t totalSize = 0;
+	long sizeAddress = (long)file.tellp();
+	file.write((char*)&totalSize, sizeof(int32_t));
+	long startAddress = (long)file.tellp();
+	//write the array flags.
+	int32_t flagsType = 6;
+	int32_t flagsSize = 8;
+	file.write((char*)&flagsType, sizeof(int32_t));
+	file.write((char*)&flagsSize, sizeof(int32_t));
+	//write the class
+	uint32_t mclass = 6;
+	file.write((char*)&mclass, sizeof(int32_t));
+	file.write(zeros, 4);
+	//write dimensions
+	int32_t dimensionsType = 5;
+	int32_t dimensionsSize = 8;
+	int32_t dim_x = (int32_t)x_h.size();
+	int32_t dim_y = 1;
+	file.write((char*)&dimensionsType, sizeof(int32_t));
+	file.write((char*)&dimensionsSize, sizeof(int32_t));
+	file.write((char*)&dim_x, sizeof(int32_t));
+	file.write((char*)&dim_y, sizeof(int32_t));
+	//write array name
+	int8_t  arrayName[8] = { 'x', '_', 'h', '\0' };
+	int16_t arrayNameType = 1;
+	int16_t arrayNameSize = 3;
+	file.write((char*)&arrayNameType, sizeof(int16_t));
+	file.write((char*)&arrayNameSize, sizeof(int16_t));
+	file.write((char*)arrayName, 4 * sizeof(int8_t));
+	//write the real data header
+	int32_t arrayType = 9;
+	int32_t arraySize = dim_x * 8;
+	file.write((char*)&arrayType, sizeof(int32_t));
+	file.write((char*)&arraySize, sizeof(int32_t));
+	//finally write the data.
+	for (size_t i = 0; i < x_h.size(); i++) {
+		double val = static_cast <double> (x_h[i]);
+		if (val != 0.) {
+			int x = 0;
+		}
+		file.write((char*)&val, sizeof(double));
+	}
+	//now write back the size to the main header.
+	long endAddress = (long)file.tellp();
+	totalSize = endAddress - startAddress;
+	file.seekp(sizeAddress);
+	file.write((char*)&totalSize, sizeof(int32_t));
+	file.close();
+	return 0;
+
 }

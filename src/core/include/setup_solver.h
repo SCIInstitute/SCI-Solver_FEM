@@ -25,14 +25,14 @@
  */
 
 
-int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_d* A,
-    Vector_h_CG* x_d, Vector_h_CG* b_d, const bool verbose);
+int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h,
+    Vector_h_CG* x_h, Vector_h_CG* b_h, const bool verbose);
 
-int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_d* A,
-    Vector_h_CG* x_d, Vector_h_CG* b_d, const bool verbose);
+int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A,
+    Vector_h_CG* x_h, Vector_h_CG* b_h, const bool verbose);
 
-void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_d* A, const bool verbose);
-void getMatrixFromMesh(AMG_Config& cfg, TriMesh* meshPtr, Matrix_d* A, const bool verbose);
+void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A, const bool verbose);
+void getMatrixFromMesh(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A, const bool verbose);
 
 class SparseEntry_t {
   public:
@@ -45,6 +45,8 @@ class SparseEntry_t {
 
 bool compare_sparse_entry(SparseEntry_t a, SparseEntry_t b);
 
-int readMatlabFile(std::string file, cusp::ell_matrix<int,float,cusp::host_memory> *mat);
+int readMatlabSparseMatrix(std::string file, Matrix_ell_h *A_h);
+
+int writeMatlabArray(std::string file, Vector_h_CG x_h);
 
 #endif

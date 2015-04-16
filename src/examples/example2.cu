@@ -34,23 +34,23 @@ int main(int argc, char** argv)
   //get the basic stiffness matrix (constant) by creating the mesh matrix
   getMatrixFromMesh(cfg, tetmeshPtr, &A, verbose);
   //intialize the b matrix to ones for now. TODO @DEBUG
-  Vector_h_CG b_d(A.num_rows, 1.0);
+  Vector_h_CG b_h(A.num_rows, 1.0);
   //The answer vector.
-  Vector_h_CG x_d(A.num_rows, 0.0); //intial X vector
+  Vector_h_CG x_h(A.num_rows, 0.0); //intial X vector
   //************************ DEBUG : creating identity matrix for stiffness properties for now.
-  cusp::ell_matrix<int, float, cusp::host_memory> identity(A.num_rows, A.num_rows, A.num_rows, 1);
+  Matrix_ell_h identity(A.num_rows, A.num_rows, A.num_rows, 1);
   for (int i = 0; i < A.num_rows; i++) {
 	  identity.column_indices(i, 0) = i;
 	  identity.values(i, 0) = 1;
   }
   //multiply the mesh matrix by the stiffness properties matrix.
-  cusp::ell_matrix<int, float, cusp::host_memory> out;
-  cusp::ell_matrix<int, float, cusp::host_memory> my_A = A;
+  Matrix_ell_h out;
+  Matrix_ell_h my_A = A;
   cusp::multiply(identity, my_A, out);
   A = out;
   //************************ DEBUG*/
   //The final call to the solver
-  setup_solver(cfg, tetmeshPtr, &A, &b_d, &x_d, verbose);
+  setup_solver(cfg, tetmeshPtr, &A, &b_h, &x_h, verbose);
   //At this point, you can do what you need with the matrices.
   // DO Something....
   return 0;
