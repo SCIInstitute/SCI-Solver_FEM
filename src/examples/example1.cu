@@ -62,7 +62,7 @@ int main(int argc, char** argv)
   //Now we read in the mesh of choice
   //TriMesh* meshPtr = TriMesh::read("mesh.ply"); //-----if we were reading a Triangle mesh
   //read in the Tetmesh
-  std::string filename("../example_data/spheres");
+  std::string filename("../example_data/CubeMesh_size256step16");
   TetMesh* tetmeshPtr = TetMesh::read(
       (filename + ".node").c_str(),
       (filename + ".ele").c_str());
