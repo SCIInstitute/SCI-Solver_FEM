@@ -103,7 +103,8 @@ public:
                                    cusp::array1d<ValueType, MemorySpace>& bc,
                                    int level_id,
                                    int largestblksz,
-                                   int largestnumentries) = 0;
+                                   int largestnumentries,
+                                   bool verbose = false) = 0;
   virtual void preRRRFullSymmetricSync(const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AinSysCoo,
                                        const cusp::coo_matrix<IndexType, ValueType, MemorySpace>& AoutSysCoo,
                                        const cusp::array1d<IndexType, MemorySpace>& AinBlockIdx,

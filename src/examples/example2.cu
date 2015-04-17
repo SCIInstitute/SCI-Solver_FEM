@@ -30,7 +30,7 @@ int main(int argc, char** argv)
       (filename + ".node").c_str(),
 	  (filename + ".ele").c_str());
   //The stiffness matrix A 
-  Matrix_d A;
+  Matrix_ell_h A;
   //get the basic stiffness matrix (constant) by creating the mesh matrix
   getMatrixFromMesh(cfg, tetmeshPtr, &A, verbose);
   //intialize the b matrix to ones for now. TODO @DEBUG
@@ -45,13 +45,13 @@ int main(int argc, char** argv)
   }
   //multiply the mesh matrix by the stiffness properties matrix.
   Matrix_ell_h out;
-  Matrix_ell_h my_A = A;
+  Matrix_ell_h my_A(A);
   cusp::multiply(identity, my_A, out);
-  A = out;
+  A = Matrix_ell_h(out);
   //************************ DEBUG*/
   //The final call to the solver
-  setup_solver(cfg, tetmeshPtr, &A, &b_h, &x_h, verbose);
+  setup_solver(cfg, tetmeshPtr, &A, &x_h, &b_h, verbose);
   //At this point, you can do what you need with the matrices.
-  // DO Something....
+  writeMatlabArray("output.mat",x_h);
   return 0;
 }

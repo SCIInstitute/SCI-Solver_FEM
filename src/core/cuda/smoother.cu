@@ -28,9 +28,9 @@ Smoother<Matrix,Vector>* Smoother<Matrix,Vector>::allocate(AMG_Config& cfg, cons
   switch(smoother)
   {
     case GAUSSSEIDEL:
+    default:
       return new gauss_seidel<Matrix,Vector>(cfg, A);
   }
-  return 0;
 }
 
 /****************************************

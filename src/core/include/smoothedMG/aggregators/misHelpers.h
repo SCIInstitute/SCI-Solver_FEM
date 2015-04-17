@@ -108,11 +108,11 @@ namespace misHelpers {
 
    void aggregateGraph(int minSize, int depth, IdxVector_d &adjIndexes, IdxVector_d &adjacency, IdxVector_d &misStencil);
 
-   void aggregateWeightedGraph(int maxSize, int fullSize, int depth, IdxVector_d &adjIndexes, IdxVector_d &adjacency, IdxVector_d &partIn, IdxVector_d &nodeWeights);
+   void aggregateWeightedGraph(int maxSize, int fullSize, int depth, IdxVector_d &adjIndexes, IdxVector_d &adjacency, IdxVector_d &partIn, IdxVector_d &nodeWeights, bool verbose = false);
 
    bool removeRuntyParts(int minSize, IdxVector_d &partition);
 
-   bool removeRuntyPartitions(int minSize, IdxVector_d &partition, IdxVector_d &nodeWeights);
+   bool removeRuntyPartitions(int minSize, IdxVector_d &partition, IdxVector_d &nodeWeights, bool verbose = false);
 
    void getPartSizes(IdxVector_d &partition, IdxVector_d &partSizes);
 
@@ -142,7 +142,7 @@ namespace misHelpers {
 
    void getInducedGraph(IdxVector_d &adjIndexesIn, IdxVector_d &adjacencyIn, IdxVector_d &partitionLabel, IdxVector_d &adjIndexesOut, IdxVector_d &adjacencyOut);
 
-   void restrictPartitionSize(int maxSize, int fullSize, IdxVector_d &adjIndexes, IdxVector_d &adjacency, IdxVector_d &partition, IdxVector_d &nodeWeights);
+   void restrictPartitionSize(int maxSize, int fullSize, IdxVector_d &adjIndexes, IdxVector_d &adjacency, IdxVector_d &partition, IdxVector_d &nodeWeights, bool verbose = false);
 
    void getWeightedPartSizes(IdxVector_d &partition, IdxVector_d &nodeWeights, IntVector_d &partSizes);
 
@@ -163,7 +163,8 @@ namespace misHelpers {
                   IdxVector_d &adjIndexesOut,
                   IdxVector_d &adjacencyOut,
                   int parameters,
-                  int part_max_size);
+                  int part_max_size,
+                  bool verbose = false);
 
       void MetisBottomUp(IdxVector_d &adjIndexesIn,
                          IdxVector_d &adjacencyIn,
@@ -175,7 +176,8 @@ namespace misHelpers {
                          IdxVector_d &adjIndexesOut,
                          IdxVector_d &adjacencyOut,
                          int parameters,
-                         int part_max_size);
+                         int part_max_size,
+                         bool verbose = false);
 
       void MetisTopDown(IdxVector_d &adjIndexesIn,
                         IdxVector_d &adjacencyIn,
@@ -187,7 +189,8 @@ namespace misHelpers {
                         IdxVector_d &adjIndexesOut,
                         IdxVector_d &adjacencyOut,
                         int parameters,
-                        int part_max_size);
+                        int part_max_size,
+                        bool verbose = false);
 
       void NewMIS(IdxVector_d &adjIndexesIn,
                   IdxVector_d &adjacencyIn,
@@ -199,7 +202,8 @@ namespace misHelpers {
                   IdxVector_d &adjIndexesOut,
                   IdxVector_d &adjacencyOut,
                   int parameters,
-                  int part_max_size);
+                  int part_max_size,
+                  bool verbose = false);
       void NewMIS_CPU(IdxVector_d &adjIndexesIn,
                       IdxVector_d &adjacencyIn,
                       IdxVector_d &permutation,
@@ -210,7 +214,8 @@ namespace misHelpers {
                       IdxVector_d &adjIndexesOut,
                       IdxVector_d &adjacencyOut,
                       int parameters,
-                      int part_max_size);
+                      int part_max_size,
+                      bool verbose = false);
       void LightMIS_CPU(IdxVector_d &adjIndexesIn,
                         IdxVector_d &adjacencyIn,
                         IdxVector_d &permutation,
@@ -221,7 +226,8 @@ namespace misHelpers {
                         IdxVector_d &adjIndexesOut,
                         IdxVector_d &adjacencyOut,
                         int parameters,
-                        int part_max_size);
+                        int part_max_size,
+                        bool verbose = false);
    }
 
    namespace Help {
@@ -229,11 +235,13 @@ namespace misHelpers {
       int GetMetisAggregation(AT::IntVector_h &indices,
                               AT::IntVector_h &adjacency,
                               AT::IntVector_h &result,
-                              int partSize);
+                              int partSize,
+                              bool verbose = false);
       int GetMetisAggregation_Large(AT::IntVector_h &indices,
                                     AT::IntVector_h &adjacency,
                                     AT::IntVector_h &result,
-                                    int partSize);
+                                    int partSize,
+                                    bool verbose = false);
       /**
        * This method takes a graph and an aggregation vector and produces the 
        * corresponding set of subgraphs along with a mapping of the nodes in
@@ -249,7 +257,8 @@ namespace misHelpers {
                         AT::IntVector_h &partition,
                         AT::IntVector_h_ptr &newIndices,
                         AT::IntVector_h_ptr &newAdjacencies,
-                        AT::IntVector_h_ptr &nodeMaps);
+                        AT::IntVector_h_ptr &nodeMaps,
+                        bool verbose = false);
       int EnsureConnectedAndNonEmpty(AT::IntVector_h &indices,
                                      AT::IntVector_h &adjacency,
                                      AT::IntVector_h &aggregation);

@@ -62,7 +62,7 @@ int main(int argc, char** argv)
   //Now we read in the mesh of choice
   //TriMesh* meshPtr = TriMesh::read("mesh.ply"); //-----if we were reading a Triangle mesh
   //read in the Tetmesh
-  std::string filename("../example_data/CubeMesh_size256step16");
+  std::string filename("../example_data/spheres");
   TetMesh* tetmeshPtr = TetMesh::read(
       (filename + ".node").c_str(),
       (filename + ".ele").c_str());
@@ -84,12 +84,10 @@ int main(int argc, char** argv)
   Matrix_ell_h out, test;
   Matrix_ell_h my_A(A_h);
   cusp::multiply(identity, my_A, out);
-  A_h = out;
+  A_h = Matrix_ell_h(out);
 
   if(readMatlabSparseMatrix("mysparse.mat",&test)) {
     std::cerr << "failed to read matlab file." << std::endl;
-  } else {
-    cusp::print(test);
   }
   //************************ DEBUG*/
   //The final call to the solver

@@ -12,6 +12,6 @@ template <class Matrix, class Vector>
   class CG_Flex_Cycle {
     public:
       typedef typename Matrix::value_type ValueType; 
-      CG_Flex_Cycle(CycleType next_cycle, int num_iters, AMG_Level<Matrix_h,Vector_h> *next, const Matrix_hyb_d_CG &Aell, const Vector_d_CG &b, Vector_d_CG &x, CGType tol, int maxiters);
+      CG_Flex_Cycle(CycleType next_cycle, int num_iters, AMG_Level<Matrix_h,Vector_h> *next, const Matrix_hyb_d_CG &Aell, const Vector_d_CG &b, Vector_d_CG &x, CGType tol, int maxiters, bool verbose = false);
  };
 #endif 

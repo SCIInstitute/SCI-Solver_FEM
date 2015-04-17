@@ -50,17 +50,17 @@ template <class Matrix, class Vector>
 class AMG 
 {
   typedef typename Matrix::value_type ValueType;
-  friend AMG_Level<Matrix,Vector>;
-  friend SmoothedMG_AMG_Level<Matrix,Vector>;
+  friend class AMG_Level<Matrix,Vector>;
+  friend class SmoothedMG_AMG_Level<Matrix,Vector>;
 
   public:
   AMG(AMG_Config cfg);
   ~AMG();
 
-  void solve(const Vector_d_CG &b, Vector_d_CG &x);
-  void solve_iteration(const Vector_d_CG &b, Vector_d_CG &x);
+  void solve(const Vector_d_CG &b, Vector_d_CG &x, bool verbose = false);
+  void solve_iteration(const Vector_d_CG &b, Vector_d_CG &x, bool verbose = false);
 
-  void setup(const Matrix_d &Acsr_d, TriMesh* meshPtr, TetMesh* tetmeshPtr);
+  void setup(const Matrix_d &Acsr_d, TriMesh* meshPtr, TetMesh* tetmeshPtr, bool verbose = false);
 
   void printGridStatistics();
 

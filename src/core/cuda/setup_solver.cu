@@ -47,7 +47,7 @@ void verifyThatCudaDeviceIsValid(AMG_Config& cfg, bool verbose)
     throw std::invalid_argument(error);
   } else if( verbose ) {
     cudaDeviceProp deviceProp;
-    cudaGetDeviceProperties(&deviceProp, 1);
+    cudaGetDeviceProperties(&deviceProp, cudaDeviceNumber);
   }
 }
 
@@ -64,6 +64,7 @@ void checkMatrixForValidContents(Matrix_ell_h* A_h, const bool verbose)
 
 void getMatrixFromMesh(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_h, const bool verbose) {
   srand48(0);
+  meshPtr->set_verbose(verbose);
   //type is triangle mesh
   cfg.setParameter<int>("mesh_type", 0);
   // print the device info
@@ -99,14 +100,14 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_h,
   //copy to device
   Matrix_d A_d(*A_h);
   //setup device
-  amg.setup(A_d, meshPtr, NULL);
+  amg.setup(A_d, meshPtr, NULL,verbose);
   //print info
   if( verbose ) amg.printGridStatistics();
   //copy to device
   Vector_d_CG x_d(*x_h);
   Vector_d_CG b_d(*b_h);
   //run solver
-  amg.solve(b_d, x_d);
+  amg.solve(b_d, x_d, verbose);
   //copy back to host
   *x_h = Vector_h_CG(x_d);
   *b_h = Vector_h_CG(b_d);
@@ -115,6 +116,7 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_h,
 
 void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h, const bool verbose) {
   srand48(0);
+  meshPtr->set_verbose(verbose);
   //type is tet mesh
   cfg.setParameter<int>("mesh_type", 1);
   // print the device info
@@ -150,14 +152,14 @@ int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h,
   //copy to device
   Matrix_d A_d(*A_h);
   //setup device
-  amg.setup(A_d, NULL, meshPtr);
+  amg.setup(A_d, NULL, meshPtr, verbose);
   //print info
   if (verbose) amg.printGridStatistics();
   //copy to device
   Vector_d_CG x_d(*x_h);
   Vector_d_CG b_d(*b_h);
   //run solver
-  amg.solve(b_d, x_d);
+  amg.solve(b_d, x_d, verbose);
   //copy back to host
   *x_h = Vector_h_CG(x_d);
   *b_h = Vector_h_CG(b_d);
@@ -171,6 +173,10 @@ bool compare_sparse_entry(SparseEntry_t a, SparseEntry_t b) {
 int readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h *A_h) {
   //read in the description header
   std::ifstream in(filename.c_str());
+  if (!in.is_open()) {
+    std::cerr << "could not open file: " << filename << std::endl;
+    return 1;
+  }
   char buffer[256];
   in.read(buffer,128);
   int32_t type;
