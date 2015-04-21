@@ -87,7 +87,7 @@ Running Examples
 You will need to enable examples in your build to compile and run them
 
 ```c++
-cmake -DBUILD_FEM_SOLVER_EXAMPLES=ON ../src
+cmake -DBUILD_EXAMPLES=ON ../src
 make
 ```
 
