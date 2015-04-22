@@ -1,1 +1,15 @@
+# gtest external download
+set(GTEST_INSTALL_DIR "${EXTERNAL_DIR}/gtest")
+ExternalProject_Add( gtest
+  PREFIX "${GTEST_INSTALL_DIR}"
+  SVN_REPOSITORY "http://googletest.googlecode.com/svn/trunk/"
+  INSTALL_DIR "${GTEST_INSTALL_DIR}/include"
+  BINARY_DIR "${GTEST_INSTALL_DIR}/lib"
+  INSTALL_COMMAND ""
+)                   
+add_custom_command(TARGET gtest POST_BUILD 
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${GTEST_INSTALL_DIR}/src/gtest/include 
+  ${GTEST_INSTALL_DIR}/include)
+include_directories("${GTEST_INSTALL_DIR}/include")
+SET(GTEST_LIBARARY "${GTEST_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}")
 add_subdirectory(cli)

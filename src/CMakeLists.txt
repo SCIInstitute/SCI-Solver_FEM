@@ -2,27 +2,54 @@ cmake_minimum_required(VERSION 2.8)
 project(FEM_Solver)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
-
-SET(BUILD_EXAMPLES false CACHE BOOL "Checking this will build sample executables that demonstrate FEM Solver usage")
+SET(BUILD_EXAMPLES false CACHE BOOL "Build sample executables")
 
 find_package(CUDA REQUIRED)
 
-include_directories(
-  "externals"
-  )
-
-add_subdirectory(externals)
+###################
+# Externals
+include(ExternalProject)
+set(EXTERNAL_DIR "${CMAKE_BINARY_DIR}/externals")
+# Metis
+set(METIS_INSTALL_DIR "${EXTERNAL_DIR}/metis")
+ExternalProject_Add( metis
+  PREFIX "${METIS_INSTALL_DIR}"
+  GIT_REPOSITORY "https://github.com/SCIInstitute/metis-4.0.3.git"
+  INSTALL_DIR "${METIS_INSTALL_DIR}/include"
+  BINARY_DIR "${METIS_INSTALL_DIR}/lib"
+  INSTALL_COMMAND ""
+)                   
+FILE(GLOB METIS_HEADERS ${METIS_INSTALL_DIR}/src/metis/Lib/*.h)
+foreach (f ${METIS_HEADERS})
+add_custom_command(TARGET metis POST_BUILD 
+  COMMAND ${CMAKE_COMMAND} -E copy ${f} ${METIS_INSTALL_DIR}/include)
+endforeach()
+include_directories("${METIS_INSTALL_DIR}/include")
+SET(METIS_LIBRARY "${METIS_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}metis${CMAKE_STATIC_LIBRARY_SUFFIX}")
+# cusp
+set(CUSP_INSTALL_DIR "${EXTERNAL_DIR}/cusp")
+ExternalProject_Add( cusp
+  PREFIX "${CUSP_INSTALL_DIR}"
+  GIT_REPOSITORY "https://github.com/SCIInstitute/cusp.git"
+  INSTALL_DIR "${CUSP_INSTALL_DIR}/include"
+  BINARY_DIR "${CUSP_INSTALL_DIR}/lib"
+  INSTALL_COMMAND ""
+  BUILD_COMMAND ""
+  CONFIGURE_COMMAND ""
+)                   
+include_directories("${CUSP_INSTALL_DIR}/src")
+###################
+# Core / Examples
 add_subdirectory(core)
 
 if (${BUILD_EXAMPLES})
   add_subdirectory(examples)
 endif()
-
-########################################################################
-# All of the testing and test framework options
+###################
+# Testing
 INCLUDE(CTest)
 if (BUILD_TESTING)
   ENABLE_TESTING()
@@ -35,6 +62,5 @@ if (BUILD_TESTING)
       SET(CMAKE_C_FLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
     endif()
   endif()
-  ADD_SUBDIRECTORY(externals/gtest)
   ADD_SUBDIRECTORY(test)
 endif()

@@ -1,10 +1,11 @@
 ########################################################################
 
-# Tests for cli
-include_directories(${FEM_Solver_SOURCE_DIR}/externals/gtest)
-include_directories(${FEM_Solver_SOURCE_DIR}/externals/gtest/include)
-add_definitions(-DBINARY_DIR="${FEM_Solver_BINARY_DIR}/test/cli")
-add_definitions(-DTEST_DATA_DIR="${FEM_Solver_SOURCE_DIR}/test/test_data/")
+# Definitions for Tests
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test/bin)
+add_definitions(-DTEST_BINARY_DIR="${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/cli")
+add_definitions(-DTEST_DATA_DIR="${CMAKE_SOURCE_DIR}/test/test_data/")
 #cli
-cxx_test(cli_basic gtest_main)
+add_executable(cli_basic cli_basic.cc)
+add_test(cli_basic cli_basic)
+target_link_libraries(cli_basic ${GTEST_LIBRARY})
+add_dependencies(cli_basic gtest)
