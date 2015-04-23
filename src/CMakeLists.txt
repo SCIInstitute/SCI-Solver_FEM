@@ -22,7 +22,7 @@ ExternalProject_Add( metis
   BINARY_DIR "${METIS_INSTALL_DIR}/lib"
   INSTALL_COMMAND ""
   )
-ExternalProject_Add( metis copy_deps
+ExternalProject_Add_Step( metis copy_deps
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${METIS_INSTALL_DIR}/src/metis/Lib ${METIS_INSTALL_DIR}/include
   DEPENDEES install
 )
