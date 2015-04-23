@@ -6,11 +6,12 @@ ExternalProject_Add( gtest
   INSTALL_DIR "${GTEST_INSTALL_DIR}/include"
   BINARY_DIR "${GTEST_INSTALL_DIR}/lib"
   INSTALL_COMMAND ""
+  CMAKE_ARGS "-Dgtest_build_tests:BOOL=OFF"
 )                   
-add_custom_command(TARGET gtest POST_BUILD 
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${GTEST_INSTALL_DIR}/src/gtest/include 
-  ${GTEST_INSTALL_DIR}/include)
+ExternalProject_Add_Step( gtest copy_deps
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${GTEST_INSTALL_DIR}/src/gtest/include ${GTEST_INSTALL_DIR}/include
+  DEPENDEES install
+)
 include_directories("${GTEST_INSTALL_DIR}/include")
 SET(GTEST_LIBRARY "${GTEST_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX};${GTEST_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}")
-message(STATUS "Gtest libraries: ${GTEST_LIBRARY}")
 add_subdirectory(cli)
