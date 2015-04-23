@@ -21,11 +21,12 @@ ExternalProject_Add( metis
   INSTALL_DIR "${METIS_INSTALL_DIR}/include"
   BINARY_DIR "${METIS_INSTALL_DIR}/lib"
   INSTALL_COMMAND ""
-)                   
+  )
 FILE(GLOB METIS_HEADERS ${METIS_INSTALL_DIR}/src/metis/Lib/*.h)
 foreach (f ${METIS_HEADERS})
-add_custom_command(TARGET metis POST_BUILD 
-  COMMAND ${CMAKE_COMMAND} -E copy ${f} ${METIS_INSTALL_DIR}/include)
+  add_custom_command(TARGET metis PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${f} ${METIS_INSTALL_DIR}/include)
+  message(STATUS "Copied ${f}")
 endforeach()
 include_directories("${METIS_INSTALL_DIR}/include")
 SET(METIS_LIBRARY "${METIS_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}metis${CMAKE_STATIC_LIBRARY_SUFFIX}")
@@ -39,7 +40,7 @@ ExternalProject_Add( cusp
   INSTALL_COMMAND ""
   BUILD_COMMAND ""
   CONFIGURE_COMMAND ""
-)                   
+  )
 include_directories("${CUSP_INSTALL_DIR}/src")
 ###################
 # Core / Examples
