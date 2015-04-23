@@ -1,9 +1,9 @@
 # gtest external download
 set(GTEST_INSTALL_DIR "${EXTERNAL_DIR}/gtest")
 if (WIN32)
-   set(GTEST_CMAKE_ARGS "-Dgtest_build_tests:BOOL=OFF -Dgtest_force_shared_crt:BOOL=ON")
+   set(GTEST_SHARED_ARG ON)
 else()
-   set(GTEST_CMAKE_ARGS "-Dgtest_build_tests:BOOL=OFF -Dgtest_force_shared_crt:BOOL=OFF")
+   set(GTEST_SHARED_ARG OFF)
 endif()
 ExternalProject_Add( gtest
   PREFIX "${GTEST_INSTALL_DIR}"
@@ -11,7 +11,9 @@ ExternalProject_Add( gtest
   INSTALL_DIR "${GTEST_INSTALL_DIR}/include"
   BINARY_DIR "${GTEST_INSTALL_DIR}/lib"
   INSTALL_COMMAND ""
-  CMAKE_ARGS "${GTEST_CMAKE_ARGS}"
+  CMAKE_ARGS 
+    -Dgtest_build_tests:BOOL=OFF
+    -Dgtest_force_shared_crt:BOOL=${GTEST_SHARED_ARG}
 )                   
 ExternalProject_Add_Step( gtest copy_deps
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${GTEST_INSTALL_DIR}/src/gtest/include ${GTEST_INSTALL_DIR}/include
