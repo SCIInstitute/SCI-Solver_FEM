@@ -117,7 +117,8 @@ class TetMesh
       void need_Rinscribe();
       void rescale(int size);
 
-      static TetMesh *read(const char *nodefilename, const char* elefilename);
+      static TetMesh *read(const char *nodefilename, const char* elefilename,
+          const bool verbose = false);
       //void write(const char *filename);
 
       // Debugging printout, controllable by a "verbose"ness parameter

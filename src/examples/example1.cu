@@ -22,7 +22,9 @@ int main(int argc, char** argv)
     if (strcmp(argv[i],"-v") == 0) {
       verbose = true;
     } else if (strcmp(argv[i],"-i") == 0) {
+      if (i+1 >= argc) break;
       filename = std::string(argv[i+1]);
+      i++;
     }
   //Our main configuration object. We will set aspects where the
   // default values are not what we desire.
@@ -66,9 +68,11 @@ int main(int argc, char** argv)
   //read in the Tetmesh
   if (filename.empty())
     filename = std::string("../example_data/CubeMesh_size256step16");
+  if (verbose)
+    std::cout << "Reading in file: " << filename << std::endl;
   TetMesh* tetmeshPtr = TetMesh::read(
       (filename + ".node").c_str(),
-      (filename + ".ele").c_str());
+      (filename + ".ele").c_str(), verbose);
   //The stiffness matrix A 
   Matrix_ell_h A_h;
   //get the basic stiffness matrix (constant) by creating the mesh matrix
