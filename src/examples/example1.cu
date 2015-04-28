@@ -17,10 +17,12 @@ int main(int argc, char** argv)
 {
   //Verbose option
   bool verbose = false;
+  std::string filename;
   for (int i = 0; i < argc; i++)
     if (strcmp(argv[i],"-v") == 0) {
       verbose = true;
-      break;
+    } else if (strcmp(argv[i],"-i") == 0) {
+      filename = std::string(argv[i+1]);
     }
   //Our main configuration object. We will set aspects where the
   // default values are not what we desire.
@@ -62,7 +64,8 @@ int main(int argc, char** argv)
   //Now we read in the mesh of choice
   //TriMesh* meshPtr = TriMesh::read("mesh.ply"); //-----if we were reading a Triangle mesh
   //read in the Tetmesh
-  std::string filename("../example_data/CubeMesh_size256step16");
+  if (filename.empty())
+    filename = std::string("../example_data/CubeMesh_size256step16");
   TetMesh* tetmeshPtr = TetMesh::read(
       (filename + ".node").c_str(),
       (filename + ".ele").c_str());
