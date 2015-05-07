@@ -17,7 +17,7 @@ set(EXTERNAL_DIR "${CMAKE_BINARY_DIR}/externals")
 set(METIS_INSTALL_DIR "${EXTERNAL_DIR}/metis")
 ExternalProject_Add( metis
   PREFIX "${METIS_INSTALL_DIR}"
-  GIT_REPOSITORY "https://github.com/SCIInstitute/metis-4.0.3.git"
+  GIT_REPOSITORY "https://github.com/cibc-internal/metis-4.0.3.git"
   INSTALL_DIR "${METIS_INSTALL_DIR}/include"
   BINARY_DIR "${METIS_INSTALL_DIR}/lib"
   INSTALL_COMMAND ""
@@ -32,7 +32,7 @@ SET(METIS_LIBRARY "${METIS_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}metis$
 set(CUSP_INSTALL_DIR "${EXTERNAL_DIR}/cusp")
 ExternalProject_Add( cusp
   PREFIX "${CUSP_INSTALL_DIR}"
-  GIT_REPOSITORY "https://github.com/SCIInstitute/cusp.git"
+  GIT_REPOSITORY "https://github.com/cibc-internal/cusp.git"
   INSTALL_DIR "${CUSP_INSTALL_DIR}/include"
   BINARY_DIR "${CUSP_INSTALL_DIR}/lib"
   INSTALL_COMMAND ""
