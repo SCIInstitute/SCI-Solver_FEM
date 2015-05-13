@@ -61,31 +61,31 @@ double compute_gamma_3d(double x)
   double ga, gr, r, z;
 
   static double g[] = {
-                       1.0,
-                       0.5772156649015329,
-                       -0.6558780715202538,
-                       -0.420026350340952e-1,
-                       0.1665386113822915,
-                       -0.421977345555443e-1,
-                       -0.9621971527877e-2,
-                       0.7218943246663e-2,
-                       -0.11651675918591e-2,
-                       -0.2152416741149e-3,
-                       0.1280502823882e-3,
-                       -0.201348547807e-4,
-                       -0.12504934821e-5,
-                       0.1133027232e-5,
-                       -0.2056338417e-6,
-                       0.6116095e-8,
-                       0.50020075e-8,
-                       -0.11812746e-8,
-                       0.1043427e-9,
-                       0.77823e-11,
-                       -0.36968e-11,
-                       0.51e-12,
-                       -0.206e-13,
-                       -0.54e-14,
-                       0.14e-14
+    1.0,
+    0.5772156649015329,
+    -0.6558780715202538,
+    -0.420026350340952e-1,
+    0.1665386113822915,
+    -0.421977345555443e-1,
+    -0.9621971527877e-2,
+    0.7218943246663e-2,
+    -0.11651675918591e-2,
+    -0.2152416741149e-3,
+    0.1280502823882e-3,
+    -0.201348547807e-4,
+    -0.12504934821e-5,
+    0.1133027232e-5,
+    -0.2056338417e-6,
+    0.6116095e-8,
+    0.50020075e-8,
+    -0.11812746e-8,
+    0.1043427e-9,
+    0.77823e-11,
+    -0.36968e-11,
+    0.51e-12,
+    -0.206e-13,
+    -0.54e-14,
+    0.14e-14
   };
 
   if(x > 171.0) return 1e308; // This value is an overflow flag.
@@ -300,7 +300,7 @@ void FEM3D::JacobiGLZW(Vector_h_CG& Z, Vector_h_CG& weight, int degree, int alph
     {
       Z[i] = tmppoly[i - 1];
     }
-    //Z(2:degree-1) = JacobiGZeros(degree-2,alpha+one,beta+one);    
+    //Z(2:degree-1) = JacobiGZeros(degree-2,alpha+one,beta+one);
     JacobiPoly(degree - 1, Z, alpha, beta, weight);
 
     ValueType tmp1 = pow(ValueType(2), ValueType(apb + 1));
@@ -349,7 +349,7 @@ void FEM3D::JacobiGRZW(Vector_h_CG& Z, Vector_h_CG& weight, int degree, int alph
     {
       Z[i] = tmpPoly[i - 1];
     }
-    //Z(2:degree-1) = JacobiGZeros(degree-1,alpha+one,beta+one);    
+    //Z(2:degree-1) = JacobiGZeros(degree-1,alpha+one,beta+one);
     JacobiPoly(degree - 1, Z, alpha, beta, weight);
     ValueType tmp = compute_gamma_3d(alpha + degree);
 
@@ -450,8 +450,8 @@ CGType FEM3D::Integration_Quadrilateral_3d(ValueType(*fx)[DEGREE][DEGREE], Vecto
 
 void FEM3D::IntegrationInTet(Vector_h_CG &phi, Vector_h_CG &weight_x, Vector_h_CG &weight_y, Vector_h_CG &weight_z, Vector_h_CG &integralMass)
 {
-	CGType integrandMass[DEGREE][DEGREE][DEGREE];
-	int cnt = 0;
+  CGType integrandMass[DEGREE][DEGREE][DEGREE];
+  int cnt = 0;
   for(int k = 0; k < 4; k++)
   {
     for(int g = k; g < 4; g++)
@@ -466,18 +466,18 @@ void FEM3D::IntegrationInTet(Vector_h_CG &phi, Vector_h_CG &weight_x, Vector_h_C
           }
         }
       }
-			integralMass[cnt++] = Integration_Quadrilateral_3d(integrandMass, weight_x, weight_y, weight_z);
+      integralMass[cnt++] = Integration_Quadrilateral_3d(integrandMass, weight_x, weight_y, weight_z);
     }
   }
 
-  
+
 }
 
 
 //void FEM3D::IntegrationForce(Vector_h_CG &phi, Vector_h_CG &weight_x, Vector_h_CG &weight_y, Vector_h_CG &weight_z, Vector_h_CG &integralForce)
 //{
-//	CGType integrandForce[DEGREE][DEGREE][DEGREE];
-//	int cnt = 0;
+//  CGType integrandForce[DEGREE][DEGREE][DEGREE];
+//  int cnt = 0;
 //  for(int k = 0; k < 4; k++)
 //  {
 //    for(int g = k; g < 4; g++)
@@ -492,7 +492,7 @@ void FEM3D::IntegrationInTet(Vector_h_CG &phi, Vector_h_CG &weight_x, Vector_h_C
 //          }
 //        }
 //      }
-//			integralForce[cnt++] = Integration_Quadrilateral_3d(integrandForce, weight_x, weight_y, weight_z);
+//      integralForce[cnt++] = Integration_Quadrilateral_3d(integrandForce, weight_x, weight_y, weight_z);
 //    }
 //  }
 //}
@@ -532,16 +532,16 @@ void FEM3D::assemble(TetMesh* meshPtr, Matrix_ell_d_CG &A, Vector_d_CG &b, bool 
 
   EvalBasisTet(coefmatBaseTet, qdTet, phiTet);
 
-  //	Vector_h_CG Integration(10);
+  //  Vector_h_CG Integration(10);
   //
-  //	int cnt = 0;
-  //	for(int p =0;p<4; p++)
-  //	{
-  //		for(int q = p; q<4; q++)
-  //		{
-  //			 IntegrationInTet(phiTet, weight_x, weight_y, weight_z, integrand[cnt++]);
-  //		}
-  //	}
+  //  int cnt = 0;
+  //  for(int p =0;p<4; p++)
+  //  {
+  //    for(int q = p; q<4; q++)
+  //    {
+  //       IntegrationInTet(phiTet, weight_x, weight_y, weight_z, integrand[cnt++]);
+  //    }
+  //  }
 
   Vector_h_CG phi(DEGREE * DEGREE * DEGREE * 4);
   for(int l = 0; l < 4; l++)
@@ -553,21 +553,18 @@ void FEM3D::assemble(TetMesh* meshPtr, Matrix_ell_d_CG &A, Vector_d_CG &b, bool 
   //  Vector_d_CG phi_d = phi;
   //  phi.clear();
 
-      Vector_h_CG integrandMass(10);
+  Vector_h_CG integrandMass(10);
   IntegrationInTet(phi, weight_x, weight_y, weight_z, integrandMass);
 
-//	Vector_h_CG integrandForce(10);
-//	IntegrationForce(phi, weight_x, weight_y, weight_z, integrandForce);
-	
-
-
+  //  Vector_h_CG integrandForce(10);
+  //  IntegrationForce(phi, weight_x, weight_y, weight_z, integrandForce);
 
   ValueType * tmp_w_x = thrust::raw_pointer_cast(&weight_x[0]);
   ValueType* tmp_w_y = thrust::raw_pointer_cast(&weight_y[0]);
   ValueType* tmp_w_z = thrust::raw_pointer_cast(&weight_z[0]);
 
   IdxVector_d matlabels = meshPtr->matlabels;
-  Vector_d_CG integrandMass_d = integrandMass;	
+  Vector_d_CG integrandMass_d = integrandMass;
 
   perform_element_loop_3d(d_vx, d_vy, d_vz, d_tri0, d_tri1, d_tri2, d_tri3, A, b, phi, weight_x, weight_y, weight_z, matlabels, integrandMass_d, isdevice);
   phi.clear();
