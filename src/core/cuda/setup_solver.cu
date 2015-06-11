@@ -325,6 +325,96 @@ int readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h *A_h) {
   return 0;
 }
 
+int readMatlabNormalMatrix(const std::string &filename, Matrix_ell_h *A_h) {
+  //read in the description header
+  std::ifstream in(filename.c_str());
+  if (!in.is_open()) {
+    std::cerr << "could not open file: " << filename << std::endl;
+    return 1;
+  }
+  char buffer[256];
+  in.read(buffer,128);
+  int32_t type;
+  in.read((char*)&type,4);
+  if (type == 15) {
+    std::cerr << "Compression not supported. Save matlab data with '-v6' option." << std::endl;
+    in.close();
+    return 1;
+  } else if (type != 14) {
+    std::cerr << filename << " is not a matlab matrix." << std::endl;
+    in.close();
+    return 1;
+  }
+  //read in the array flags
+  uint32_t data_size;
+  in.read((char*)&data_size,4);
+  in.read((char*)&type,4);
+  if (type != 6 && type != 5) {
+    std::cerr << "Invalid type for sparse matrix. Must be 32bit." << std::endl;
+    in.close();
+    return 1;
+  }
+  int32_t byte_per_element;
+  in.read((char*)&byte_per_element,4);
+  uint32_t mclass;
+  in.read((char*)&mclass,4);
+  mclass &= 0x000000FF;
+  if (mclass == 5) {
+    std::cerr << "This import routine is not for a sparse matrix file." << std::endl;
+    in.close();
+    return 1;
+  }
+  uint32_t nzmax;
+  in.read((char*)&nzmax,4);
+  //read in the dimensions and name
+  in.read((char*)&type,4);
+  in.read((char*)&byte_per_element,4);
+  if ((type != 6 && type != 5) || byte_per_element != 8) {
+    std::cerr << "Matrix of wrong dimension type or # of dimensions." << std::endl;
+    std::cerr << "Matrix must be 2 dimensions and of 32bit type." << std::endl;
+    in.close();
+    return 1;
+  }
+  int32_t x_dim,y_dim;
+  in.read((char*)&x_dim,4);
+  in.read((char*)&y_dim,4);
+
+  //Array name
+  uint32_t arrayName_type;
+  in.read((char*)&arrayName_type, 4);
+  if (arrayName_type != 1 && arrayName_type != 2) {
+    std::cerr << "Invalid variable type for array name characters (Must be 8-bit)." << std::endl;
+    in.close();
+    return 1;
+  }
+  uint32_t arrayName_length;
+  in.read((char*)&arrayName_length, 4);
+  //Account for padding of array name to match 64-bit requirement
+  int lenRemainder = arrayName_length % 8;
+  if( lenRemainder != 0 )
+	  arrayName_length = arrayName_length + 8 - lenRemainder;
+  in.read(buffer,arrayName_length); //Read the array name (ignore)
+
+  //Data type in array field
+  in.read((char*)&type,4);
+  if (type != 9 ) {
+    std::cerr << "Matrix data type must be miDOUBLE (id=9)." << std::endl;
+    in.close();
+    return 1;
+  }
+
+  //Length of array field
+  uint32_t arrayData_length;
+  in.read((char*)&arrayData_length, 4);
+  for (int j = 0; j < arrayData_length; ++j) {
+	  A_h->column
+  }
+
+  in.close();
+  *A_h = Matrix_ell_h(A);
+  return 0;
+}
+
 int writeMatlabArray(const std::string &filename, const Vector_h_CG &array) {
 
 	//read in the description header
