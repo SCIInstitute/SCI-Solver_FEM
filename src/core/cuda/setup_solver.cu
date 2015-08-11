@@ -412,7 +412,7 @@ int readMatlabNormalMatrix(const std::string &filename, vector<double> *A_h) {
   A_h->clear();
   for (int j = 0; j < numValues; ++j) {
 	  in.read(buffer, byte_per_element);
-	  std::copy(buffer, &readInDouble, sizeof(double));
+	  memcpy(buffer, &readInDouble, sizeof(double));
 	  A_h->push_back(readInDouble);
   }
 
