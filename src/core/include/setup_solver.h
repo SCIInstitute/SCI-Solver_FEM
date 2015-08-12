@@ -47,6 +47,8 @@ bool compare_sparse_entry(SparseEntry_t a, SparseEntry_t b);
 
 int readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h *A_h);
 
+int readMatlabNormalMatrix(const std::string &filename, vector<double> *A_h);
+
 int writeMatlabArray(const std::string &filename, const Vector_h_CG &array);
 
 #endif
