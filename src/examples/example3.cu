@@ -13,6 +13,17 @@
  *  5. We invoke the "setup_solver" call, which does all of the work.
  */
 
+void printMatlabReadContents(vector<double>& test)
+{
+  std::cout << "test result vector is size = " << test.size() << std::endl;
+  int incr = test.size() / 5;
+  for (int j = 0; j < test.size(); j += incr) {
+    std::cout << "element #" << j << " = " << test.at(j) << std::endl;
+  }
+  if( test.size() > 0 )
+    std::cout << "last element = " << test.at(test.size() - 1) << std::endl;
+}
+
 int main(int argc, char** argv)
 {
   //Verbose option
@@ -97,9 +108,12 @@ int main(int argc, char** argv)
   cusp::multiply(identity, my_A, out);
   A_h = Matrix_ell_h(out);
 
-  if(readMatlabNormalMatrix("../example_data/RHS.mat", &test)) {
+  if( readMatlabNormalMatrix("../example_data/RHS.mat", &test) < 0 ) {
     std::cerr << "failed to read matlab file." << std::endl;
   }
+
+  printMatlabReadContents(test);
+  /*remove after testing*/ return 0;
 
   //The final call to the solver
   setup_solver(cfg, tetmeshPtr, &A_h, &x_h, &b_h, verbose);

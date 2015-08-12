@@ -407,7 +407,7 @@ int readMatlabNormalMatrix(const std::string &filename, vector<double> *A_h) {
   uint32_t arrayData_length;
   in.read((char*)&arrayData_length, 4);
   double readInDouble;
-  unsigned int numValues = arrayData_length % byte_per_element;
+  unsigned int numValues = arrayData_length / byte_per_element;
 
   A_h->clear();
   for (int j = 0; j < numValues; ++j) {
