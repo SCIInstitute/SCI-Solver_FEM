@@ -29,11 +29,54 @@ void printMatlabReadContents(vector<double>& test)
     std::cout << "last element = " << test[test.size() - 1] << std::endl;
 }
 
+int importRhsVectorFromFile(string filename, vector<double>* source,
+                            Vector_h_CG& targetVector, bool verbose)
+{
+  if( filename.empty() ) {
+    string errMsg = "No matlab file provided for RHS (b) vector.";
+    errMsg += " Specify the file using argument at commandline using -b switch.";
+    std::cerr << errMsg << std::endl;
+    return -1;
+  }
+  if( readMatlabNormalMatrix(filename, source) < 0 ) {
+    std::cerr << "Failed to read matlab file for RSH (b)." << std::endl;
+    return -1;
+  }
+  targetVector = *source;
+  if (verbose) {
+    string msg = "Finished reading RHS (b) data file with ";
+    msg += targetVector.size() + " values.";
+    std::cout << msg << std::endl;
+  }
+  return 0;
+}
+
+int importStiffnessMatrixFromFile(string filename, Matrix_ell_h* targetMatrix, bool verbose)
+{
+  if( filename.empty() ) {
+    string errMsg = "No matlab file provided for stiffness matrix (A).";
+    errMsg += " Specify the file using argument at commandline using -A switch.";
+    std::cerr << errMsg << std::endl;
+    return -1;
+  }
+  if( readMatlabSparseMatrix(filename, targetMatrix) < 0 ) {
+    std::cerr << "Failed to read matlab file for stiffness matrix (A)." << std::endl;
+    return -1;
+  }
+  if (verbose) {
+    string msg = "Finished reading stiffness matrix data file.";
+    std::cout << msg << std::endl;
+  }
+  return 0;
+}
+
+
+
 int main(int argc, char** argv)
 {
   //Verbose option
   bool verbose = false;
-  std::string filename;
+  std::string filename, aFilename, bFilename;
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i],"-v") == 0) {
       verbose = true;
@@ -41,6 +84,16 @@ int main(int argc, char** argv)
       if (i+1 >= argc)
     	break;
       filename = std::string(argv[i+1]);
+      i++;
+    } else if (strcmp(argv[i],"-b") == 0) {
+      if (i+1 >= argc)
+    	break;
+      bFilename = std::string(argv[i+1]);
+      i++;
+    } else if (strcmp(argv[i],"-A") == 0) {
+      if (i+1 >= argc)
+    	break;
+      aFilename = std::string(argv[i+1]);
       i++;
     }
   }
@@ -108,17 +161,18 @@ int main(int argc, char** argv)
   }
   //multiply the mesh matrix by the stiffness properties matrix.
   vector<double> test;
-  Matrix_ell_h out;
+  Matrix_ell_h out, A_fromFile;
   Matrix_ell_h my_A(A_h);
   cusp::multiply(identity, my_A, out);
   A_h = Matrix_ell_h(out);
 
   //Import right-hand-side single-column array (b)
-  if( readMatlabNormalMatrix("../example_data/RHS.mat", &test) < 0 ) {
-    std::cerr << "failed to read matlab file." << std::endl;
-  }
-  b_h = test;
+  if( importRhsVectorFromFile(bFilename, &test, b_h, verbose) < 0 )
+	  return 0;
 
+  //Import stiffness matrix (A)
+  if( importStiffnessMatrixFromFile(aFilename, &A_h, verbose) < 0 )
+	  return 0;
 
   //The final call to the solver
   setup_solver(cfg, tetmeshPtr, &A_h, &x_h, &b_h, verbose);
