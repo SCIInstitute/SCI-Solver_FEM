@@ -13,15 +13,20 @@
  *  5. We invoke the "setup_solver" call, which does all of the work.
  */
 
+void printElementWithHeader(vector<double>& test, unsigned int index)
+{
+  std::cout << "element #" << index << " = " << test[index] << std::endl;
+}
+
 void printMatlabReadContents(vector<double>& test)
 {
   std::cout << "test result vector is size = " << test.size() << std::endl;
   int incr = test.size() / 5;
   for (int j = 0; j < test.size(); j += incr) {
-    std::cout << "element #" << j << " = " << test.at(j) << std::endl;
+    printElementWithHeader(test, j);
   }
   if( test.size() > 0 )
-    std::cout << "last element = " << test.at(test.size() - 1) << std::endl;
+    std::cout << "last element = " << test[test.size() - 1] << std::endl;
 }
 
 int main(int argc, char** argv)
@@ -108,12 +113,12 @@ int main(int argc, char** argv)
   cusp::multiply(identity, my_A, out);
   A_h = Matrix_ell_h(out);
 
+  //Import right-hand-side single-column array (b)
   if( readMatlabNormalMatrix("../example_data/RHS.mat", &test) < 0 ) {
     std::cerr << "failed to read matlab file." << std::endl;
   }
+  b_h = test;
 
-  printMatlabReadContents(test);
-  /*remove after testing*/ return 0;
 
   //The final call to the solver
   setup_solver(cfg, tetmeshPtr, &A_h, &x_h, &b_h, verbose);
