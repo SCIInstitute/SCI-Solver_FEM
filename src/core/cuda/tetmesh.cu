@@ -129,8 +129,24 @@ void TetMesh::need_neighbors()
 
 
   neighbors.resize(nv);
+  if( neighbors.size() != nv )
+  {
+    std::cerr << "Neighbors resize operation expected " << nv;
+    std::cerr << " but returned " << neighbors.size() << std::endl;
+  }
+
+  int reserveSize = 0;
   for(int i = 0; i < nv; i++)
-    neighbors[i].reserve(numneighbors[i] + 2); // Slop for boundaries
+  {
+    reserveSize = numneighbors[i] + 2;
+    neighbors[i].reserve(reserveSize); // Slop for boundaries
+    if( neighbors[i].capacity() != reserveSize )
+    {
+      std::cerr << "Failed to reserve neighbors[" << i << "]";
+      std::cerr << "to size " << reserveSize;
+      std::cerr << " (got " << neighbors[i].capacity() << ")." << std::endl;
+    }
+  }
 
   for(int i = 0; i < nt; i++)
   {
@@ -140,6 +156,7 @@ void TetMesh::need_neighbors()
       int n1 = tets[i][(j + 1) % 4];
       int n2 = tets[i][(j + 2) % 4];
       int n3 = tets[i][(j + 3) % 4];
+
       if(find(me.begin(), me.end(), n1) == me.end())
         me.push_back(n1);
       if(find(me.begin(), me.end(), n2) == me.end())
