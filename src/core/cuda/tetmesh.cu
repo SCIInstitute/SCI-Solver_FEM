@@ -320,7 +320,6 @@ TetMesh *TetMesh::read(const char *nodefilename,
   {
     std::getline(elefile, line);
     if (line.empty() || line.at(0) == '#') continue;
-    int a,b,c,d,mat;
     int tval[4], mat;
     if (haslabel == 0)
     {
