@@ -17,6 +17,7 @@ int main(int argc, char** argv)
 {
   //Verbose option
   bool verbose = false;
+  bool zero_based = false;
   std::string filename;
   for (int i = 0; i < argc; i++)
     if (strcmp(argv[i],"-v") == 0) {
@@ -25,6 +26,8 @@ int main(int argc, char** argv)
       if (i+1 >= argc) break;
       filename = std::string(argv[i+1]);
       i++;
+    } else if (strcmp(argv[i],"-z") == 0) {
+      zero_based = true;
     }
   //Our main configuration object. We will set aspects where the
   // default values are not what we desire.
@@ -72,7 +75,7 @@ int main(int argc, char** argv)
     std::cout << "Reading in file: " << filename << std::endl;
   TetMesh* tetmeshPtr = TetMesh::read(
       (filename + ".node").c_str(),
-      (filename + ".ele").c_str(), verbose);
+      (filename + ".ele").c_str(), zero_based, verbose);
   //The stiffness matrix A 
   Matrix_ell_h A_h;
   //get the basic stiffness matrix (constant) by creating the mesh matrix

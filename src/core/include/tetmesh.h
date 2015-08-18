@@ -1,6 +1,7 @@
 #ifndef TETMESH_H
 #define TETMESH_H
 /*
+   TetMesh: Class for tetrahedral meshes based on TriMesh by
    Szymon Rusinkiewicz
    Princeton University
 
@@ -117,8 +118,26 @@ class TetMesh
       void need_Rinscribe();
       void rescale(int size);
 
+      //Tet mesh constructor
+      //  nodefilename: file containing the XYZ position of each node or point.
+      //    This must have the extension .node, and have the following
+      //    characteristics: ASCII text with one node per line. Values are space-
+      //    delimited. First line is a header line with 4 values: 'n 3 0 0'
+      //    where n is the total number of nodes. Subsequent lines have the
+      //    format 'i x y z' where i is the node number (starts at 1),
+      //    and xyz are floats representing the node position in 3D space.
+      //  elefilename: file containing the 4 nodes that define each tetrahedron.
+      //    This must have the extension .ele, and have the following
+      //    characteristics: ASCII text with one element per line. Values are
+      //    space delimited. First line is a header line with 3 values: 't 4 0'
+      //    where t is the total number of elements. Subsequent lines have the
+      //    format 't a b c d' where t is the element number (starts at 1),
+      //    and abcd are integers representing the node numbers from that file.
+      //  zero_based: set to true if the element numbers in the file are zero-
+      //    based (defaults to false).
+      //  verbose: set to true for verbose output
       static TetMesh *read(const char *nodefilename, const char* elefilename,
-          const bool verbose = false);
+          const bool zero_based = false, const bool verbose = false);
       //void write(const char *filename);
 
       // Debugging printout, controllable by a "verbose"ness parameter

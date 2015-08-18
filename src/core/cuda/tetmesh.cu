@@ -249,14 +249,14 @@ void TetMesh::need_across_face()
 }
 
 TetMesh *TetMesh::read(const char *nodefilename,
-    const char* elefilename, const bool verb) {
+    const char* elefilename, const bool zero_based, const bool verb) {
   TetMesh *mesh = new TetMesh();
   mesh->set_verbose(verb);
   std::ifstream nodefile(nodefilename);
   std::ifstream elefile(elefilename);
   if(!nodefile.is_open() || !elefile.is_open())
   {
-    printf("node or ele file open failed!");
+    printf("node or ele file open failed!\n");
     exit(0);
   }
   //get the number of nodes
@@ -273,8 +273,15 @@ TetMesh *TetMesh::read(const char *nodefilename,
     break;
   }
   mesh->vertices.resize(nv);
+  int invalidNodeReferenceValue;
+  if( zero_based )
+	  invalidNodeReferenceValue = nv;
+  else
+	  invalidNodeReferenceValue = 0;
+
   //get the nodes
   size_t i = 0;
+  int j = 0;
   while (nodefile.good()) {
     std::getline(nodefile, line);
     if (line.empty() || line.at(0) == '#') {
@@ -307,33 +314,47 @@ TetMesh *TetMesh::read(const char *nodefilename,
   mesh->tets.resize(ne);
   mesh->matlabels.resize(ne, 0);
 
-  //if we are reading in a zero-based set of vert indicies
-  bool zero_based = false;
   i = 0;
   //get the elements
-  while (elefile.good()) {
+  while (elefile.good())
+  {
     std::getline(elefile, line);
     if (line.empty() || line.at(0) == '#') continue;
     int a,b,c,d,mat;
-    if (haslabel == 0) {
-      if (sscanf(line.c_str(), "%d %d %d %d %d", &tmp, &a, &b, &c, &d) != 5) {
+    int tval[4], mat;
+    if (haslabel == 0)
+    {
+      if (sscanf(line.c_str(), "%d %d %d %d %d",
+          &tmp, &tval[0], &tval[1], &tval[2], &tval[3]) != 5)
+      {
         std::cerr << "Bad Ele file, line # " << i << std::endl;
         exit(0);
       }
-    } else {
-      if (sscanf(line.c_str(), "%d %d %d %d %d %d", &tmp, &a, &b, &c, &d, &mat) != 6) {
+    }
+    else
+    {
+      if (sscanf(line.c_str(), "%d %d %d %d %d %d",
+          &tmp, &tval[0], &tval[1], &tval[2], &tval[3], &mat) != 6)
+      {
         std::cerr << "Bad Ele file, line # " << i << std::endl;
         exit(0);
       }
       mesh->matlabels[i] = mat;
     }
-    if (i == 0 && (a == 0 || b == 0 || c == 0 || d == 0)) {
-      zero_based = true;
+
+    for (j = 0; j < 4; ++j)
+    {
+      if( tval[j] == invalidNodeReferenceValue )
+      {
+        std::cerr << "Node reference error in elements file at element # " << i;
+        std::cerr << ". Check if file is zero or one-based." << std::endl;
+        exit(0);
+      }
     }
-    mesh->tets[i][0] = a - (zero_based?0:1);
-    mesh->tets[i][1] = b - (zero_based?0:1);
-    mesh->tets[i][2] = c - (zero_based?0:1);
-    mesh->tets[i][3] = d - (zero_based?0:1);
+
+    for (j = 0; j < 4; ++j)
+      mesh->tets[i][j] = tval[j] - (zero_based?0:1);
+
     i++;
   }
 

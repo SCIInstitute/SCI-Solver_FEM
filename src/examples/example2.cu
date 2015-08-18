@@ -13,10 +13,13 @@ int main(int argc, char** argv)
 {
   //Verbose option
   bool verbose = false;
+  bool zero_based = false;
   for (int i = 0; i < argc; i++)
     if (strcmp(argv[i],"-v") == 0) {
       verbose = true;
       break;
+    } else if (strcmp(argv[i],"-z") == 0) {
+      zero_based = true;
     }
   //Our main configuration object. We will set aspects where the
   // default values are not what we desire.
@@ -28,7 +31,7 @@ int main(int argc, char** argv)
   std::string filename("example_data/CubeMesh_size256step16_correct");
   TetMesh* tetmeshPtr = TetMesh::read(
       (filename + ".node").c_str(),
-	  (filename + ".ele").c_str());
+	  (filename + ".ele").c_str(), zero_based, verbose);
   //The stiffness matrix A 
   Matrix_ell_h A;
   //get the basic stiffness matrix (constant) by creating the mesh matrix
