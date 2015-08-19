@@ -149,7 +149,7 @@ template<class Matrix>
 void trimesh2csr(TriMesh* meshPtr, Matrix &A);
 
 template<class Matrix>
-void tetmesh2ell(TetMesh* meshPtr, Matrix &A);
+void tetmesh2ell(TetMesh* meshPtr, Matrix &A, bool verbose);
 
 
 

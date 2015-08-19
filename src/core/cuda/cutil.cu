@@ -166,7 +166,7 @@ void __global__ compute_ele_indices_kernel(IndexType* tri0, IndexType* tri1, Ind
 //}
 
 template<>
-void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_d_CG &A_d)
+void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_d_CG &A_d, bool verbose)
 {
   typedef typename Matrix_ell_d_CG::value_type ValueType;
   typedef typename Matrix_ell_d_CG::index_type IndexType;
@@ -192,9 +192,14 @@ void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_d_CG &A_d)
   }
   num_entries += nv;
   maxsize += 1; // should include itself
-
+  if( verbose )
+    std::cout << "Constructing Matrix_ell_h_CG A... ";
   Matrix_ell_h_CG A(nv, nv, num_entries, maxsize, 32);
-//  A.resize(nv, nv, num_entries, maxsize, 32);
+  if( verbose )
+    std::cout << "done." << std::endl;
+  //A.resize(nv, nv, num_entries, maxsize, 32);
+  if( verbose )
+    std::cout << "Adding values to matrix A... ";
   for(int i = 0; i < nv; i++)
   {
     A.column_indices(i, 0) = i;
@@ -211,9 +216,16 @@ void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_d_CG &A_d)
       }
     }
   }
+  if( verbose )
+    std::cout << "done." << std::endl;
 
+
+  if( verbose )
+    std::cout << "Copying A to device... ";
 //  A_d = Matrix_ell_d_CG(A);
   A_d = A;
+  if( verbose )
+    std::cout << "done." << std::endl;
 //	Matrix_ell_d_CG A_tmp = A;
 }
 
