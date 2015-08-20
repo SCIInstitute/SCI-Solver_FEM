@@ -150,17 +150,33 @@ int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h,
   //register configuration properties
   AMG<Matrix_h, Vector_h> amg(cfg);
   //copy to device
+  if( verbose )
+    std::cout << "Copying A_h to device." << std::endl;
   Matrix_d A_d(*A_h);
   //setup device
+  if( verbose )
+    std::cout << "Calling device amg setup." << std::endl;
   amg.setup(A_d, NULL, meshPtr, verbose);
   //print info
-  if (verbose) amg.printGridStatistics();
+  if (verbose)
+  {
+    std::cout << "Calling device amg printGridStatistics." << std::endl;
+    amg.printGridStatistics();
+  }
   //copy to device
+  if( verbose )
+    std::cout << "Copying x_h to device." << std::endl;
   Vector_d_CG x_d(*x_h);
+  if( verbose )
+    std::cout << "Copying b_h to device." << std::endl;
   Vector_d_CG b_d(*b_h);
   //run solver
+  if( verbose )
+    std::cout << "Run amg.solve( )." << std::endl;
   amg.solve(b_d, x_d, verbose);
   //copy back to host
+  if( verbose )
+    std::cout << "Copying x & b back to host." << std::endl;
   *x_h = Vector_h_CG(x_d);
   *b_h = Vector_h_CG(b_d);
   return 0;

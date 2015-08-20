@@ -90,6 +90,8 @@ void AMG<Matrix, Vector>::setup(const Matrix_d &Acsr_d, TriMesh* meshPtr, TetMes
 
    int topsize = cfg.getParameter<int>("top_size");
 
+   if( verbose )
+	   std::cout << "Entering AMG setup loop." << std::endl;
    while(true)
    {
       int N = level->A_d.num_rows;
@@ -127,6 +129,8 @@ void AMG<Matrix, Vector>::setup(const Matrix_d &Acsr_d, TriMesh* meshPtr, TetMes
 
       //increment the level counter
       num_levels++;
+      if( verbose )
+	    std::cout << "Looping with num_levels=" << num_levels << std::endl;
    }
 
 }
