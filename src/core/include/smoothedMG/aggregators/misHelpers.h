@@ -106,7 +106,7 @@ namespace misHelpers {
 
    void getAdjacency(TetMesh * meshPtr, IdxVector_d &adjIndexes, IdxVector_d &adjacency);
 
-   void aggregateGraph(int minSize, int depth, IdxVector_d &adjIndexes, IdxVector_d &adjacency, IdxVector_d &misStencil);
+   void aggregateGraph(int minSize, int depth, IdxVector_d &adjIndexes, IdxVector_d &adjacency, IdxVector_d &misStencil, bool verbose);
 
    void aggregateWeightedGraph(int maxSize, int fullSize, int depth, IdxVector_d &adjIndexes, IdxVector_d &adjacency, IdxVector_d &partIn, IdxVector_d &nodeWeights, bool verbose = false);
 

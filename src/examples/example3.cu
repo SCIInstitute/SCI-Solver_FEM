@@ -42,11 +42,12 @@ int importRhsVectorFromFile(string filename, vector<double>* source,
     std::cerr << "Failed to read matlab file for RSH (b)." << std::endl;
     return -1;
   }
+//  targetVector = static_cast<const vector<double> >(*source);
   targetVector = *source;
   if (verbose) {
-    string msg = "Finished reading RHS (b) data file with ";
-    msg += targetVector.size() + " values.";
-    std::cout << msg << std::endl;
+    int sizeRead = targetVector.size();
+    std::cout << "Finished reading RHS (b) data file with ";
+    std::cout << sizeRead << " values." << std::endl;
   }
   return 0;
 }
@@ -59,12 +60,12 @@ int importStiffnessMatrixFromFile(string filename, Matrix_ell_h* targetMatrix, b
     std::cerr << errMsg << std::endl;
     return -1;
   }
-  if( readMatlabSparseMatrix(filename, targetMatrix) < 0 ) {
+  if( readMatlabSparseMatrix(filename, targetMatrix) != 0 ) {
     std::cerr << "Failed to read matlab file for stiffness matrix (A)." << std::endl;
     return -1;
   }
   if (verbose) {
-    string msg = "Finished reading stiffness matrix data file.";
+    string msg = "Finished reading stiffness matrix.";
     std::cout << msg << std::endl;
   }
   return 0;

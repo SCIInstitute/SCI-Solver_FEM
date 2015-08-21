@@ -510,7 +510,7 @@ void misHelpers::getAdjacency(TetMesh *meshPtr, IdxVector_d &adjIndexes, IdxVect
    adjacency = adjacency_h;
 }
 
-void misHelpers::aggregateGraph(int minSize, int depth, IdxVector_d &adjIndexes, IdxVector_d &adjacency, IdxVector_d &partIn)
+void misHelpers::aggregateGraph(int minSize, int depth, IdxVector_d &adjIndexes, IdxVector_d &adjacency, IdxVector_d &partIn, bool verbose)
 {
    int size = adjIndexes.size() - 1;
 
@@ -523,13 +523,14 @@ void misHelpers::aggregateGraph(int minSize, int depth, IdxVector_d &adjIndexes,
 
    // Prefix sum to number aggregate roots:
    thrust::inclusive_scan(partIn.begin(), partIn.end(), partIn.begin());
-
+   if( verbose )  std::cout << "Finished aggregateGraph inclusive_scan." << std::endl;
    int misCount = partIn.back();
    //  DataRecorder::Add("Fine MIS Count", misCount);
 
    // Transform non root nodes to -1
    thrust::transform(partIn.begin(), partIn.end(), aggregated.begin(), partIn.begin(), ifLabelOne());
    partOut = partIn;
+   if( verbose )  std::cout << "Finished aggregateGraph thrust::transform." << std::endl;
 
    // Preparing to call aggregate kernel:
    int *partIn_d; // Pointer to partIn vector
@@ -549,6 +550,9 @@ void misHelpers::aggregateGraph(int minSize, int depth, IdxVector_d &adjIndexes,
    int blockSize = 256;
    int nBlocks = size / blockSize + (size % blockSize == 0 ? 0 : 1);
 
+   int loopCounter = 0;
+   if( verbose )
+     std::cout << "Starting aggregateGraph loop." << std::endl;
    while(!complete)
    {
       // Allocating nodes
@@ -570,6 +574,28 @@ void misHelpers::aggregateGraph(int minSize, int depth, IdxVector_d &adjIndexes,
             thrust::transform(partIn.begin(), partIn.end(), aggregated.begin(), findAggregated());
             partOut = partIn;
          }
+      }
+
+      if( verbose )
+      {
+        bool doPrint = false;
+        if( loopCounter < 10 ) {
+          doPrint = true;
+        } else if( loopCounter < 50 ) {
+          if( loopCounter % 5 == 0 )
+            doPrint = true;
+        } else if( loopCounter < 250 ) {
+          if( loopCounter % 10 == 0 )
+            doPrint = true;
+        } else {
+          if( loopCounter % 100 == 0 )
+            doPrint = true;
+        }
+
+        if( doPrint )
+          std::cout << "Finished loop " << loopCounter << " in aggregateGraph loop with " << unallocatedNodes << " unallocated nodes." << std::endl;
+
+        loopCounter++;
       }
    }
 }

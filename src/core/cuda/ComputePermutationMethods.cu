@@ -50,10 +50,17 @@ namespace misHelpers {
          IdxVector_d aggregateRemapIndex; // Holds the start index of each aggregate
          IdxVector_d inducedNodeWeights; // Holds the sizes of the fine aggregates
          AggMIS::Types::JTimer timmy;
+         if (verbose)
+            std::cout << "Finished initializing IdxVector_d elements." << std::endl;
 
          partitionLabel = IdxVector_d(numNodesIn, 2); // Holds the partition each vertex is located in
+         if (verbose)
+            std::cout << "Finished with partitionLabel creation." << std::endl;
          timmy.start();
-         misHelpers::aggregateGraph(minAggregateSize, fineDepth, adjIndexesIn, adjacencyIn, fineAggregate);
+
+         misHelpers::aggregateGraph(minAggregateSize, fineDepth, adjIndexesIn, adjacencyIn, fineAggregate, verbose);
+         if (verbose)
+            std::cout << "Finished with aggregateGraph." << std::endl;
          timmy.stop();
          totalAggregationTime += timmy.getElapsedTimeInSec(true);
          if (verbose)
@@ -270,7 +277,7 @@ namespace misHelpers {
          IdxVector_d inducedNodeWeights; // Holds the sizes of the fine aggregates
 
          partitionLabel = IdxVector_d(numNodesIn, 2); // Holds the partition each vertex is located in
-         misHelpers::aggregateGraph(minAggregateSize, fineDepth, adjIndexesIn, adjacencyIn, fineAggregate);
+         misHelpers::aggregateGraph(minAggregateSize, fineDepth, adjIndexesIn, adjacencyIn, fineAggregate, verbose);
 
          // Setting the permutation array to have values equal to element indices
          permutation = IdxVector_d(numNodesIn);

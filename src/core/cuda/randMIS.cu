@@ -545,6 +545,9 @@ void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(IdxVector_d &adjIn
    }
    else if (verbose)
       printf("Aggregation method %d not recognized!\n", AggregatorMethod);
+
+   if (verbose)
+      std::cout << "Finished with RandMIS_Aggregator::computePermutation_d" << std::endl;
 }
 
 template <class Matrix, class Vector>
