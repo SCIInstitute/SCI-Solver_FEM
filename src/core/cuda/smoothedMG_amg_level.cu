@@ -395,21 +395,35 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::createNextLevel(bool verbose)
    IdxVector_h partitionlabelpermuted(this->nn);
    IdxVector_h partitionlabel(this->nn);
 
+   if (verbose)  std::cout << "Initialized IdxVector host & device vars." << std::endl;
+
    //compute permutation
    if(this->level_id == 0)
    {
       if(mesh_type == 0)
       {
+         if (verbose)
+           std::cout << "calling computePermutation_d with tri mesh." << std::endl;
          aggregator->computePermutation_d(this->m_meshPtr, permutation_d, ipermutation_d, aggregateIdx_d, partitionIdx_d, partitionlabel_d, m_xadjout_d, m_adjncyout_d, metis_size, part_max_size, verbose);// DHL
+         if (verbose)
+           std::cout << "computePermutation_d called with tri mesh." << std::endl;
       }
       else
       {
+         if (verbose)
+           std::cout << "calling computePermutation_d with tet mesh." << std::endl;
          aggregator->computePermutation_d(this->m_tetmeshPtr, permutation_d, ipermutation_d, aggregateIdx_d, partitionIdx_d, partitionlabel_d, m_xadjout_d, m_adjncyout_d, metis_size, part_max_size, verbose); // DHL
+         if (verbose)
+           std::cout << "computePermutation_d called with tet mesh." << std::endl;
       }
    }
    else
    {
+         if (verbose)
+           std::cout << "calling computePermutation_d with level_id != 0." << std::endl;
       aggregator->computePermutation_d(m_xadj_d, m_adjncy_d, permutation_d, ipermutation_d, aggregateIdx_d, partitionIdx_d, partitionlabel_d, m_xadjout_d, m_adjncyout_d, metis_size, part_max_size, verbose); // DHL
+         if (verbose)
+           std::cout << "computePermutation_d called with level_id != 0." << std::endl;
    }
 
    if (verbose)

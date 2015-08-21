@@ -90,8 +90,7 @@ void AMG<Matrix, Vector>::setup(const Matrix_d &Acsr_d, TriMesh* meshPtr, TetMes
 
    int topsize = cfg.getParameter<int>("top_size");
 
-   if( verbose )
-	   std::cout << "Entering AMG setup loop." << std::endl;
+   if( verbose )  std::cout << "Entering AMG setup loop." << std::endl;
    while(true)
    {
       int N = level->A_d.num_rows;
@@ -103,26 +102,33 @@ void AMG<Matrix, Vector>::setup(const Matrix_d &Acsr_d, TriMesh* meshPtr, TetMes
          LU = cusp::detail::lu_solver<ValueType, cusp::host_memory > (coarse_dense);
          break;
       }
+      if( verbose )  std::cout << "Finished with lu_solver." << std::endl;
 
       level->next = AMG_Level<Matrix, Vector>::allocate(this);
+      if( verbose )  std::cout << "Finished with AMG_Level_allocate." << std::endl;
       level->createNextLevel(verbose);
+      if( verbose )  std::cout << "Finished with createNextLevel call." << std::endl;
 
       if(level->level_id == 0)
       {
          Ahyb_d_CG = level->A_d;
       }
+      if( verbose )  std::cout << "Copied A_d." << std::endl;
 
       level->setup(); //allocate smoother !! must be after createNextLevel since A_d is used
+      if( verbose )  std::cout << "level->setup." << std::endl;
 
       level->next->level_id = num_levels;
       level->next->nn = level->nnout;
       level->next->m_xadj_d = level->m_xadjout_d;
       level->next->m_adjncy_d = level->m_adjncyout_d;
       int nextN = level->next->A_d.num_rows;
+      if( verbose )  std::cout << "level->next finished" << std::endl;
 
       //resize vectors
       level->xc_d = Vector_d(nextN, -1);
       level->bc_d = Vector_d(nextN, -1);
+      if( verbose )  std::cout << "resize vectors finished" << std::endl;
 
       //advance to the next level
       level = level->next;
