@@ -174,14 +174,15 @@ int main(int argc, char** argv)
   if( importRhsVectorFromFile(bFilename, &test, b_h, verbose) < 0 )
 	  return 0;
 
+  Matrix_ell_h A_h_imported;
   //Import stiffness matrix (A)
-  if( importStiffnessMatrixFromFile(aFilename, &A_h, verbose) < 0 )
+  if( importStiffnessMatrixFromFile(aFilename, &A_h_imported, verbose) < 0 )
 	  return 0;
 
   if( verbose )
     std::cout << "Calling setup_solver." << std::endl;
   //The final call to the solver
-  setup_solver(cfg, tetmeshPtr, &A_h, &x_h, &b_h, verbose);
+  setup_solver(cfg, tetmeshPtr, &A_h_imported, &x_h, &b_h, verbose);
   //At this point, you can do what you need with the matrices.
   if (writeMatlabArray("output.mat", x_h)) {
     std::cerr << "failed to write matlab file." << std::endl;
