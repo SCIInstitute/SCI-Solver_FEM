@@ -25,10 +25,10 @@
  */
 
 
-int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h,
+int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_d* A,
     Vector_h_CG* x_h, Vector_h_CG* b_h, const bool verbose);
 
-int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A,
+int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_d* A,
     Vector_h_CG* x_h, Vector_h_CG* b_h, const bool verbose);
 
 void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A, const bool verbose);
@@ -50,5 +50,7 @@ int readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h *A_h);
 int readMatlabNormalMatrix(const std::string &filename, vector<double> *A_h);
 
 int writeMatlabArray(const std::string &filename, const Vector_h_CG &array);
+
+void checkMatrixForValidContents(Matrix_ell_h* A_h, const bool verbose);
 
 #endif

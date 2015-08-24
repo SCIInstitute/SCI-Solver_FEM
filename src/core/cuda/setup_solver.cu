@@ -90,17 +90,14 @@ void getMatrixFromMesh(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_h, con
   *A_h = Matrix_ell_h(Aell_d);
 }
 
-int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_h,
+int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_d,
     Vector_h_CG* x_h, Vector_h_CG* b_h, const bool verbose) {
-  checkMatrixForValidContents(A_h, verbose);
   //print info
   if( verbose ) cfg.printAMGConfig();
   //register configuration parameters
   AMG<Matrix_h, Vector_h> amg(cfg);
-  //copy to device
-  Matrix_d A_d(*A_h);
   //setup device
-  amg.setup(A_d, meshPtr, NULL,verbose);
+  amg.setup(*A_d, meshPtr, NULL,verbose);
   //print info
   if( verbose ) amg.printGridStatistics();
   //copy to device
@@ -142,21 +139,17 @@ void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h, con
   *A_h = Matrix_ell_h(Aell_d);
 }
 
-int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h,
+int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_d* A_d,
     Vector_h_CG* x_h, Vector_h_CG* b_h, const bool verbose) {
-  checkMatrixForValidContents(A_h, verbose);
   //print info
   if( verbose ) cfg.printAMGConfig();
   //register configuration properties
   AMG<Matrix_h, Vector_h> amg(cfg);
   //copy to device
-  if( verbose )
-    std::cout << "Copying A_h to device." << std::endl;
-  Matrix_d A_d(*A_h);
   //setup device
   if( verbose )
     std::cout << "Calling device amg setup." << std::endl;
-  amg.setup(A_d, NULL, meshPtr, verbose);
+  amg.setup(*A_d, NULL, meshPtr, verbose);
   //print info
   if (verbose)
   {
