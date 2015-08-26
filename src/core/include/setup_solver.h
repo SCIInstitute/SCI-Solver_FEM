@@ -31,8 +31,8 @@ int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_d* A,
 int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_d* A,
     Vector_h_CG* x_h, Vector_h_CG* b_h, const bool verbose);
 
-void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A, const bool verbose);
-void getMatrixFromMesh(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A, const bool verbose);
+void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A, const bool generateStiffnessMatrix, const bool verbose);
+void getMatrixFromMesh(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A, const bool getMatrixFromMesh, const bool verbose);
 
 class SparseEntry_t {
   public:

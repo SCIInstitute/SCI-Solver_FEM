@@ -165,50 +165,35 @@ void __global__ compute_ele_indices_kernel(IndexType* tri0, IndexType* tri1, Ind
 //  int a = meiyongde + 1;
 //}
 
-template<>
-void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_d_CG &A_d, bool verbose)
+template<typename MeshType>
+void populateStiffnessMatrix(MeshType mesh, Matrix_ell_d_CG &stiffnessMatrix, int numVerts, bool verbose)
 {
-  typedef typename Matrix_ell_d_CG::value_type ValueType;
-  typedef typename Matrix_ell_d_CG::index_type IndexType;
-  const int X = Matrix_ell_d_CG::invalid_index;
-
-  int nv = meshPtr->vertices.size();
-  int ne = meshPtr->tets.size();
-
-
-
-  meshPtr->need_neighbors();
-  for(int i = 0; i < nv; i++)
-  {
-    std::sort(meshPtr->neighbors[i].begin(), meshPtr->neighbors[i].end());
-  }
-
   int maxsize = 0;
   int num_entries = 0;
-  for(int i = 0; i < nv; i++)
+  const int X = Matrix_ell_d_CG::invalid_index;
+
+  for(int i = 0; i < numVerts; i++)
   {
-    num_entries += (int)meshPtr->neighbors[i].size();
-    maxsize = std::max(maxsize, (int)meshPtr->neighbors[i].size());
+    num_entries += (int)mesh->neighbors[i].size();
+    maxsize = std::max(maxsize, (int)mesh->neighbors[i].size());
   }
-  num_entries += nv;
+  num_entries += numVerts;
   maxsize += 1; // should include itself
+
   if( verbose )
-    std::cout << "Constructing Matrix_ell_h_CG A... ";
-  Matrix_ell_h_CG A(nv, nv, num_entries, maxsize, 32);
+    std::cout << "Constructing Matrix_ell_h_CG A";
+  Matrix_ell_h_CG A(numVerts, numVerts, num_entries, maxsize, 32);
   if( verbose )
-    std::cout << "done." << std::endl;
-  //A.resize(nv, nv, num_entries, maxsize, 32);
-  if( verbose )
-    std::cout << "Adding values to matrix A... ";
-  for(int i = 0; i < nv; i++)
+    std::cout << "Adding values to matrix A";
+  for(int i = 0; i < numVerts; i++)
   {
     A.column_indices(i, 0) = i;
     for(int j = 1; j < maxsize; j++)
     {
       A.values(i, j) = 0.0;
-      if(j < meshPtr->neighbors[i].size() + 1)
+      if(j < mesh->neighbors[i].size() + 1)
       {
-        A.column_indices(i, j) = meshPtr->neighbors[i][j - 1];
+        A.column_indices(i, j) = mesh->neighbors[i][j - 1];
       }
       else
       {
@@ -217,16 +202,27 @@ void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_d_CG &A_d, bool v
     }
   }
   if( verbose )
-    std::cout << "done." << std::endl;
+    std::cout << "Copying A to device";
+  //A_d = Matrix_ell_d_CG(A);
+  stiffnessMatrix = A;
+}
 
+template<>
+void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_d_CG &A_d,
+		                          bool generateStiffnessMatrix, bool verbose)
+{
+  int nv = meshPtr->vertices.size();
 
-  if( verbose )
-    std::cout << "Copying A to device... ";
-//  A_d = Matrix_ell_d_CG(A);
-  A_d = A;
-  if( verbose )
-    std::cout << "done." << std::endl;
-//	Matrix_ell_d_CG A_tmp = A;
+  meshPtr->need_neighbors();
+  for(int i = 0; i < nv; i++)
+  {
+    std::sort(meshPtr->neighbors[i].begin(), meshPtr->neighbors[i].end());
+  }
+
+  if( generateStiffnessMatrix )
+  {
+    populateStiffnessMatrix<TetMesh*>(meshPtr, A_d, nv, verbose);
+  }
 }
 
 template<>
@@ -295,16 +291,10 @@ void trimesh2csr<Matrix_d_CG>(TriMesh* meshPtr, Matrix_d_CG &A_d)
 }
 
 template<>
-void trimesh2ell<Matrix_ell_d_CG>(TriMesh* meshPtr, Matrix_ell_d_CG &A_d)
+void trimesh2ell<Matrix_ell_d_CG>(TriMesh* meshPtr, Matrix_ell_d_CG &A_d,
+		                          bool generateStiffnessMatrix, bool verbose)
 {
-  typedef typename Matrix_ell_d_CG::value_type ValueType;
-  typedef typename Matrix_ell_d_CG::index_type IndexType;
-  const int X = Matrix_ell_d_CG::invalid_index;
-
   int nv = meshPtr->vertices.size();
-  int ne = meshPtr->faces.size();
-
-
 
   meshPtr->need_neighbors();
   for(int i = 0; i < nv; i++)
@@ -312,39 +302,10 @@ void trimesh2ell<Matrix_ell_d_CG>(TriMesh* meshPtr, Matrix_ell_d_CG &A_d)
     std::sort(meshPtr->neighbors[i].begin(), meshPtr->neighbors[i].end());
   }
 
-  int maxsize = 0;
-  int num_entries = 0;
-  for(int i = 0; i < nv; i++)
+  if( generateStiffnessMatrix )
   {
-    num_entries += (int)meshPtr->neighbors[i].size();
-    maxsize = std::max(maxsize, (int)meshPtr->neighbors[i].size());
+    populateStiffnessMatrix<TriMesh*>(meshPtr, A_d, nv, verbose);
   }
-  num_entries += nv;
-  maxsize += 1; // should include itself
-
-  Matrix_ell_h_CG A;
-  A.resize(nv, nv, num_entries, maxsize, 32);
-  for(int i = 0; i < nv; i++)
-  {
-    A.column_indices(i, 0) = i;
-    for(int j = 1; j < maxsize; j++)
-    {
-      A.values(i, j) = 0.0;
-      if(j < meshPtr->neighbors[i].size() + 1)
-      {
-        A.column_indices(i, j) = meshPtr->neighbors[i][j - 1];
-      }
-      else
-      {
-        A.column_indices(i, j) = X;
-      }
-    }
-  }
-
-  A_d = A;
-
-  A.resize(0, 0, 0, 0);
-//  meshPtr->neighbors.clear();
 }
 
 template<typename IndexType, typename ValueType>

@@ -79,7 +79,7 @@ int main(int argc, char** argv)
   //The stiffness matrix A 
   Matrix_ell_h A_h;
   //get the basic stiffness matrix (constant) by creating the mesh matrix
-  getMatrixFromMesh(cfg, tetmeshPtr, &A_h, verbose);
+  getMatrixFromMesh(cfg, tetmeshPtr, &A_h, true, verbose);
   //intialize the b matrix to ones for now. TODO @DEBUG
   Vector_h_CG b_h(A_h.num_rows, 1.0);
   //The answer vector.

@@ -62,7 +62,9 @@ void checkMatrixForValidContents(Matrix_ell_h* A_h, const bool verbose)
   }
 }
 
-void getMatrixFromMesh(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_h, const bool verbose) {
+void getMatrixFromMesh(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_h,
+		               const bool generateStiffnessMatrix, const bool verbose)
+{
   srand48(0);
   meshPtr->set_verbose(verbose);
   //type is triangle mesh
@@ -79,7 +81,7 @@ void getMatrixFromMesh(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_h, con
   Matrix_ell_d_CG Aell_d;
   Vector_d_CG RHS(meshPtr->vertices.size(), 0.0);
   //generate the unit constant mesh stiffness matrix
-  trimesh2ell<Matrix_ell_d_CG >(meshPtr, Aell_d);
+  trimesh2ell<Matrix_ell_d_CG >(meshPtr, Aell_d, generateStiffnessMatrix, verbose);
   cudaThreadSynchronize();
   //assembly step
   fem2d->initializeWithTriMesh(meshPtr);
@@ -111,7 +113,9 @@ int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_d,
   return 0;
 }
 
-void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h, const bool verbose) {
+void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h,
+		               const bool generateStiffnessMatrix, const bool verbose)
+{
   srand48(0);
   meshPtr->set_verbose(verbose);
   //type is tet mesh
@@ -128,7 +132,7 @@ void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h, con
   Matrix_ell_d_CG Aell_d;
   Vector_d_CG RHS(meshPtr->vertices.size(), 0.0);
   //generate the unit constant mesh stiffness matrix
-  tetmesh2ell<Matrix_ell_d_CG >(meshPtr, Aell_d, verbose);
+  tetmesh2ell<Matrix_ell_d_CG >(meshPtr, Aell_d, generateStiffnessMatrix, verbose);
   cudaThreadSynchronize();
   //assembly step
   fem3d->initializeWithTetMesh(meshPtr);

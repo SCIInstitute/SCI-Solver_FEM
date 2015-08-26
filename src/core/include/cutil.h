@@ -143,13 +143,13 @@ struct cudaCSRGraph
 };
 
 template<class Matrix>
-void trimesh2ell(TriMesh* meshPtr, Matrix &A);
+void trimesh2ell(TriMesh* meshPtr, Matrix &A, bool generateStiffnessMatrix, bool verbose);
 
 template<class Matrix>
 void trimesh2csr(TriMesh* meshPtr, Matrix &A);
 
 template<class Matrix>
-void tetmesh2ell(TetMesh* meshPtr, Matrix &A, bool verbose);
+void tetmesh2ell(TetMesh* meshPtr, Matrix &A, bool generateStiffnessMatrix, bool verbose);
 
 
 
