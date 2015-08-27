@@ -29,21 +29,21 @@ void printMatlabReadContents(vector<double>& test)
     std::cout << "last element = " << test[test.size() - 1] << std::endl;
 }
 
-int importRhsVectorFromFile(string filename, vector<double>* source,
-                            Vector_h_CG& targetVector, bool verbose)
+int importRhsVectorFromFile(string filename, Vector_h_CG& targetVector, bool verbose)
 {
+  vector<double> sourceRead;
+
   if( filename.empty() ) {
     string errMsg = "No matlab file provided for RHS (b) vector.";
     errMsg += " Specify the file using argument at commandline using -b switch.";
     std::cerr << errMsg << std::endl;
     return -1;
   }
-  if( readMatlabNormalMatrix(filename, source) < 0 ) {
+  if( readMatlabNormalMatrix(filename, &sourceRead) < 0 ) {
     std::cerr << "Failed to read matlab file for RSH (b)." << std::endl;
     return -1;
   }
-//  targetVector = static_cast<const vector<double> >(*source);
-  targetVector = *source;
+  targetVector = sourceRead;
   if (verbose) {
     int sizeRead = targetVector.size();
     std::cout << "Finished reading RHS (b) data file with ";
@@ -71,6 +71,19 @@ int importStiffnessMatrixFromFile(string filename, Matrix_ell_h* targetMatrix, b
   return 0;
 }
 
+void debugPrintMatlabels(TetMesh* mesh)
+{
+  std::cout << "Found " << mesh->matlabels.size() << " elements in matlabels." << std::endl;
+  unsigned int numZeros = 0;
+  for (vector<int>::iterator it = mesh->matlabels.begin(); it != mesh->matlabels.end(); ++it)
+  {
+    if( (*it) == 0 )
+      numZeros++;
+    else
+      std::cout << (*it) << std::endl;
+  }
+  std::cout << numZeros << " zero values found." << std::endl;
+}
 
 
 int main(int argc, char** argv)
@@ -164,21 +177,26 @@ int main(int argc, char** argv)
 //    identity.values(i, 0) = 1;
 //  }
   //multiply the mesh matrix by the stiffness properties matrix.
-  vector<double> test;
 //  Matrix_ell_h out, A_fromFile;
 //  Matrix_ell_h my_A(A_h);
 //  cusp::multiply(identity, my_A, out);
 //  A_h = Matrix_ell_h(out);
 
+std::cout << "Contents of mesh pointer matlabels:" << std::endl;
+debugPrintMatlabels(tetmeshPtr);
+
   //Import right-hand-side single-column array (b)
   Vector_h_CG b_h;
-  if( importRhsVectorFromFile(bFilename, &test, b_h, verbose) < 0 )
+  if( importRhsVectorFromFile(bFilename, b_h, verbose) < 0 )
 	  return 0;
 
   Matrix_ell_h A_h_imported;
   //Import stiffness matrix (A)
   if( importStiffnessMatrixFromFile(aFilename, &A_h_imported, verbose) < 0 )
 	  return 0;
+
+std::cout << "Contents of mesh pointer matlabels:" << std::endl;
+debugPrintMatlabels(tetmeshPtr);
 
   Vector_h_CG x_h(A_h_imported.num_rows, 0.0); //intial X vector
   getMatrixFromMesh(cfg, tetmeshPtr, &A_h_imported, false, verbose);
@@ -188,6 +206,7 @@ int main(int argc, char** argv)
   //The final call to the solver
   checkMatrixForValidContents(&A_h_imported, verbose);
   Matrix_ell_d A_d(A_h_imported);
+
   setup_solver(cfg, tetmeshPtr, &A_d, &x_h, &b_h, verbose);
   //At this point, you can do what you need with the matrices.
   if (writeMatlabArray("output.mat", x_h)) {
