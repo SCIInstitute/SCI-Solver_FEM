@@ -140,9 +140,9 @@ int main(int argc, char** argv)
   //set the post inner iterations for GSINNER
   cfg.setParameter("PostINNER_iters", 3);
   //set the Aggregator METIS (0) or MIS (1)
-  cfg.setParameter("aggregator_type", 1);
+  cfg.setParameter("aggregator_type", 0);
   //set the Max size of coarsest level
-  cfg.setParameter("metis_size", 90102);
+  cfg.setParameter("metis_size", 524287);
   //set the solving algorithm
   cfg.setParameter("solver", /*(SolverType::)*/PCG_SOLVER);
   //set the cycle algorithm
@@ -182,9 +182,6 @@ int main(int argc, char** argv)
 //  cusp::multiply(identity, my_A, out);
 //  A_h = Matrix_ell_h(out);
 
-std::cout << "Contents of mesh pointer matlabels:" << std::endl;
-debugPrintMatlabels(tetmeshPtr);
-
   //Import right-hand-side single-column array (b)
   Vector_h_CG b_h;
   if( importRhsVectorFromFile(bFilename, b_h, verbose) < 0 )
@@ -194,9 +191,6 @@ debugPrintMatlabels(tetmeshPtr);
   //Import stiffness matrix (A)
   if( importStiffnessMatrixFromFile(aFilename, &A_h_imported, verbose) < 0 )
 	  return 0;
-
-std::cout << "Contents of mesh pointer matlabels:" << std::endl;
-debugPrintMatlabels(tetmeshPtr);
 
   Vector_h_CG x_h(A_h_imported.num_rows, 0.0); //intial X vector
   getMatrixFromMesh(cfg, tetmeshPtr, &A_h_imported, false, verbose);
