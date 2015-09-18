@@ -181,10 +181,10 @@ void populateStiffnessMatrix(MeshType mesh, Matrix_ell_d_CG &stiffnessMatrix, in
   maxsize += 1; // should include itself
 
   if( verbose )
-    std::cout << "Constructing Matrix_ell_h_CG A";
+    std::cout << "Constructing Matrix_ell_h_CG A" << std::endl;
   Matrix_ell_h_CG A(numVerts, numVerts, num_entries, maxsize, 32);
   if( verbose )
-    std::cout << "Adding values to matrix A";
+    std::cout << "Adding values to matrix A" << std::endl;
   for(int i = 0; i < numVerts; i++)
   {
     A.column_indices(i, 0) = i;
@@ -202,7 +202,7 @@ void populateStiffnessMatrix(MeshType mesh, Matrix_ell_d_CG &stiffnessMatrix, in
     }
   }
   if( verbose )
-    std::cout << "Copying A to device";
+    std::cout << "Copying A to device" << std::endl;
   //A_d = Matrix_ell_d_CG(A);
   stiffnessMatrix = A;
 }

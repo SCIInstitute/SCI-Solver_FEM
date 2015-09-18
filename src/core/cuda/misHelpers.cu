@@ -613,13 +613,14 @@ void misHelpers::aggregateWeightedGraph(int maxSize, int fullSize, int depth, Id
 
    // Prefix sum to number aggregate roots:
    thrust::inclusive_scan(partIn.begin(), partIn.end(), partIn.begin());
-
+   if( verbose )  std::cout << "Finished inclusive_scan." << std::endl;
    int misCount = partIn.back();
    //  DataRecorder::Add("Coarse MIS Count", misCount);
 
    // Transform non root nodes to -1
    thrust::transform(partIn.begin(), partIn.end(), aggregated.begin(), partIn.begin(), ifLabelOne());
    partOut = partIn;
+   if( verbose )  std::cout << "Finished thrust::transform." << std::endl;
 
    // Preparing to call aggregate kernel:
    int *partIn_d; // Pointer to partIn vector

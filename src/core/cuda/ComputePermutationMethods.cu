@@ -76,15 +76,23 @@ namespace misHelpers {
          // Sorting arrays together:
          fineAggregateSort = fineAggregate;
          thrust::sort_by_key(fineAggregateSort.begin(), fineAggregateSort.end(), permutation.begin());
+         if (verbose)
+            std::cout << "Finished with fineAggregateSort." << std::endl;
 
          // Building the permutation array:
          misHelpers::getInversePermutation(permutation, ipermutation);
+         if (verbose)
+            std::cout << "Got permutation array." << std::endl;
 
          // Getting the aggregate indices and node weights for the induced graph
          misHelpers::getPartSizes(fineAggregateSort, inducedNodeWeights, aggregateIdx);
+         if (verbose)
+            std::cout << "Got partition sizes." << std::endl;
 
          // Getting the induced graph:
          misHelpers::getInducedGraph(adjIndexesIn, adjacencyIn, fineAggregate, adjIndexesOut, adjacencyOut);
+         if (verbose)
+            std::cout << "Got induced graph." << std::endl;
 
          // Doing the coarse aggregation:
          int maxSize = part_max_size;
@@ -95,6 +103,8 @@ namespace misHelpers {
          timmy.start();
          misHelpers::aggregateWeightedGraph(maxSize, fullSize, coarseDepth, adjIndexesOut, adjacencyOut, coarseAggregate, inducedNodeWeights, verbose);
          timmy.stop();
+         if (verbose)
+            std::cout << "Finished aggregateWeightedGraph." << std::endl;
 
          Help::RecordAllStats(adjIndexesOut,
                adjacencyOut,
@@ -104,12 +114,18 @@ namespace misHelpers {
 
          // Performing new version of getting induced graph
          misHelpers::remapInducedGraph(adjIndexesOut, adjacencyOut, coarseAggregate);
+         if (verbose)
+            std::cout << "Finished remapInducedGraph." << std::endl;
 
          // Filling in the partitionLabel:
          misHelpers::fillPartitionLabel(coarseAggregate, fineAggregateSort, partitionLabel);
+         if (verbose)
+            std::cout << "Finished fillPartitionLabel." << std::endl;
 
          // Do a stable sort by key with the partitionLabel as the key:
          thrust::stable_sort_by_key(partitionLabel.begin(), partitionLabel.end(), thrust::make_zip_iterator(thrust::make_tuple(fineAggregateSort.begin(), permutation.begin())));
+         if (verbose)
+            std::cout << "Finished thrust::stable_sort_by_key." << std::endl;
 
          // Remapping the aggregate id's:
          aggregateRemapId = IdxVector_d(aggregateIdx.size() - 1, 0);
