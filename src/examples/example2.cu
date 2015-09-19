@@ -55,7 +55,7 @@ int main(int argc, char** argv)
   //The final call to the solver
   checkMatrixForValidContents(&A, verbose);
   Matrix_ell_d A_d(A);
-  setup_solver(cfg, tetmeshPtr, &A_d, &x_h, &b_h, verbose);
+  setup_solver(cfg, tetmeshPtr, NULL, &A_d, &x_h, &b_h, verbose);
   //At this point, you can do what you need with the matrices.
   writeMatlabArray("output.mat",x_h);
   return 0;

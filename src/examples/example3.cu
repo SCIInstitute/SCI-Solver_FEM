@@ -140,7 +140,7 @@ int main(int argc, char** argv)
   //set the post inner iterations for GSINNER
   cfg.setParameter("PostINNER_iters", 3);
   //set the Aggregator METIS (0) or MIS (1)
-  cfg.setParameter("aggregator_type", 0);
+  cfg.setParameter("aggregator_type", 1);
   //set the Max size of coarsest level
   cfg.setParameter("metis_size", 524287);
   //set the solving algorithm
@@ -193,15 +193,17 @@ int main(int argc, char** argv)
 	  return 0;
 
   Vector_h_CG x_h(A_h_imported.num_rows, 0.0); //intial X vector
-  getMatrixFromMesh(cfg, tetmeshPtr, &A_h_imported, false, verbose);
+
+  Matrix_ell_h A0;
+  getMatrixFromMesh(cfg, tetmeshPtr, &A0, true, verbose);
+
+  checkMatrixForValidContents(&A_h_imported, verbose);
+  Matrix_ell_d A_d(A0);
 
   if( verbose )
     std::cout << "Calling setup_solver." << std::endl;
   //The final call to the solver
-  checkMatrixForValidContents(&A_h_imported, verbose);
-  Matrix_ell_d A_d(A_h_imported);
-
-  setup_solver(cfg, tetmeshPtr, &A_d, &x_h, &b_h, verbose);
+  setup_solver(cfg, tetmeshPtr, &A_h_imported, &A_d, &x_h, &b_h, verbose);
   //At this point, you can do what you need with the matrices.
   if (writeMatlabArray("output.mat", x_h)) {
     std::cerr << "failed to write matlab file." << std::endl;

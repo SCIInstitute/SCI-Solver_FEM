@@ -92,14 +92,14 @@ void getMatrixFromMesh(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_h,
   *A_h = Matrix_ell_h(Aell_d);
 }
 
-int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_d,
+int setup_solver(AMG_Config& cfg, TriMesh* meshPtr, Matrix_ell_h* A_h_imported, Matrix_ell_h* A_d,
     Vector_h_CG* x_h, Vector_h_CG* b_h, const bool verbose) {
   //print info
   if( verbose ) cfg.printAMGConfig();
   //register configuration parameters
   AMG<Matrix_h, Vector_h> amg(cfg);
   //setup device
-  amg.setup(*A_d, meshPtr, NULL,verbose);
+  amg.setup(*A_h_imported, *A_d, meshPtr, NULL,verbose);
   //print info
   if( verbose ) amg.printGridStatistics();
   //copy to device
@@ -148,7 +148,7 @@ void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h,
   *A_h = Matrix_ell_h(Aell_d);
 }
 
-int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_d* A_d,
+int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h_imported, Matrix_ell_d* A_d,
     Vector_h_CG* x_h, Vector_h_CG* b_h, const bool verbose) {
   //print info
   if( verbose ) cfg.printAMGConfig();
@@ -158,7 +158,7 @@ int setup_solver(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_d* A_d,
   //setup device
   if( verbose )
     std::cout << "Calling device amg setup." << std::endl;
-  amg.setup(*A_d, NULL, meshPtr, verbose);
+  amg.setup(*A_h_imported, *A_d, NULL, meshPtr, verbose);
   //print info
   if (verbose)
   {

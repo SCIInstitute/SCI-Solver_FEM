@@ -60,7 +60,7 @@ class AMG
   void solve(const Vector_d_CG &b, Vector_d_CG &x, bool verbose = false);
   void solve_iteration(const Vector_d_CG &b, Vector_d_CG &x, bool verbose = false);
 
-  void setup(const Matrix_d &Acsr_d, TriMesh* meshPtr, TetMesh* tetmeshPtr, bool verbose = false);
+  void setup(const Matrix_h &Acsr_import_h, const Matrix_d &Acsr_d, TriMesh* meshPtr, TetMesh* tetmeshPtr, bool verbose = false);
 
   void printGridStatistics();
 

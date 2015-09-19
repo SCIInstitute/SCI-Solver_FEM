@@ -64,7 +64,7 @@ bool AMG<Matrix, Vector>::converged(const Vector &r, ValueType &nrm)
  * Creates the AMG hierarchy
  *********************************************************/
 template <class Matrix, class Vector>
-void AMG<Matrix, Vector>::setup(const Matrix_d &Acsr_d, TriMesh* meshPtr, TetMesh* tetmeshPtr, bool verbose)
+void AMG<Matrix, Vector>::setup(const Matrix_h &Acsr_import_h, const Matrix_d &Acsr_d, TriMesh* meshPtr, TetMesh* tetmeshPtr, bool verbose)
 {
 
    int min_rows = cfg.getParameter<int>("min_rows");
@@ -97,7 +97,7 @@ void AMG<Matrix, Vector>::setup(const Matrix_d &Acsr_d, TriMesh* meshPtr, TetMes
       if(N < topsize || num_levels >= max_levels)
       {
          coarsestlevel = num_levels - 1;
-         Matrix_h Atmp = level->A_d;
+         Matrix_h Atmp = Acsr_import_h; //level->A_d;
          cusp::array2d<ValueType, cusp::host_memory> coarse_dense(Atmp);
          LU = cusp::detail::lu_solver<ValueType, cusp::host_memory > (coarse_dense);
          break;
