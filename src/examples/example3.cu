@@ -140,9 +140,9 @@ int main(int argc, char** argv)
   //set the post inner iterations for GSINNER
   cfg.setParameter("PostINNER_iters", 3);
   //set the Aggregator METIS (0) or MIS (1)
-  cfg.setParameter("aggregator_type", 0);
+  cfg.setParameter("aggregator_type", 1);
   //set the Max size of coarsest level
-  cfg.setParameter("metis_size", 524287);
+  cfg.setParameter("metis_size", 90102);
   //set the solving algorithm
   cfg.setParameter("solver", /*(SolverType::)*/PCG_SOLVER);
   //set the cycle algorithm
@@ -163,36 +163,38 @@ int main(int argc, char** argv)
       (filename + ".node").c_str(),
       (filename + ".ele").c_str(), zero_based, verbose);
 
-  //Import right-hand-side single-column array (b)
+  //The stiffness matrix A 
+  Matrix_ell_h A_h;
+  //Import stiffness matrix (A)
+  if( importStiffnessMatrixFromFile(aFilename, &A_h, verbose) < 0 )
+	  return 0;
+
+  getMatrixFromMesh(cfg, tetmeshPtr, &A_h, false, verbose);
   Vector_h_CG b_h;
+  //Import right-hand-side single-column array (b)
+
   if( importRhsVectorFromFile(bFilename, b_h, verbose) < 0 )
 	  return 0;
 
-  Matrix_ell_h A_h_imported;
-  //Import stiffness matrix (A)
-  if( importStiffnessMatrixFromFile(aFilename, &A_h_imported, verbose) < 0 )
-	  return 0;
+  //The answer vector.
+  Vector_h_CG x_h(A_h.num_rows, 0.0); //intial X vector
 
-  Vector_h_CG x_h(A_h_imported.num_rows, 0.0); //intial X vector
-  getMatrixFromMesh(cfg, tetmeshPtr, &A_h_imported, false, verbose);
-
-  Matrix_ell_h identity(A_h_imported.num_rows, A_h_imported.num_rows,
-		                A_h_imported.num_rows, 1);
-  for (int i = 0; i < A_h_imported.num_rows; i++) {
+  Matrix_ell_h identity(A_h.num_rows, A_h.num_rows, A_h.num_rows, 1);
+  for (int i = 0; i < A_h.num_rows; i++) {
 	  identity.column_indices(i, 0) = i;
 	  identity.values(i, 0) = 1;
   }
   //multiply the mesh matrix by the stiffness properties matrix.
   Matrix_ell_h out;
-  Matrix_ell_h my_A(A_h_imported);
+  Matrix_ell_h my_A(A_h);
   cusp::multiply(identity, my_A, out);
-  A_h_imported = Matrix_ell_h(out);
+  A_h = Matrix_ell_h(out);
 
   if( verbose )
     std::cout << "Calling setup_solver." << std::endl;
   //The final call to the solver
-  checkMatrixForValidContents(&A_h_imported, verbose);
-  Matrix_ell_d A_d(A_h_imported);
+  checkMatrixForValidContents(&A_h, verbose);
+  Matrix_ell_d A_d(A_h);
 
   setup_solver(cfg, tetmeshPtr, &A_d, &x_h, &b_h, verbose);
   //At this point, you can do what you need with the matrices.
