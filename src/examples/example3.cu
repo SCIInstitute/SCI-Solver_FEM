@@ -165,29 +165,25 @@ int main(int argc, char** argv)
 
   //The stiffness matrix A 
   Matrix_ell_h A_h;
-  //Import stiffness matrix (A)
-  if( importStiffnessMatrixFromFile(aFilename, &A_h, verbose) < 0 )
-	  return 0;
+  //get the basic stiffness matrix (constant) by creating the mesh matrix
+  getMatrixFromMesh(cfg, tetmeshPtr, &A_h, true, verbose);
 
-  getMatrixFromMesh(cfg, tetmeshPtr, &A_h, false, verbose);
-  Vector_h_CG b_h;
   //Import right-hand-side single-column array (b)
-
+  Vector_h_CG b_h;
   if( importRhsVectorFromFile(bFilename, b_h, verbose) < 0 )
-	  return 0;
+    return 0;
 
   //The answer vector.
   Vector_h_CG x_h(A_h.num_rows, 0.0); //intial X vector
 
-  Matrix_ell_h identity(A_h.num_rows, A_h.num_rows, A_h.num_rows, 1);
-  for (int i = 0; i < A_h.num_rows; i++) {
-	  identity.column_indices(i, 0) = i;
-	  identity.values(i, 0) = 1;
-  }
+  //Import stiffness matrix (A)
+  Matrix_ell_h A_h_import;
+  if( importStiffnessMatrixFromFile(aFilename, &A_h_import, verbose) < 0 )
+    return 0;
+
   //multiply the mesh matrix by the stiffness properties matrix.
   Matrix_ell_h out;
-  Matrix_ell_h my_A(A_h);
-  cusp::multiply(identity, my_A, out);
+  cusp::multiply(A_h_import, A_h, out);
   A_h = Matrix_ell_h(out);
 
   if( verbose )
