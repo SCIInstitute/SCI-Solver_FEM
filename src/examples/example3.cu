@@ -71,7 +71,7 @@ int importStiffnessMatrixFromFile(string filename, Matrix_ell_h* targetMatrix, b
   return 0;
 }
 
-void debugPrintMatlabels(TetMesh* mesh)
+void debugPrintMatlabels(TriMesh* mesh)
 {
   std::cout << "Found " << mesh->matlabels.size() << " elements in matlabels." << std::endl;
   unsigned int numZeros = 0;
@@ -154,19 +154,19 @@ int main(int argc, char** argv)
   //Now we read in the mesh of choice
   //TriMesh* meshPtr = TriMesh::read("mesh.ply"); //-----if we were reading a Triangle mesh
 
-  //read in the Tetmesh
+  //read in the Trimesh
   if (filename.empty())
     filename = std::string("../example_data/CubeMesh_size256step16");
   if (verbose)
     std::cout << "Reading in file: " << filename << std::endl;
-  TetMesh* tetmeshPtr = TetMesh::read(
+  TriMesh* trimeshPtr = TriMesh::read(
       (filename + ".node").c_str(),
       (filename + ".ele").c_str(), zero_based, verbose);
 
   //The stiffness matrix A 
   Matrix_ell_h A_h;
   //get the basic stiffness matrix (constant) by creating the mesh matrix
-  getMatrixFromMesh(cfg, tetmeshPtr, &A_h, true, verbose);
+  getMatrixFromMesh(cfg, trimeshPtr, &A_h, true, verbose);
 
   //Import right-hand-side single-column array (b)
   Vector_h_CG b_h;
@@ -202,7 +202,7 @@ int main(int argc, char** argv)
   checkMatrixForValidContents(&A_h, verbose);
   Matrix_ell_d A_d(A_h);
 
-  setup_solver(cfg, tetmeshPtr, &A_d, &x_h, &b_h, verbose);
+  setup_solver(cfg, trimeshPtr, &A_d, &x_h, &b_h, verbose);
   //At this point, you can do what you need with the matrices.
   if (writeMatlabArray("output.mat", x_h)) {
     std::cerr << "failed to write matlab file." << std::endl;
