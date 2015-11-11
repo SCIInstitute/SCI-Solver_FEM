@@ -53,4 +53,7 @@ int writeMatlabArray(const std::string &filename, const Vector_h_CG &array);
 
 void checkMatrixForValidContents(Matrix_ell_h* A_h, const bool verbose);
 
+
+void writeVTK(TetMesh* m_meshPtr, std::vector <float> values, std::string fname);
+
 #endif

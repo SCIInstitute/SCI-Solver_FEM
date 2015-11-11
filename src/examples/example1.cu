@@ -82,6 +82,8 @@ int main(int argc, char** argv)
   getMatrixFromMesh(cfg, tetmeshPtr, &A_h, verbose);
   //intialize the b matrix to ones for now. TODO @DEBUG
   Vector_h_CG b_h(A_h.num_rows, 1.0);
+  for (size_t i = 0; i < b_h.size() / 2; i++)
+    b_h[i] = 0.;
   //The answer vector.
   Vector_h_CG x_h(A_h.num_rows, 0.0); //intial X vector
   //************************ DEBUG : creating identity matrix for stiffness properties for now.
@@ -108,5 +110,15 @@ int main(int argc, char** argv)
   if (writeMatlabArray("output.mat", x_h)) {
 	  std::cerr << "failed to write matlab file." << std::endl;
   }
+  //write the VTK
+  std::vector<float> vals;
+  for (size_t i = 0; i < x_h.size(); i++){
+    vals.push_back(x_h[i]);
+  }
+  auto pos = filename.find_last_of("/");
+  if (pos == std::string::npos)
+    pos = filename.find_last_of("\\");
+  filename = filename.substr(pos + 1, filename.size() - 1);
+  writeVTK(tetmeshPtr, vals, filename);
   return 0;
 }

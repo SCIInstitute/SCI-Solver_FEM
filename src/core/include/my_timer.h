@@ -26,6 +26,7 @@ int inline clock_gettime(int clk_id, struct timespec *t){
 double inline CLOCK() {
 #ifdef WIN32
 #include <windows.h>
+#include <stdio.h>
 	SYSTEMTIME st;
 	GetSystemTime(&st);
 	return ((st.wDay * 24. + st.wHour) * 60. + st.wMinute) * 60. + st.wSecond + st.wMilliseconds / 1000.;

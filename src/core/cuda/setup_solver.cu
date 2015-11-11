@@ -512,3 +512,36 @@ int writeMatlabArray(const std::string &filename, const Vector_h_CG &array) {
 	return 0;
 
 }
+
+void writeVTK(TetMesh* m_meshPtr, std::vector <float> values, std::string fname)
+{
+  int nv = m_meshPtr->vertices.size();
+  int nt = m_meshPtr->tets.size();
+    FILE* vtkfile;
+    vtkfile = fopen((fname + ".vtk").c_str(), "w+");
+    fprintf(vtkfile, "# vtk DataFile Version 3.0\nvtk output\nASCII\nDATASET UNSTRUCTURED_GRID\n");
+    fprintf(vtkfile, "POINTS %d float\n", nv);
+    for (int i = 0; i < nv; i++)
+    {
+      fprintf(vtkfile, "%.12f %.12f %.12f\n", m_meshPtr->vertices[i][0],
+        m_meshPtr->vertices[i][1], m_meshPtr->vertices[i][2]);
+    }
+    fprintf(vtkfile, "CELLS %d %d\n", nt, nt * 5);
+    for (int i = 0; i < nt; i++)
+    {
+      fprintf(vtkfile, "4 %d %d %d %d\n", m_meshPtr->tets[i][0],
+        m_meshPtr->tets[i][1], m_meshPtr->tets[i][2], m_meshPtr->tets[i][3]);
+    }
+
+    fprintf(vtkfile, "CELL_TYPES %d\n", nt);
+    for (int i = 0; i < nt; i++)
+    {
+      fprintf(vtkfile, "10\n");
+    }
+    fprintf(vtkfile, "POINT_DATA %d\nSCALARS traveltime float 1\nLOOKUP_TABLE default\n",
+      nv, values.size());
+    for (int i = 0; i < values.size(); i++) {
+      fprintf(vtkfile, "%.12f\n ", values[i]);
+    }
+    fclose(vtkfile);
+}
