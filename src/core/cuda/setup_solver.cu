@@ -130,14 +130,16 @@ void getMatrixFromMesh(AMG_Config& cfg, TetMesh* meshPtr, Matrix_ell_h* A_h,
   meshPtr->rescale(1.0);
   // create the initial A and b
   Matrix_ell_d_CG Aell_d;
-  if( ! generateStiffnessMatrix )
-  {
-    Aell_d = Matrix_ell_d_CG(*A_h);
-  }
+
   Vector_d_CG RHS(meshPtr->vertices.size(), 0.0);
 
   //generate the unit constant mesh stiffness matrix
   tetmesh2ell<Matrix_ell_d_CG >(meshPtr, Aell_d, generateStiffnessMatrix, verbose);
+  cudaThreadSynchronize();
+  if( ! generateStiffnessMatrix )
+  {
+    Aell_d = Matrix_ell_d_CG(*A_h);
+  }
   cudaThreadSynchronize();
   //assembly step
   fem3d->initializeWithTetMesh(meshPtr);
