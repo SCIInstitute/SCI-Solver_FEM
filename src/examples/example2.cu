@@ -55,7 +55,7 @@ int main(int argc, char** argv)
   for (size_t i = 0; i < x_h.size(); i++){
     vals.push_back(x_h[i]);
   }
-  auto pos = cfg.filename_.find_last_of("/");
+  int pos = cfg.filename_.find_last_of("/");
   if (pos == std::string::npos)
     pos = cfg.filename_.find_last_of("\\");
   cfg.filename_ = cfg.filename_.substr(pos + 1,
