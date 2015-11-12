@@ -176,10 +176,20 @@ int main(int argc, char** argv)
   //The answer vector.
   Vector_h_CG x_h(A_h.num_rows, 0.0); //intial X vector
 
+#define USE_IDENTITY_MATRIX_ONLY
+
+#ifndef USE_IDENTITY_MATRIX_ONLY
   //Import stiffness matrix (A)
   Matrix_ell_h A_h_import;
   if( importStiffnessMatrixFromFile(aFilename, &A_h_import, verbose) < 0 )
     return 0;
+#else //USE_IDENTITY_MATRIX_ONLY
+  Matrix_ell_h A_h_import(A_h.num_rows, A_h.num_rows, A_h.num_rows, 1.0);
+  for (int i = 0; i < A_h.num_rows; i++) {
+    A_h_import.column_indices(i, 0) = i;
+    A_h_import.values(i, 0) = 1;
+  }
+#endif //#ifdef USE_IDENTITY_MATRIX_ONLY
 
   //multiply the mesh matrix by the stiffness properties matrix.
   Matrix_ell_h out;
