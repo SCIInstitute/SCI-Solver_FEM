@@ -13,17 +13,20 @@ int main(int argc, char** argv)
 {
   //Verbose option
   FEMSolver cfg;
+  cfg.filename_ = "example_data/sphere_266verts.ply";
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i], "-v") == 0) {
       cfg.verbose_ = true;
-      break;
+    } else if (strcmp(argv[i], "-i") == 0) {
+      if (i + 1 >= argc) break;
+      cfg.filename_ = std::string(argv[i + 1]);
+      i++;
     }
   }
   //Our main configuration object. We will set aspects where the
   // default values are not what we desire.
   //Now we read in the mesh of choice
   //read in the Tetmesh
-  cfg.filename_ = "example_data/sphere_266verts.ply";
   cfg.triMesh_ = TriMesh::read(cfg.filename_.c_str());
   //The stiffness matrix A 
   Matrix_ell_h A;
@@ -60,6 +63,8 @@ int main(int argc, char** argv)
     pos = cfg.filename_.find_last_of("\\");
   cfg.filename_ = cfg.filename_.substr(pos + 1,
     cfg.filename_.size() - 1);
+  pos = cfg.filename_.find_last_of(".");
+  cfg.filename_ = cfg.filename_.substr(0, pos);
   cfg.writeVTK(vals, cfg.filename_);
   return 0;
 }

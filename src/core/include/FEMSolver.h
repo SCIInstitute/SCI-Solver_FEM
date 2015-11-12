@@ -46,8 +46,8 @@ public:
 public:
   void solveFEM(Matrix_ell_h* A_d, Vector_h_CG* x_h, Vector_h_CG* b_h);
   void getMatrixFromMesh(Matrix_ell_h* A_h);
-  int readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h *A_h);
-  int readMatlabNormalMatrix(const std::string &filename, vector<double> *A_h);
+  static int readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h *A_h);
+  static int readMatlabNormalMatrix(const std::string &filename, vector<double> *A_h);
   int writeMatlabArray(const std::string &filename, const Vector_h_CG &array);
   void checkMatrixForValidContents(Matrix_ell_h* A_h);
   void writeVTK(std::vector <float> values, std::string fname);

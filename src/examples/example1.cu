@@ -20,6 +20,7 @@ int main(int argc, char** argv)
   // default values are not what we desire.
   FEMSolver cfg;
   bool zero_based = false;
+  cfg.filename_ = std::string("../example_data/CubeMesh_size256step16");
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i], "-v") == 0) {
       cfg.verbose_ = true;
@@ -67,8 +68,6 @@ int main(int argc, char** argv)
   //Now we read in the mesh of choice
   //TriMesh* meshPtr = TriMesh::read("mesh.ply"); //-----if we were reading a Triangle mesh
   //read in the Tetmesh
-  if (cfg.filename_.empty())
-    cfg.filename_ = std::string("../example_data/CubeMesh_size256step16");
   cfg.tetMesh_ = TetMesh::read(
     (cfg.filename_ + ".node").c_str(),
     (cfg.filename_ + ".ele").c_str(), zero_based, cfg.verbose_);
@@ -92,7 +91,7 @@ int main(int argc, char** argv)
   cusp::multiply(identity, my_A, out);
   A_h = Matrix_ell_h(out);
 
-  if(cfg.readMatlabSparseMatrix("mysparse.mat",&test)) {
+  if(FEMSolver::readMatlabSparseMatrix("mysparse.mat",&test)) {
     std::cerr << "failed to read matlab file." << std::endl;
   }
   //************************ DEBUG*/

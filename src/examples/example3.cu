@@ -12,7 +12,7 @@
  *  4. We declare all the variables we need for the solver (matrices).
  *  5. We invoke the "setup_solver" call, which does all of the work.
  */
-/*
+
 void printElementWithHeader(vector<double>& test, unsigned int index)
 {
   std::cout << "element #" << index << " = " << test[index] << std::endl;
@@ -38,7 +38,7 @@ int importRhsVectorFromFile(string filename, vector<double>* source,
     std::cerr << errMsg << std::endl;
     return -1;
   }
-  if( readMatlabNormalMatrix(filename, source) < 0 ) {
+  if (FEMSolver::readMatlabNormalMatrix(filename, source) < 0) {
     std::cerr << "Failed to read matlab file for RSH (b)." << std::endl;
     return -1;
   }
@@ -60,7 +60,7 @@ int importStiffnessMatrixFromFile(string filename, Matrix_ell_h* targetMatrix, b
     std::cerr << errMsg << std::endl;
     return -1;
   }
-  if( readMatlabSparseMatrix(filename, targetMatrix) != 0 ) {
+  if (FEMSolver::readMatlabSparseMatrix(filename, targetMatrix) != 0) {
     std::cerr << "Failed to read matlab file for stiffness matrix (A)." << std::endl;
     return -1;
   }
@@ -70,12 +70,12 @@ int importStiffnessMatrixFromFile(string filename, Matrix_ell_h* targetMatrix, b
   }
   return 0;
 }
-*/
+
 
 
 int main(int argc, char** argv)
 {
-/*
+
   //Verbose option
   bool verbose = false;
   bool zero_based = false;
@@ -106,39 +106,38 @@ int main(int argc, char** argv)
   // default values are not what we desire.
   FEMSolver cfg;
   //assuming our device is zero...
-  int dev_num = 0;
-  cfg.setParameter("cuda_device_num", dev_num);
+  cfg.device_ = 0;
   // Make sure part_max_size is representative of harware limits by default
   // when compiling the library, up to 64 registers were seen to be used on the
   // device. We can set our max allocation based on that number
   int max_registers_used = 64;
-  cfg.setParameter("part_max_size", getMaxThreads(max_registers_used,dev_num));
+  cfg.partitionMaxSize_ = getMaxThreads(max_registers_used, cfg.device_);
   //set the desired algorithm
-  cfg.setParameter("algorithm", CLASSICAL);
+  cfg.algoType_ = /*(AlgorithmType::)*/CLASSICAL;
   //set the convergence tolerance
-  cfg.setParameter("tolerance", 1e-8);
+  cfg.tolerance_ = 1e-8;
   //set the weight parameter used in a smoother
-  cfg.setParameter("smoother_weight", 0.7);
+  cfg.smootherWeight_ = 0.7;
   //set the weight parameter used in a prolongator smoother
-  cfg.setParameter("pro_omega", 0.7);
+  cfg.proOmega_ = 0.7;
   //set the maximum solve iterations
-  cfg.setParameter("max_iters", 10);
+  cfg.maxIters_ = 10;
   //set the pre inner iterations for GSINNER
-  cfg.setParameter("PreINNER_iters", 2);
+  cfg.preInnerIters_ = 2;
   //set the post inner iterations for GSINNER
-  cfg.setParameter("PostINNER_iters", 3);
+  cfg.postInnerIters_ = 3;
   //set the Aggregator METIS (0) or MIS (1)
-  cfg.setParameter("aggregator_type", 1);
+  cfg.aggregatorType_ = 1;
   //set the Max size of coarsest level
-  cfg.setParameter("metis_size", 90102);
+  cfg.metisSize_ = 90102;
   //set the solving algorithm
-  cfg.setParameter("solver", PCG_SOLVER);
+  cfg.solverType_ = /*(SolverType::)*/PCG_SOLVER;
   //set the cycle algorithm
-  cfg.setParameter("cycle", V_CYCLE);
+  cfg.cycleType_ = /*(CycleType::)*/V_CYCLE;
   //set the convergence tolerance algorithm
-  cfg.setParameter("convergence",ABSOLUTE_CONVERGENCE);
+  cfg.convergeType_ = /*(ConvergenceType::)*/ABSOLUTE_CONVERGENCE;
   //set the smoothing algorithm
-  cfg.setParameter("smoother",GAUSSSEIDEL);
+  cfg.smootherType_ = GAUSSSEIDEL;
   //Now we read in the mesh of choice
   //TriMesh* meshPtr = TriMesh::read("mesh.ply"); //-----if we were reading a Triangle mesh
 
@@ -153,7 +152,7 @@ int main(int argc, char** argv)
   //The stiffness matrix A 
   Matrix_ell_h A_h;
   //get the basic stiffness matrix (constant) by creating the mesh matrix
-  getMatrixFromMesh(cfg, tetmeshPtr, &A_h, verbose);
+  cfg.getMatrixFromMesh(&A_h);
   //intialize the b matrix to ones for now. TODO @DEBUG
   Vector_h_CG b_h(A_h.num_rows, 1.0);
   //The answer vector.
@@ -183,12 +182,11 @@ int main(int argc, char** argv)
   if( verbose )
     std::cout << "Calling setup_solver." << std::endl;
   //The final call to the solver
-  checkMatrixForValidContents(&A_h_imported, verbose);
-  Matrix_ell_d A_d(A_h_imported);
-  setup_solver(cfg, tetmeshPtr, &A_d, &x_h, &b_h, verbose);
+  cfg.checkMatrixForValidContents(&A_h_imported);
+  cfg.solveFEM(&A_h_imported, &x_h, &b_h);
   //At this point, you can do what you need with the matrices.
-  if (writeMatlabArray("output.mat", x_h)) {
+  if (cfg.writeMatlabArray("output.mat", x_h)) {
     std::cerr << "failed to write matlab file." << std::endl;
-  }*/
+  }
   return 0;
 }

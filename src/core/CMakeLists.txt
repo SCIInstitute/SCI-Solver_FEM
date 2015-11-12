@@ -92,7 +92,8 @@ FILE(GLOB CORE_CUDA_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
 							${CMAKE_CURRENT_SOURCE_DIR}/include/FEM/*.h
 							${CMAKE_CURRENT_SOURCE_DIR}/include/cycles/*.h
 							${CMAKE_CURRENT_SOURCE_DIR}/aggmis/include/*.h
-							${CMAKE_CURRENT_SOURCE_DIR}/cuda/perform_element_loop_3D.cuh)
+							${CMAKE_CURRENT_SOURCE_DIR}/cuda/perform_element_loop_3D.cuh
+							${CMAKE_CURRENT_SOURCE_DIR}/cuda/perform_element_loop_2D.cuh)
 
 CUDA_ADD_LIBRARY(FEM_CORE STATIC ${CORE_CUDA_SOURCES} ${CORE_CUDA_HEADERS})
 ADD_DEPENDENCIES(FEM_CORE metis)

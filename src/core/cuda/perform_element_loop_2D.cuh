@@ -343,8 +343,10 @@ __global__ void element_loop_kernel(size_t nv, ValueType *d_nx, ValueType *d_ny,
       r1 = AB2 * AC0 - AB0*AC2;
       r2 = AB0 * AC1 - AB1*AC0;
 
-      if (r2 == 0.0)
-        printf("r2 == 0!!!");
+      if (r2 == 0.0) { 
+        //TODO
+        printf("r2 == 0 : %d, %d\n", eleidx, i);
+      }
 
       a = -r0 / r2;
       b = -r1 / r2;

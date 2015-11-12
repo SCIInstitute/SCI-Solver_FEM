@@ -113,12 +113,13 @@ void FEMSolver::checkMatrixForValidContents(Matrix_ell_h* A_h) {
 
 void FEMSolver::getMatrixFromMesh(Matrix_ell_h* A_h) {
   srand48(0);
+  if (this->triMesh_ == NULL && this->tetMesh_ == NULL)
+    exit(0);
   if (this->triMesh_ != NULL) {
     this->triMesh_->set_verbose(this->verbose_);
     // print the device info
     // 2D fem solving object
     FEM2D* fem2d = new FEM2D;
-    this->triMesh_->rescale(4.0);
     this->triMesh_->need_neighbors();
     this->triMesh_->need_meshquality();
     // create the initial A and b
@@ -140,7 +141,6 @@ void FEMSolver::getMatrixFromMesh(Matrix_ell_h* A_h) {
     FEM3D* fem3d = new FEM3D;
     this->tetMesh_->need_neighbors();
     this->tetMesh_->need_meshquality();
-    this->tetMesh_->rescale(1.0);
     // create the initial A and b
     Matrix_ell_d_CG Aell_d;
     Vector_d_CG RHS(this->tetMesh_->vertices.size(), 0.0);
@@ -303,7 +303,7 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
   //determine the max nonzeros per row
   int32_t max_row = 0;
   for (size_t i = 0; i < row_max.size(); i++)
-    max_row = std::max(max_row, row_max[i]);
+    max_row = max_row > row_max[i] ? max_row : row_max[i];
   //set up the matrix
   Matrix_ell_h A(x_dim, y_dim, num_entries, max_row);
   //iterate through to add values.
@@ -531,7 +531,7 @@ void FEMSolver::writeVTK(std::vector <float> values, std::string fname)
     size_t nv = this->triMesh_->vertices.size();
     size_t nt = this->triMesh_->faces.size();
     FILE* vtkfile;
-    vtkfile = fopen(fname.c_str(), "w+");
+    vtkfile = fopen((fname + ".vtk").c_str(), "w+");
     fprintf(vtkfile, "# vtk DataFile Version 3.0\nvtk output\nASCII\nDATASET UNSTRUCTURED_GRID\n");
     fprintf(vtkfile, "POINTS %d float\n", nv);
     for (size_t i = 0; i < nv; i++) {
