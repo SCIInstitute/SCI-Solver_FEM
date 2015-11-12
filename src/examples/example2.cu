@@ -1,41 +1,36 @@
 #include <cstdlib>
 #include <cstdio>
-#include "setup_solver.h"
+#include "FEMSolver.h"
+#include <string>
 
 /**
  * SCI-Solver_FEM :: Example 2
  * This example is nearly identical to Example 1, except:
- *  1. We are using a config file instead of setting parameters manually.
- *  2. We are using a different input mesh data set.
+ *  1. We are using a tri mesh data set.
  */
 
 int main(int argc, char** argv)
 {
   //Verbose option
-  bool verbose = false;
+  FEMSolver cfg;
   bool zero_based = false;
   for (int i = 0; i < argc; i++)
     if (strcmp(argv[i],"-v") == 0) {
-      verbose = true;
+      cfg.verbose_ = true;
       break;
     } else if (strcmp(argv[i],"-z") == 0) {
       zero_based = true;
     }
   //Our main configuration object. We will set aspects where the
   // default values are not what we desire.
-  AMG_Config cfg;
-  //This example uses a difference data set and loads a config file
-  cfg.parseFile("configs/PCGV");
   //Now we read in the mesh of choice
   //read in the Tetmesh
-  std::string filename("example_data/CubeMesh_size256step16_correct");
-  TetMesh* tetmeshPtr = TetMesh::read(
-      (filename + ".node").c_str(),
-	  (filename + ".ele").c_str(), zero_based, verbose);
+  cfg.filename_ = "example_data/sphere_266verts.ply";
+  FEMSolver::triMesh_ = TriMesh::read(cfg.filename_.c_str());
   //The stiffness matrix A 
   Matrix_ell_h A;
   //get the basic stiffness matrix (constant) by creating the mesh matrix
-  getMatrixFromMesh(cfg, tetmeshPtr, &A, verbose);
+  cfg.getMatrixFromMesh(&A);
   //intialize the b matrix to ones for now. TODO @DEBUG
   Vector_h_CG b_h(A.num_rows, 1.0);
   //The answer vector.
@@ -53,10 +48,20 @@ int main(int argc, char** argv)
   A = Matrix_ell_h(out);
   //************************ DEBUG*/
   //The final call to the solver
-  checkMatrixForValidContents(&A, verbose);
-  Matrix_ell_d A_d(A);
-  setup_solver(cfg, tetmeshPtr, &A_d, &x_h, &b_h, verbose);
+  cfg.checkMatrixForValidContents(&A);
+  cfg.solveFEM(&A, &x_h, &b_h);
   //At this point, you can do what you need with the matrices.
-  writeMatlabArray("output.mat",x_h);
+  cfg.writeMatlabArray("output.mat", x_h);
+  //write the VTK
+  std::vector<float> vals;
+  for (size_t i = 0; i < x_h.size(); i++){
+    vals.push_back(x_h[i]);
+  }
+  auto pos = cfg.filename_.find_last_of("/");
+  if (pos == std::string::npos)
+    pos = cfg.filename_.find_last_of("\\");
+  cfg.filename_ = cfg.filename_.substr(pos + 1,
+    cfg.filename_.size() - 1);
+  cfg.writeVTK(vals, cfg.filename_);
   return 0;
 }

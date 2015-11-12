@@ -13,14 +13,15 @@
 using namespace std;
 
 template <class Matrix, class Vector>
-SmoothedMG_AMG_Level<Matrix, Vector>::SmoothedMG_AMG_Level(AMG<Matrix, Vector> *amg) : AMG_Level<Matrix, Vector>(amg)
+SmoothedMG_AMG_Level<Matrix, Vector>::SmoothedMG_AMG_Level(AMG<Matrix, Vector> *amg) 
+  : AMG_Level<Matrix, Vector>(amg)
 {
-   prosmoothomega = amg->cfg.AMG_Config::getParameter<double> ("pro_omega");
+  prosmoothomega = amg->cfg->proOmega_;
    aggregator = Aggregator<Matrix, Vector>::allocate(amg->cfg); // DHL
-   DS_type = amg->cfg.AMG_Config::getParameter<int> ("DS_type");
-   metis_size = amg->cfg.AMG_Config::getParameter<int> ("metis_size");
-   mesh_type = amg->cfg.AMG_Config::getParameter<int> ("mesh_type");
-   part_max_size = amg->cfg.AMG_Config::getParameter<int> ("part_max_size");
+   DS_type = amg->cfg->dsType_;
+   metis_size = amg->cfg->metisSize_;
+   mesh_type = FEMSolver::tetMesh_ == NULL ? 0 : 1;
+   part_max_size = amg->cfg->partitionMaxSize_;
 }
 
 template <class Matrix, class Vector>

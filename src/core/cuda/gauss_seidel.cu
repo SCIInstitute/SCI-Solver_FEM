@@ -59,13 +59,13 @@
  * Source Definitions
  ***************************************/
 template <class Matrix, class Vector>
-gauss_seidel<Matrix, Vector>::gauss_seidel(AMG_Config &cfg, const Matrix_d& Ainit)
+gauss_seidel<Matrix, Vector>::gauss_seidel(FEMSolver *cfg, const Matrix_d& Ainit)
 {
    cusp::detail::extract_diagonal(Ainit, this->diag);
-   post_relaxes = cfg.AMG_Config::getParameter<int>("post_relaxes");
-   weight = cfg.AMG_Config::getParameter<double>("smoother_weight");
-   nPreInnerIter = cfg.AMG_Config::getParameter<int>("PreINNER_iters");
-   nPostInnerIter = cfg.AMG_Config::getParameter<int>("PostINNER_iters");
+   post_relaxes = cfg->postRelaxes_;
+   weight = cfg->smootherWeight_;
+   nPreInnerIter = cfg->preInnerIters_;
+   nPostInnerIter = cfg->postInnerIters_;
 }
 
 template<>

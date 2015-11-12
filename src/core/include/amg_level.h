@@ -21,7 +21,7 @@ inline const char* getString(AlgorithmType p)
 #include <amg.h>
 #include <smoothers/smoother.h>
 #include <cycles/cycle.h>
-#include <amg_config.h>
+#include <FEMSolver.h>
 #include <my_timer.h>
 #include <vector>
 #include <types.h>
@@ -57,7 +57,7 @@ template <class Matrix, class Vector>
 
    AMG_Level(AMG<Matrix, Vector> *amg) : smoother(0), amg(amg), next(0), init(false)
    {
-      DS_type = amg->cfg.AMG_Config::getParameter<int> ("DS_type");
+     DS_type = amg->cfg->dsType_;
    };
    virtual ~AMG_Level();
 

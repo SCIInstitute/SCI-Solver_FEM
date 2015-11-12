@@ -11,6 +11,8 @@ enum SmootherType
 #include <error.h>
 #include <types.h>
 
+class FEMSolver;
+
 inline const char* getString(SmootherType p)
 {
   switch (p)
@@ -52,8 +54,6 @@ inline SmootherType getValue<SmootherType>(const char* name)
   sprintf(error, "Smoother '%s' is not defined", name);
   FatalError(error);
 }
-
-#include <amg_config.h>
 
 /*************************************
  * Smoother base class
@@ -192,7 +192,7 @@ public:
   virtual void smooth(const Matrix &A, const Vector &b, Vector &x) = 0;
   virtual void smooth_with_0_initial_guess(const Matrix &A, const Vector &b, Vector &x); //default initializes the vector to 0 and calls smooth
   virtual ~Smoother();
-  static Smoother<Matrix, Vector>* allocate(AMG_Config& cfg, const Matrix_d& A);
+  static Smoother<Matrix, Vector>* allocate(FEMSolver *cfg, const Matrix_d& A);
 	Vector diag;
 };
 #endif

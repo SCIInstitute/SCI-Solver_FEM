@@ -11,7 +11,7 @@ inline int getValue<int>(const char* name) {
 
 template <> 
 inline float getValue<float>(const char* name) {
-  return atof(name);
+  return static_cast<float>(atof(name));
 }
 
 template <> 

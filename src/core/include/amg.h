@@ -9,9 +9,8 @@ enum SolverType {AMG_SOLVER,PCG_SOLVER};
 #include <cusp/detail/lu.h>
 #include <error.h>
 
-#include <amg_config.h>
+#include <FEMSolver.h>
 #include <cycles/cycle.h>
-//#include <norm.h>
 #include <convergence.h>
 #include <smoothedMG/smoothedMG_amg_level.h>
 #include "TriMesh.h"
@@ -54,7 +53,7 @@ class AMG
   friend class SmoothedMG_AMG_Level<Matrix,Vector>;
 
   public:
-  AMG(AMG_Config cfg);
+  AMG(FEMSolver * cfg);
   ~AMG();
 
   void solve(const Vector_d_CG &b, Vector_d_CG &x, bool verbose = false);
@@ -68,14 +67,14 @@ class AMG
   void printProfile();
   void printCoarsePoints();
   void printConnections();
-
+  //config pointer
+  FEMSolver * cfg;
   private:
   bool converged(const Vector &r, ValueType &nrm);
 
 	cusp::detail::lu_solver<ValueType, cusp::host_memory> LU;
 
   AMG_Level<Matrix,Vector>* fine;
-  AMG_Config cfg;
   ValueType initial_nrm;
   CGType tolerance;
   int iterations;

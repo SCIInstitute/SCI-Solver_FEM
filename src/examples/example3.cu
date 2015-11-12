@@ -1,18 +1,18 @@
 #include <cstdlib>
 #include <cstdio>
-#include "setup_solver.h"
+#include "FEMSolver.h"
 #include "cuda_resources.h"
 
 /**
  * SCI-Solver_FEM :: Example 3
  * This example is the basic steps for running the solver:
- *  1. We define our main AMG_Config object.
+ *  1. We define our main FEMSolver object.
  *  2. We set all of the parameters we want. (Otherwise defaults used.)
  *  3. We read in our input data mesh.
  *  4. We declare all the variables we need for the solver (matrices).
  *  5. We invoke the "setup_solver" call, which does all of the work.
  */
-
+/*
 void printElementWithHeader(vector<double>& test, unsigned int index)
 {
   std::cout << "element #" << index << " = " << test[index] << std::endl;
@@ -103,7 +103,7 @@ int main(int argc, char** argv)
   }
   //Our main configuration object. We will set aspects where the
   // default values are not what we desire.
-  AMG_Config cfg;
+  FEMSolver cfg;
   //assuming our device is zero...
   int dev_num = 0;
   cfg.setParameter("cuda_device_num", dev_num);
@@ -113,7 +113,7 @@ int main(int argc, char** argv)
   int max_registers_used = 64;
   cfg.setParameter("part_max_size", getMaxThreads(max_registers_used,dev_num));
   //set the desired algorithm
-  cfg.setParameter("algorithm", /*(AlgorithmType::)*/CLASSICAL);
+  cfg.setParameter("algorithm", CLASSICAL);
   //set the convergence tolerance
   cfg.setParameter("tolerance", 1e-8);
   //set the weight parameter used in a smoother
@@ -131,13 +131,13 @@ int main(int argc, char** argv)
   //set the Max size of coarsest level
   cfg.setParameter("metis_size", 90102);
   //set the solving algorithm
-  cfg.setParameter("solver", /*(SolverType::)*/PCG_SOLVER);
+  cfg.setParameter("solver", PCG_SOLVER);
   //set the cycle algorithm
-  cfg.setParameter("cycle", /*(CycleType::)*/V_CYCLE);
+  cfg.setParameter("cycle", V_CYCLE);
   //set the convergence tolerance algorithm
-  cfg.setParameter("convergence", /*(ConvergenceType::)*/ABSOLUTE_CONVERGENCE);
+  cfg.setParameter("convergence",ABSOLUTE_CONVERGENCE);
   //set the smoothing algorithm
-  cfg.setParameter("smoother", /*(SmootherType::)*/GAUSSSEIDEL);
+  cfg.setParameter("smoother",GAUSSSEIDEL);
   //Now we read in the mesh of choice
   //TriMesh* meshPtr = TriMesh::read("mesh.ply"); //-----if we were reading a Triangle mesh
 
@@ -191,3 +191,4 @@ int main(int argc, char** argv)
   }
   return 0;
 }
+*/

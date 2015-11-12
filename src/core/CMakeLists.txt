@@ -75,14 +75,12 @@ ENDIF()
 #END CMAKE SETTING CUDA_NVCC_FLAGS
 ###################
 
-include_directories(
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/include
-	${CMAKE_CURRENT_SOURCE_DIR}/include/cycles
-	${CMAKE_CURRENT_SOURCE_DIR}/include/smoothers
-	${CMAKE_CURRENT_SOURCE_DIR}/aggmis/include
-	${METIS_PATH}/Lib
-)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/cycles)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/smoothers)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/aggmis/include)
+include_directories(${METIS_PATH}/Lib)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 FILE(GLOB CORE_CUDA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cuda/*.cu
 							${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/*.cu)

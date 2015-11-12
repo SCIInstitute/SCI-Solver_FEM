@@ -13,7 +13,7 @@ AMG_Level<Matrix, Vector>::~AMG_Level()
 template <class Matrix, class Vector>
 AMG_Level<Matrix, Vector>* AMG_Level<Matrix, Vector>::allocate(AMG<Matrix, Vector>*amg)
 {
-   AlgorithmType alg = amg->cfg.AMG_Config::getParameter<AlgorithmType > ("algorithm");
+  AlgorithmType alg = amg->cfg->algoType_;
    switch(alg)
    {
    case CLASSICAL:
