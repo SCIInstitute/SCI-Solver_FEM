@@ -20,7 +20,7 @@ SmoothedMG_AMG_Level<Matrix, Vector>::SmoothedMG_AMG_Level(AMG<Matrix, Vector> *
    aggregator = Aggregator<Matrix, Vector>::allocate(amg->cfg); // DHL
    DS_type = amg->cfg->dsType_;
    metis_size = amg->cfg->metisSize_;
-   mesh_type = FEMSolver::tetMesh_ == NULL ? 0 : 1;
+   mesh_type = amg->cfg->tetMesh_ == NULL ? 0 : 1;
    part_max_size = amg->cfg->partitionMaxSize_;
 }
 

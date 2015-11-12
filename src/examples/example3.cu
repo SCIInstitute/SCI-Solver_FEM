@@ -70,11 +70,12 @@ int importStiffnessMatrixFromFile(string filename, Matrix_ell_h* targetMatrix, b
   }
   return 0;
 }
-
+*/
 
 
 int main(int argc, char** argv)
 {
+/*
   //Verbose option
   bool verbose = false;
   bool zero_based = false;
@@ -188,7 +189,6 @@ int main(int argc, char** argv)
   //At this point, you can do what you need with the matrices.
   if (writeMatlabArray("output.mat", x_h)) {
     std::cerr << "failed to write matlab file." << std::endl;
-  }
+  }*/
   return 0;
 }
-*/

@@ -13,20 +13,18 @@ int main(int argc, char** argv)
 {
   //Verbose option
   FEMSolver cfg;
-  bool zero_based = false;
-  for (int i = 0; i < argc; i++)
-    if (strcmp(argv[i],"-v") == 0) {
+  for (int i = 0; i < argc; i++) {
+    if (strcmp(argv[i], "-v") == 0) {
       cfg.verbose_ = true;
       break;
-    } else if (strcmp(argv[i],"-z") == 0) {
-      zero_based = true;
     }
+  }
   //Our main configuration object. We will set aspects where the
   // default values are not what we desire.
   //Now we read in the mesh of choice
   //read in the Tetmesh
   cfg.filename_ = "example_data/sphere_266verts.ply";
-  FEMSolver::triMesh_ = TriMesh::read(cfg.filename_.c_str());
+  cfg.triMesh_ = TriMesh::read(cfg.filename_.c_str());
   //The stiffness matrix A 
   Matrix_ell_h A;
   //get the basic stiffness matrix (constant) by creating the mesh matrix

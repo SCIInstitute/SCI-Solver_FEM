@@ -69,17 +69,15 @@ int main(int argc, char** argv)
   //read in the Tetmesh
   if (cfg.filename_.empty())
     cfg.filename_ = std::string("../example_data/CubeMesh_size256step16");
-  FEMSolver::tetMesh_ = TetMesh::read(
+  cfg.tetMesh_ = TetMesh::read(
     (cfg.filename_ + ".node").c_str(),
     (cfg.filename_ + ".ele").c_str(), zero_based, cfg.verbose_);
   //The stiffness matrix A 
   Matrix_ell_h A_h;
   //get the basic stiffness matrix (constant) by creating the mesh matrix
   cfg.getMatrixFromMesh(&A_h);
-  //intialize the b matrix to ones for now. TODO @DEBUG
+  //intialize the b matrix to ones for now.
   Vector_h_CG b_h(A_h.num_rows, 1.0);
-  for (size_t i = 0; i < b_h.size() / 2; i++)
-    b_h[i] = 0.;
   //The answer vector.
   Vector_h_CG x_h(A_h.num_rows, 0.0); //intial X vector
   //************************ DEBUG : creating identity matrix for stiffness properties for now.

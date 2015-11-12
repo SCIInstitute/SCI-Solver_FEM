@@ -1,8 +1,5 @@
 #include <FEMSolver.h>
 
-TetMesh * FEMSolver::tetMesh_ = NULL;
-TriMesh * FEMSolver::triMesh_ = NULL;
-
 FEMSolver::FEMSolver(
   std::string fname, bool verbose) :
   verbose_(verbose),
@@ -29,11 +26,16 @@ FEMSolver::FEMSolver(
   algoType_(CLASSICAL),
   smootherWeight_(1.0),
   proOmega_(0.67),
-  device_(0) {}
+  device_(0),
+  tetMesh_(NULL),
+  triMesh_(NULL)
+{}
 
 FEMSolver::~FEMSolver() {
-  delete FEMSolver::tetMesh_;
-  delete FEMSolver::triMesh_;
+  if (this->tetMesh_ != NULL)
+    delete this->tetMesh_;
+  if (this->triMesh_ != NULL)
+    delete this->triMesh_;
 }
 /**
 * Creates the mesh, partitions the mesh, and runs the algorithm.
@@ -48,7 +50,7 @@ void FEMSolver::solveFEM(Matrix_ell_h* A_d,
   //register configuration parameters
   AMG<Matrix_h, Vector_h> amg(this);
   //setup device
-  amg.setup(*A_d, FEMSolver::triMesh_, FEMSolver::tetMesh_, this->verbose_);
+  amg.setup(*A_d, this->triMesh_, this->tetMesh_, this->verbose_);
   //print info
   if (this->verbose_)
     amg.printGridStatistics();
@@ -111,43 +113,43 @@ void FEMSolver::checkMatrixForValidContents(Matrix_ell_h* A_h) {
 
 void FEMSolver::getMatrixFromMesh(Matrix_ell_h* A_h) {
   srand48(0);
-  if (FEMSolver::triMesh_ != NULL) {
-    FEMSolver::triMesh_->set_verbose(this->verbose_);
+  if (this->triMesh_ != NULL) {
+    this->triMesh_->set_verbose(this->verbose_);
     // print the device info
     // 2D fem solving object
     FEM2D* fem2d = new FEM2D;
-    FEMSolver::triMesh_->rescale(4.0);
-    FEMSolver::triMesh_->need_neighbors();
-    FEMSolver::triMesh_->need_meshquality();
+    this->triMesh_->rescale(4.0);
+    this->triMesh_->need_neighbors();
+    this->triMesh_->need_meshquality();
     // create the initial A and b
     Matrix_ell_d_CG Aell_d;
-    Vector_d_CG RHS(FEMSolver::triMesh_->vertices.size(), 0.0);
+    Vector_d_CG RHS(this->triMesh_->vertices.size(), 0.0);
     //generate the unit constant mesh stiffness matrix
-    trimesh2ell<Matrix_ell_d_CG >(FEMSolver::triMesh_, Aell_d);
+    trimesh2ell<Matrix_ell_d_CG >(this->triMesh_, Aell_d);
     cudaThreadSynchronize();
     //assembly step
-    fem2d->initializeWithTriMesh(FEMSolver::triMesh_);
-    fem2d->assemble(FEMSolver::triMesh_, Aell_d, RHS);
+    fem2d->initializeWithTriMesh(this->triMesh_);
+    fem2d->assemble(this->triMesh_, Aell_d, RHS);
     delete fem2d;
     //copy back to the host
     cudaThreadSynchronize();
     *A_h = Matrix_ell_h(Aell_d);
   } else {
-    FEMSolver::tetMesh_->set_verbose(this->verbose_);
+    this->tetMesh_->set_verbose(this->verbose_);
     // 3D fem solving object
     FEM3D* fem3d = new FEM3D;
-    FEMSolver::tetMesh_->need_neighbors();
-    FEMSolver::tetMesh_->need_meshquality();
-    FEMSolver::tetMesh_->rescale(1.0);
+    this->tetMesh_->need_neighbors();
+    this->tetMesh_->need_meshquality();
+    this->tetMesh_->rescale(1.0);
     // create the initial A and b
     Matrix_ell_d_CG Aell_d;
-    Vector_d_CG RHS(FEMSolver::tetMesh_->vertices.size(), 0.0);
+    Vector_d_CG RHS(this->tetMesh_->vertices.size(), 0.0);
     //generate the unit constant mesh stiffness matrix
-    tetmesh2ell<Matrix_ell_d_CG >(FEMSolver::tetMesh_, Aell_d, this->verbose_);
+    tetmesh2ell<Matrix_ell_d_CG >(this->tetMesh_, Aell_d, this->verbose_);
     cudaThreadSynchronize();
     //assembly step
-    fem3d->initializeWithTetMesh(FEMSolver::tetMesh_);
-    fem3d->assemble(FEMSolver::tetMesh_, Aell_d, RHS, true);
+    fem3d->initializeWithTetMesh(this->tetMesh_);
+    fem3d->assemble(this->tetMesh_, Aell_d, RHS, true);
     delete fem3d;
     //copy back to the host
     cudaThreadSynchronize();
@@ -494,26 +496,26 @@ int FEMSolver::writeMatlabArray(const std::string &filename, const Vector_h_CG &
 
 void FEMSolver::writeVTK(std::vector <float> values, std::string fname)
 {
-  if (FEMSolver::tetMesh_ != NULL) {
-    int nv = FEMSolver::tetMesh_->vertices.size();
-    int nt = FEMSolver::tetMesh_->tets.size();
+  if (this->tetMesh_ != NULL) {
+    int nv = this->tetMesh_->vertices.size();
+    int nt = this->tetMesh_->tets.size();
     FILE* vtkfile;
     vtkfile = fopen((fname + ".vtk").c_str(), "w+");
     fprintf(vtkfile, "# vtk DataFile Version 3.0\nvtk output\nASCII\nDATASET UNSTRUCTURED_GRID\n");
     fprintf(vtkfile, "POINTS %d float\n", nv);
     for (int i = 0; i < nv; i++) {
       fprintf(vtkfile, "%.12f %.12f %.12f\n",
-        FEMSolver::tetMesh_->vertices[i][0],
-        FEMSolver::tetMesh_->vertices[i][1],
-        FEMSolver::tetMesh_->vertices[i][2]);
+        this->tetMesh_->vertices[i][0],
+        this->tetMesh_->vertices[i][1],
+        this->tetMesh_->vertices[i][2]);
     }
     fprintf(vtkfile, "CELLS %d %d\n", nt, nt * 5);
     for (int i = 0; i < nt; i++) {
       fprintf(vtkfile, "4 %d %d %d %d\n",
-        FEMSolver::tetMesh_->tets[i][0],
-        FEMSolver::tetMesh_->tets[i][1],
-        FEMSolver::tetMesh_->tets[i][2],
-        FEMSolver::tetMesh_->tets[i][3]);
+        this->tetMesh_->tets[i][0],
+        this->tetMesh_->tets[i][1],
+        this->tetMesh_->tets[i][2],
+        this->tetMesh_->tets[i][3]);
     }
     fprintf(vtkfile, "CELL_TYPES %d\n", nt);
     for (int i = 0; i < nt; i++) {
@@ -525,25 +527,25 @@ void FEMSolver::writeVTK(std::vector <float> values, std::string fname)
       fprintf(vtkfile, "%.12f\n ", values[i]);
     }
     fclose(vtkfile);
-  } else if (FEMSolver::triMesh_ != NULL) {
-    size_t nv = FEMSolver::triMesh_->vertices.size();
-    size_t nt = FEMSolver::triMesh_->faces.size();
+  } else if (this->triMesh_ != NULL) {
+    size_t nv = this->triMesh_->vertices.size();
+    size_t nt = this->triMesh_->faces.size();
     FILE* vtkfile;
     vtkfile = fopen(fname.c_str(), "w+");
     fprintf(vtkfile, "# vtk DataFile Version 3.0\nvtk output\nASCII\nDATASET UNSTRUCTURED_GRID\n");
     fprintf(vtkfile, "POINTS %d float\n", nv);
     for (size_t i = 0; i < nv; i++) {
       fprintf(vtkfile, "%.12f %.12f %.12f\n",
-        FEMSolver::triMesh_->vertices[i][0],
-        FEMSolver::triMesh_->vertices[i][1],
-        FEMSolver::triMesh_->vertices[i][2]);
+        this->triMesh_->vertices[i][0],
+        this->triMesh_->vertices[i][1],
+        this->triMesh_->vertices[i][2]);
     }
     fprintf(vtkfile, "CELLS %d %d\n", nt, nt * 4);
     for (size_t i = 0; i < nt; i++) {
       fprintf(vtkfile, "3 %d %d %d\n",
-        FEMSolver::triMesh_->faces[i][0],
-        FEMSolver::triMesh_->faces[i][1],
-        FEMSolver::triMesh_->faces[i][2]);
+        this->triMesh_->faces[i][0],
+        this->triMesh_->faces[i][1],
+        this->triMesh_->faces[i][2]);
     }
     fprintf(vtkfile, "CELL_TYPES %d\n", nt);
     for (size_t i = 0; i < nt; i++) {
@@ -555,54 +557,4 @@ void FEMSolver::writeVTK(std::vector <float> values, std::string fname)
     }
     fclose(vtkfile);
   }
-}
-
-/**
-  * This function uses the provided analytical solutions to
-  * visualize the algorithm's error after each iteration.
-  *
-  * @param solution The vector of expected solutions.
-  */
-void FEMSolver::printErrorGraph(std::vector<float> solution) {
-  // now calculate the RMS error for each iteration
-  std::vector<float> rmsError;
-  rmsError.resize(FEMSolver::iteration_values_.size());
-  for (size_t i = 0; i < FEMSolver::iteration_values_.size(); i++) {
-    float sum = 0.f;
-    std::vector<float> result = FEMSolver::iteration_values_[FEMSolver::iteration_values_.size() - 1];
-    for (size_t j = 0; j < solution.size(); j++) {
-      float err = std::abs(solution[j] - result[j]);
-      sum += err * err;
-    }
-    rmsError[i] = std::sqrt(sum / static_cast<float>(solution.size()));
-  }
-  //determine the log range
-  float max_err = rmsError[0];
-  float min_err = rmsError[rmsError.size() - 1];
-  int max_log = -10, min_log = 10;
-  while (std::pow(static_cast<float>(10), max_log) < max_err) max_log++;
-  while (std::pow(static_cast<float>(10), min_log) > min_err) min_log--;
-  // print the error graph
-  printf("\n\nlog(Err)|\n");
-  bool printTick = true;
-  for (int i = max_log; i >= min_log; i--) {
-    if (printTick) {
-      printf("   10^%2d|", i);
-    } else {
-      printf("        |");
-    }
-    for (size_t j = 0; j < FEMSolver::iteration_values_.size(); j++) {
-      if (rmsError[j] > std::pow(static_cast<float>(10), i) &&
-        rmsError[j] < std::pow(static_cast<float>(10), i + 1))
-        printf("*");
-      else
-        printf(" ");
-    }
-    printf("\n");
-    printTick = !printTick;
-  }
-  printf("--------|------------------------------------------");
-  printf("  Converged to: %.4f\n", rmsError[rmsError.size() - 1]);
-  printf("        |1   5    10   15   20   25   30   35\n");
-  printf("                   Iteration\n");
 }

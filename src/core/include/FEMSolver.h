@@ -46,7 +46,6 @@ public:
 public:
   void solveFEM(Matrix_ell_h* A_d, Vector_h_CG* x_h, Vector_h_CG* b_h);
   void getMatrixFromMesh(Matrix_ell_h* A_h);
-  void printErrorGraph(std::vector<float> solution);
   int readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h *A_h);
   int readMatlabNormalMatrix(const std::string &filename, vector<double> *A_h);
   int writeMatlabArray(const std::string &filename, const Vector_h_CG &array);
@@ -83,10 +82,8 @@ public:
   double proOmega_;               // the weight parameter used in prolongator smoother
   int device_;                    // the GPU device number to specify
   //The static pointer to the mesh
-  static TetMesh * tetMesh_;
-  static TriMesh * triMesh_;
-  static std::vector < std::vector <float> > iteration_values_;
-private:
+  TetMesh * tetMesh_;
+  TriMesh * triMesh_;
 };
 
 #endif
