@@ -6,8 +6,7 @@
 template <class Matrix, class Vector>
 Aggregator<Matrix, Vector>* Aggregator<Matrix, Vector>::allocate(FEMSolver *cfg)
 {
-  int misType = cfg->aggregatorType_;
-  if (misType == 0)
+  if (cfg->aggregatorType_ == 0)
     return new MIS_Aggregator < Matrix, Vector > ;
   else
     return new RandMIS_Aggregator < Matrix, Vector > ;

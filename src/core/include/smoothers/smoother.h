@@ -7,53 +7,10 @@ enum SmootherType
   JACOBI, JACOBI_NO_CUSP, GAUSSSEIDEL, POLYNOMIAL, GSINNER
 };
 
-#include <getvalue.h>
 #include <error.h>
 #include <types.h>
 
 class FEMSolver;
-
-inline const char* getString(SmootherType p)
-{
-  switch (p)
-  {
-    case JACOBI:
-      return "JACOBI";
-    case JACOBI_NO_CUSP: //TODO remove cusp jacobi and rename
-      return "JACOBI_NO_CUSP";
-    case GAUSSSEIDEL:
-      return "GAUSSSEIDEL";
-    case POLYNOMIAL:
-      return "POLYNOMIAL";
-    case GSINNER:
-      return "GSINNER";
-    default:
-      return "UNKNOWN";
-  }
-}
-
-template <>
-inline SmootherType getValue<SmootherType>(const char* name)
-{
-  if (strncmp(name, "JACOBI", 100) == 0)
-    return JACOBI;
-
-  if (strncmp(name, "JACOBI_NO_CUSP", 100) == 0)
-    return JACOBI_NO_CUSP;
-
-  if (strncmp(name, "GAUSSSEIDEL", 100) == 0)
-    return GAUSSSEIDEL;
-
-  if (strncmp(name, "POLYNOMIAL", 100) == 0)
-    return POLYNOMIAL;
-
-  if (strncmp(name, "GSINNER", 100) == 0)
-    return GSINNER;
-
-  char error[100];
-  sprintf(error, "Smoother '%s' is not defined", name);
-  FatalError(error);
-}
 
 /*************************************
  * Smoother base class

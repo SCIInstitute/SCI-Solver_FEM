@@ -112,8 +112,6 @@ int main(int argc, char** argv)
   // device. We can set our max allocation based on that number
   int max_registers_used = 64;
   cfg.partitionMaxSize_ = getMaxThreads(max_registers_used, cfg.device_);
-  //set the desired algorithm
-  cfg.algoType_ = /*(AlgorithmType::)*/CLASSICAL;
   //set the convergence tolerance
   cfg.tolerance_ = 1e-8;
   //set the weight parameter used in a smoother
@@ -136,8 +134,6 @@ int main(int argc, char** argv)
   cfg.cycleType_ = /*(CycleType::)*/V_CYCLE;
   //set the convergence tolerance algorithm
   cfg.convergeType_ = /*(ConvergenceType::)*/ABSOLUTE_CONVERGENCE;
-  //set the smoothing algorithm
-  cfg.smootherType_ = GAUSSSEIDEL;
   //Now we read in the mesh of choice
   //TriMesh* meshPtr = TriMesh::read("mesh.ply"); //-----if we were reading a Triangle mesh
 

@@ -150,7 +150,7 @@ public:
     int largestnumentries);
 
 public:
-  double weight;
+  double smootherWeight;
   int nPreInnerIter;
   int nPostInnerIter;
   int post_relaxes;

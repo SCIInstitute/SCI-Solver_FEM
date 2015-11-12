@@ -5,13 +5,10 @@ FEMSolver::FEMSolver(
   verbose_(verbose),
   filename_(fname),
   maxLevels_(100),
-  minRows_(1),
   maxIters_(100),
   preInnerIters_(5),
   postInnerIters_(5),
   postRelaxes_(1),
-  preSweeps_(1),
-  postSweeps_(1),
   cycleIters_(1),
   dsType_(0),
   topSize_(256),
@@ -21,9 +18,7 @@ FEMSolver::FEMSolver(
   convergeType_(ABSOLUTE_CONVERGENCE),
   tolerance_(1e-6),
   cycleType_(V_CYCLE),
-  smootherType_(GAUSSSEIDEL),
   solverType_(AMG_SOLVER),
-  algoType_(CLASSICAL),
   smootherWeight_(1.0),
   proOmega_(0.67),
   device_(0),
@@ -50,7 +45,7 @@ void FEMSolver::solveFEM(Matrix_ell_h* A_d,
   //register configuration parameters
   AMG<Matrix_h, Vector_h> amg(this);
   //setup device
-  amg.setup(*A_d, this->triMesh_, this->tetMesh_, this->verbose_);
+  amg.setup(*A_d);
   //print info
   if (this->verbose_)
     amg.printGridStatistics();
@@ -58,7 +53,7 @@ void FEMSolver::solveFEM(Matrix_ell_h* A_d,
   Vector_d_CG x_d(*x_h);
   Vector_d_CG b_d(*b_h);
   //run solver
-  amg.solve(b_d, x_d, this->verbose_);
+  amg.solve(b_d, x_d);
   //copy back to host
   *x_h = Vector_h_CG(x_d);
   *b_h = Vector_h_CG(b_d);

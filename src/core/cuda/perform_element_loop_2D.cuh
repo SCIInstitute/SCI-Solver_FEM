@@ -286,9 +286,10 @@ __device__ void sum_into_global_linear_system_cuda(IndexType* __restrict__ ids, 
 }
 
 template<typename IndexType, typename ValueType>
-__global__ void element_loop_kernel(size_t nv, ValueType *d_nx, ValueType *d_ny, size_t ne, IndexType *d_tri0, IndexType *d_tri1, IndexType *d_tri2,
-    ValueType *d_ellvalues, IndexType *d_ellcolidx, size_t nrow, size_t num_col_per_row, size_t pitch,
-    ValueType *d_b)
+__global__ void element_loop_kernel(size_t nv, ValueType *d_nx, 
+  ValueType *d_ny, size_t ne, IndexType *d_tri0, IndexType *d_tri1, 
+  IndexType *d_tri2,ValueType *d_ellvalues, IndexType *d_ellcolidx,
+  size_t nrow, size_t num_col_per_row, size_t pitch, ValueType *d_b)
 {
   ValueType coeffs[9];
   ValueType stiffMat[6];
@@ -298,7 +299,8 @@ __global__ void element_loop_kernel(size_t nv, ValueType *d_nx, ValueType *d_ny,
   ValueType x[3];
   ValueType y[3];
 
-  for (int eleidx = blockIdx.x * blockDim.x + threadIdx.x; eleidx < ne; eleidx += blockDim.x * gridDim.x)
+  for (int eleidx = blockIdx.x * blockDim.x + threadIdx.x; 
+    eleidx < ne; eleidx += blockDim.x * gridDim.x)
   {
     ValueType Ax, Ay, Az, Bx, By, Bz, Cx, Cy, Cz;
     ValueType AB0, AB1, AB2, AC0, AC1, AC2, r0, r1, r2, a, b, c;
@@ -315,20 +317,21 @@ __global__ void element_loop_kernel(size_t nv, ValueType *d_nx, ValueType *d_ny,
     y[1] = d_ny[ids[1]];
     y[2] = d_ny[ids[2]];
 
-    ValueType TArea = fabs(x[0] * y[2] - x[0] * y[1] + x[1] * y[0] - x[1] * y[2] + x[2] * y[1] - x[2] * y[0]) / 2.0;
+    ValueType TArea = fabs(x[0] * y[2] - x[0] * y[1] +
+      x[1] * y[0] - x[1] * y[2] + x[2] * y[1] - x[2] * y[0]) / 2.0;
 
 #pragma unroll
     for (int i = 0; i < 3; i++)
     {
       Ax = x[i % 3];
       Ay = y[i % 3];
-      Az = 1.0;
+      Az = 0.0;
       Bx = x[(i + 1) % 3];
       By = y[(i + 1) % 3];
       Bz = 0.0;
       Cx = x[(i + 2) % 3];
       Cy = y[(i + 2) % 3];
-      Cz = 0.0;
+      Cz = 1.0;
 
       //compute AB cross AC
       AB0 = Bx - Ax;

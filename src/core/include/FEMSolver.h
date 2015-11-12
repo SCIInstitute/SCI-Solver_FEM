@@ -19,7 +19,6 @@
 #include <cmath>
 #include "smoothers/smoother.h"
 #include "cycles/cycle.h"
-#include "convergence.h"
 #include "amg_level.h"
 
 #ifdef WIN32
@@ -59,13 +58,10 @@ public:
   bool verbose_;                  // output verbosity
   std::string filename_;          // mesh file name
   int maxLevels_;                 // the maximum number of levels
-  int minRows_;                   // the minimum number of rows in a level
   int maxIters_;                  // the maximum solve iterations
   int preInnerIters_;             // the pre inner iterations for GSINNER
   int postInnerIters_;            // the post inner iterations for GSINNER
   int postRelaxes_;               // the number of post relax iterations
-  int preSweeps_;                 // the number of presmooth iterations
-  int postSweeps_;                // the number of postsmooth iterations
   int cycleIters_;                // the number of CG iterations per outer iteration
   int dsType_;                    // data structure type
   int topSize_;                   // max size of coarsest level
@@ -75,9 +71,7 @@ public:
   ConvergenceType convergeType_;  // the convergence tolerance algorithm <absolute|relative>
   double tolerance_;              // the convergence tolerance
   CycleType cycleType_;           // the cycle algorithm <V|W|F|KCG|PCGV|PCGW|PCGF>
-  SmootherType smootherType_;     // the smoothing algorithm <GAUSSSEIDEL>
   SolverType solverType_;         // the solving algorithm <AMG|PCG>
-  AlgorithmType algoType_;        // the AMG algorithm <classical>
   double smootherWeight_;         // the weight parameter used in a smoother
   double proOmega_;               // the weight parameter used in prolongator smoother
   int device_;                    // the GPU device number to specify

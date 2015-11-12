@@ -2,22 +2,6 @@
 #define __AMG_LEVEL_H__
 template <class Matrix, class Vector> class AMG_Level;
 
-enum AlgorithmType
-{
-   CLASSICAL, SAMG, SAMGFULL
-};
-
-inline const char* getString(AlgorithmType p)
-{
-   switch (p)
-   {
-   case CLASSICAL:
-      return "CLASSICAL";
-   default:
-      return "UNKNOWN";
-   }
-}
-
 #include <amg.h>
 #include <smoothers/smoother.h>
 #include <cycles/cycle.h>
@@ -28,20 +12,6 @@ inline const char* getString(AlgorithmType p)
 #include "TriMesh.h"
 #include "tetmesh.h"
 #include <cusp/print.h>
-
-template <>
-inline AlgorithmType getValue<AlgorithmType>(const char* name) {
-   if(strncmp(name,"CLASSICAL",100)==0)
-      return CLASSICAL;
-   else if(strncmp(name,"SAMG",100)==0)
-      return SAMG;
-   else if(strncmp(name,"SAMGFULL",100)==0)
-      return SAMGFULL;
-
-   char error[100];
-   sprintf(error,"Algorithm '%s' is not defined",name);
-   FatalError(error);
-}
 
 /********************************************************
  * AMG Level class:
@@ -56,9 +26,7 @@ template <class Matrix, class Vector>
    public:
 
    AMG_Level(AMG<Matrix, Vector> *amg) : smoother(0), amg(amg), next(0), init(false)
-   {
-     DS_type = amg->cfg->dsType_;
-   };
+   {};
    virtual ~AMG_Level();
 
    virtual void restrictResidual(const Vector &r, Vector &rr) = 0;
@@ -169,7 +137,6 @@ template <class Matrix, class Vector>
 
    AMG<Matrix, Vector>* amg;
    AMG_Level* next;
-   int DS_type;
    int largest_num_entries;
    int largest_num_per_row;
    int largest_num_segment;

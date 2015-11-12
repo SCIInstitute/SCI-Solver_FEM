@@ -2,7 +2,6 @@
 #define __AGGREGATOR_H__
 template <class Matrix, class Vector> class Aggregator;
 
-#include <getvalue.h>
 #include <error.h>
 #include <types.h>
 #include <TriMesh.h>

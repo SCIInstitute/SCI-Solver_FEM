@@ -4,41 +4,16 @@ template <class Matrix, class Vector> class AMG;
 
 enum SolverType {AMG_SOLVER,PCG_SOLVER};
 
-#include <getvalue.h>
+enum ConvergenceType { ABSOLUTE_CONVERGENCE, RELATIVE_CONVERGENCE };
 
 #include <cusp/detail/lu.h>
 #include <error.h>
 
 #include <FEMSolver.h>
 #include <cycles/cycle.h>
-#include <convergence.h>
 #include <smoothedMG/smoothedMG_amg_level.h>
 #include "TriMesh.h"
 #include "tetmesh.h"
-
-inline const char* getString(SolverType p) {
-  switch(p)
-  {
-    case PCG_SOLVER:
-      return "Preconditioned CG";
-    case AMG_SOLVER:
-      return "AMG";
-    default:
-      return "UNKNOWN";
-  }
-}
-
-template <>
-inline SolverType getValue<SolverType>(const char* name) {
-  if(strncmp(name,"AMG",100)==0)
-    return AMG_SOLVER;
-  else if(strncmp(name,"PCG",100)==0)
-    return PCG_SOLVER;
-
-  char error[100];
-  sprintf(error,"Solver type '%s' is not defined",name);
-  FatalError(error);
-}
 
 /*********************************************************
  * AMG Class
@@ -56,10 +31,10 @@ class AMG
   AMG(FEMSolver * cfg);
   ~AMG();
 
-  void solve(const Vector_d_CG &b, Vector_d_CG &x, bool verbose = false);
-  void solve_iteration(const Vector_d_CG &b, Vector_d_CG &x, bool verbose = false);
+  void solve(const Vector_d_CG &b, Vector_d_CG &x);
+  void solve_iteration(const Vector_d_CG &b, Vector_d_CG &x);
 
-  void setup(const Matrix_d &Acsr_d, TriMesh* meshPtr, TetMesh* tetmeshPtr, bool verbose = false);
+  void setup(const Matrix_d &Acsr_d);
 
   void printGridStatistics();
 
@@ -76,19 +51,10 @@ class AMG
 
   AMG_Level<Matrix,Vector>* fine;
   ValueType initial_nrm;
-  CGType tolerance;
   int iterations;
-  int max_iters;
-  int cycle_iters;
   int num_levels;
 	int coarsestlevel;
-  int presweeps,postsweeps;
 
-  CycleType cycle;
-//  NormType norm;
-  ConvergenceType convergence;
-	int DS_type;
-  SolverType solver;
 	Matrix_hyb_d_CG Ahyb_d_CG;
 
   double solve_start, solve_stop;
