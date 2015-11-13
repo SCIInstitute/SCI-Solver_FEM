@@ -59,13 +59,13 @@
  * Source Definitions
  ***************************************/
 template <class Matrix, class Vector>
-gauss_seidel<Matrix, Vector>::gauss_seidel(AMG_Config &cfg, const Matrix_d& Ainit)
+gauss_seidel<Matrix, Vector>::gauss_seidel(FEMSolver *cfg, const Matrix_d& Ainit)
 {
    cusp::detail::extract_diagonal(Ainit, this->diag);
-   post_relaxes = cfg.AMG_Config::getParameter<int>("post_relaxes");
-   weight = cfg.AMG_Config::getParameter<double>("smoother_weight");
-   nPreInnerIter = cfg.AMG_Config::getParameter<int>("PreINNER_iters");
-   nPostInnerIter = cfg.AMG_Config::getParameter<int>("PostINNER_iters");
+   post_relaxes = cfg->postRelaxes_;
+   smootherWeight = cfg->smootherWeight_;
+   nPreInnerIter = cfg->preInnerIters_;
+   nPostInnerIter = cfg->postInnerIters_;
 }
 
 template<>
@@ -128,7 +128,7 @@ void gauss_seidel<Matrix_d, Vector_d>::smooth(const Matrix_d &A, const Vector_d 
        thrust::raw_pointer_cast(&A.values[0]),
        thrust::raw_pointer_cast(&diag[0]),
        thrust::raw_pointer_cast(&b[0]),
-       weight,
+       smootherWeight,
        thrust::raw_pointer_cast(&x[0]));
 }
 
@@ -416,7 +416,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -432,7 +432,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -454,7 +454,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -470,7 +470,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -490,7 +490,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -506,7 +506,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -526,7 +526,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -542,7 +542,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -563,7 +563,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -579,7 +579,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -599,7 +599,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -615,7 +615,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -635,7 +635,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -651,7 +651,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -671,7 +671,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -687,7 +687,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -707,7 +707,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -723,7 +723,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -743,7 +743,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -759,7 +759,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -780,7 +780,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -796,7 +796,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -817,7 +817,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -833,7 +833,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -853,7 +853,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -869,7 +869,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -890,7 +890,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -906,7 +906,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -926,7 +926,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -942,7 +942,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -963,7 +963,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -979,7 +979,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -999,7 +999,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -1015,7 +1015,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2076,7 +2076,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2094,7 +2094,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2114,7 +2114,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2134,7 +2134,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2154,7 +2154,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2174,7 +2174,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2194,7 +2194,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2213,7 +2213,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2232,7 +2232,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2479,7 +2479,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
             thrust::raw_pointer_cast(&b[0]),
             thrust::raw_pointer_cast(&segSyncIdx[0]),
             thrust::raw_pointer_cast(&partSyncIdx[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2499,7 +2499,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
             thrust::raw_pointer_cast(&b[0]),
             thrust::raw_pointer_cast(&segSyncIdx[0]),
             thrust::raw_pointer_cast(&partSyncIdx[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2520,7 +2520,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
             thrust::raw_pointer_cast(&b[0]),
             thrust::raw_pointer_cast(&segSyncIdx[0]),
             thrust::raw_pointer_cast(&partSyncIdx[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2541,7 +2541,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
             thrust::raw_pointer_cast(&b[0]),
             thrust::raw_pointer_cast(&segSyncIdx[0]),
             thrust::raw_pointer_cast(&partSyncIdx[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2562,7 +2562,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
             thrust::raw_pointer_cast(&b[0]),
             thrust::raw_pointer_cast(&segSyncIdx[0]),
             thrust::raw_pointer_cast(&partSyncIdx[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2583,7 +2583,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
             thrust::raw_pointer_cast(&b[0]),
             thrust::raw_pointer_cast(&segSyncIdx[0]),
             thrust::raw_pointer_cast(&partSyncIdx[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2604,7 +2604,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
             thrust::raw_pointer_cast(&b[0]),
             thrust::raw_pointer_cast(&segSyncIdx[0]),
             thrust::raw_pointer_cast(&partSyncIdx[0]),
-            weight,
+            smootherWeight,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
             nPreInnerIter);
@@ -2688,7 +2688,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2705,7 +2705,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2725,7 +2725,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2741,7 +2741,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2761,7 +2761,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2777,7 +2777,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2797,7 +2797,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2813,7 +2813,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2834,7 +2834,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2850,7 +2850,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2870,7 +2870,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2886,7 +2886,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2906,7 +2906,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2922,7 +2922,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2942,7 +2942,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2958,7 +2958,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2978,7 +2978,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -2994,7 +2994,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3014,7 +3014,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3030,7 +3030,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3051,7 +3051,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3067,7 +3067,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3088,7 +3088,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3104,7 +3104,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3124,7 +3124,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3140,7 +3140,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3161,7 +3161,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3177,7 +3177,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3197,7 +3197,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3213,7 +3213,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3234,7 +3234,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3250,7 +3250,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3271,7 +3271,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -3287,7 +3287,7 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
                nPreInnerIter);
@@ -4454,7 +4454,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4476,7 +4476,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4499,7 +4499,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4522,7 +4522,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4544,7 +4544,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4566,7 +4566,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4589,7 +4589,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4612,7 +4612,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4635,7 +4635,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4849,7 +4849,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
                thrust::raw_pointer_cast(&b[0]),
                thrust::raw_pointer_cast(&segSyncIdx[0]),
                thrust::raw_pointer_cast(&partSyncIdx[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4873,7 +4873,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
                thrust::raw_pointer_cast(&b[0]),
                thrust::raw_pointer_cast(&segSyncIdx[0]),
                thrust::raw_pointer_cast(&partSyncIdx[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4898,7 +4898,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
                thrust::raw_pointer_cast(&b[0]),
                thrust::raw_pointer_cast(&segSyncIdx[0]),
                thrust::raw_pointer_cast(&partSyncIdx[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4923,7 +4923,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
                thrust::raw_pointer_cast(&b[0]),
                thrust::raw_pointer_cast(&segSyncIdx[0]),
                thrust::raw_pointer_cast(&partSyncIdx[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4948,7 +4948,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
                thrust::raw_pointer_cast(&b[0]),
                thrust::raw_pointer_cast(&segSyncIdx[0]),
                thrust::raw_pointer_cast(&partSyncIdx[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4973,7 +4973,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
                thrust::raw_pointer_cast(&b[0]),
                thrust::raw_pointer_cast(&segSyncIdx[0]),
                thrust::raw_pointer_cast(&partSyncIdx[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -4998,7 +4998,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
                thrust::raw_pointer_cast(&b[0]),
                thrust::raw_pointer_cast(&segSyncIdx[0]),
                thrust::raw_pointer_cast(&partSyncIdx[0]),
-               weight,
+               smootherWeight,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
                nPostInnerIter);
@@ -5090,7 +5090,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5112,7 +5112,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5137,7 +5137,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5159,7 +5159,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5184,7 +5184,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5206,7 +5206,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5231,7 +5231,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5253,7 +5253,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5278,7 +5278,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5300,7 +5300,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5325,7 +5325,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5347,7 +5347,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5372,7 +5372,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5394,7 +5394,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5419,7 +5419,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5441,7 +5441,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5466,7 +5466,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5488,7 +5488,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5513,7 +5513,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5535,7 +5535,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5560,7 +5560,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5582,7 +5582,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5607,7 +5607,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5629,7 +5629,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5654,7 +5654,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5676,7 +5676,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5702,7 +5702,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5724,7 +5724,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5749,7 +5749,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5771,7 +5771,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5796,7 +5796,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5818,7 +5818,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5843,7 +5843,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -5865,7 +5865,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6174,7 +6174,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6196,7 +6196,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6221,7 +6221,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6243,7 +6243,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6268,7 +6268,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6290,7 +6290,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6315,7 +6315,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6337,7 +6337,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6362,7 +6362,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6384,7 +6384,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6409,7 +6409,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6431,7 +6431,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6456,7 +6456,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6478,7 +6478,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6503,7 +6503,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6525,7 +6525,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6550,7 +6550,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6572,7 +6572,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6597,7 +6597,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6619,7 +6619,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6644,7 +6644,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6666,7 +6666,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6691,7 +6691,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6713,7 +6713,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6738,7 +6738,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6760,7 +6760,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6786,7 +6786,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6808,7 +6808,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6833,7 +6833,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6855,7 +6855,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6880,7 +6880,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6902,7 +6902,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6927,7 +6927,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);
@@ -6949,7 +6949,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  weight,
+                  smootherWeight,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
                   nPostInnerIter);

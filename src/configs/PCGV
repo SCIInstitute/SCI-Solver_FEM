@@ -1,7 +1,0 @@
-solver=PCG
-max_iters=15
-smoother=GAUSSSEIDEL
-cuda_device_num=0
-part_max_size=512
-aggregator_type=1
-metis_size=90102

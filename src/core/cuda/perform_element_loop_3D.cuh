@@ -519,10 +519,16 @@ __global__ void element_loop_3d_kernel(size_t nv, ValueType *d_nx, ValueType *d_
     ValueType b1 = x[2] - x[3], b2 = y[2] - y[3], b3 = z[2] - z[3];
     ValueType c1 = x[0] - x[3], c2 = y[0] - y[3], c3 = z[0] - z[3];
 
-    ValueType Tvol = fabs(c1 * (a2 * b3 - a3 * b2) + c2 * (a3 * b1 - a1 * b3) + c3 * (a1 * b2 - a2 * b1)) / 6.0;
+    ValueType Tvol = fabs(
+      c1 * (a2 * b3 - a3 * b2) +
+      c2 * (a3 * b1 - a1 * b3) +
+      c3 * (a1 * b2 - a2 * b1)) / 6.0;
 
     //compute inverse of 4 by 4 matrix
-    ValueType a11 = x[0], a12 = y[0], a13 = z[0], a14 = 1.0, a21 = x[1], a22 = y[1], a23 = z[1], a24 = 1.0, a31 = x[2], a32 = y[2], a33 = z[2], a34 = 1.0, a41 = x[3], a42 = y[3], a43 = z[3], a44 = 1.0;
+    ValueType a11 = x[0], a12 = y[0], a13 = z[0], a14 = 1.0,
+      a21 = x[1], a22 = y[1], a23 = z[1], a24 = 1.0,
+      a31 = x[2], a32 = y[2], a33 = z[2], a34 = 1.0,
+      a41 = x[3], a42 = y[3], a43 = z[3], a44 = 1.0;
 
     ValueType det =
       a11 * a22 * a33 * a44 + a11 * a23 * a34 * a42 + a11 * a24 * a32 * a43

@@ -22,15 +22,9 @@ void Smoother<Matrix,Vector>::smooth_with_0_initial_guess(const Matrix &A, const
  * Allocates smoothers based on passed in type
  *********************************************/
 template <class Matrix, class Vector>
-Smoother<Matrix,Vector>* Smoother<Matrix,Vector>::allocate(AMG_Config& cfg, const Matrix_d& A)
+Smoother<Matrix,Vector>* Smoother<Matrix,Vector>::allocate(FEMSolver * cfg, const Matrix_d& A)
 {
-  SmootherType smoother=cfg.AMG_Config::getParameter<SmootherType>("smoother");
-  switch(smoother)
-  {
-    case GAUSSSEIDEL:
-    default:
-      return new gauss_seidel<Matrix,Vector>(cfg, A);
-  }
+  return new gauss_seidel<Matrix, Vector>(cfg, A);
 }
 
 /****************************************

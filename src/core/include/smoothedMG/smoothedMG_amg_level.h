@@ -35,7 +35,6 @@ class SmoothedMG_AMG_Level : public AMG_Level<Matrix, Vector>
 
    protected:
 
-
    void generateMatrixCsr(IdxVector_d &permutation, IdxVector_d &aggregateIdx, IdxVector_d &partitionIdx, IdxVector_d &partitionlabel);
    void generateMatrixSymmetric_d(IdxVector_d &permutation, IdxVector_d &aggregateIdx, IdxVector_d &partitionIdx, IdxVector_d &partitionlabel, bool verbose = false);
    void generateProlongatorFull_d(IdxVector_d &aggregateIdx, IdxVector_d &partitionIdx);
@@ -44,7 +43,6 @@ class SmoothedMG_AMG_Level : public AMG_Level<Matrix, Vector>
    void generateNextLevelMatrixFull_d(bool verbose = false);
    void computeAOperator();
 
-
    Matrix P, R;
    Matrix_coo_d P_d, R_d;
    Matrix_coo_h Acoo;
@@ -52,19 +50,10 @@ class SmoothedMG_AMG_Level : public AMG_Level<Matrix, Vector>
 
    Matrix_coo_h AinCoo;
 
-
-
    Aggregator<Matrix, Vector>* aggregator;
    IdxVector_h aggregateIdx;
    IdxVector_h partitionIdx;
    IdxVector_h permutation_h;
    IdxVector_h ipermutation_h;
-
-
-   double prosmoothomega;
-   int DS_type;
-   int metis_size;
-   int mesh_type;
-   int part_max_size;
 };
 #endif

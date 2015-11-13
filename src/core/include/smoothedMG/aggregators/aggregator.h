@@ -2,12 +2,11 @@
 #define __AGGREGATOR_H__
 template <class Matrix, class Vector> class Aggregator;
 
-#include <getvalue.h>
 #include <error.h>
 #include <types.h>
 #include <TriMesh.h>
 #include <tetmesh.h>
-#include<amg_config.h>
+#include <FEMSolver.h>
 
 template <class Matrix, class Vector>
 class Aggregator
@@ -25,7 +24,7 @@ class Aggregator
   virtual ~Aggregator()
   {
   }
-  static Aggregator<Matrix, Vector>* allocate(AMG_Config &cfg);
+  static Aggregator<Matrix, Vector>* allocate(FEMSolver * cfg);
 
 };
 #endif
