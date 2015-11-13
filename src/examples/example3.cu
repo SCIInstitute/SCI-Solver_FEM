@@ -75,18 +75,19 @@ int importStiffnessMatrixFromFile(string filename, Matrix_ell_h* targetMatrix, b
 
 int main(int argc, char** argv)
 {
-
-  //Verbose option
+  //Our main configuration object. We will set aspects where the
+  // default values are not what we desire.
+  FEMSolver cfg;
   bool verbose = false;
   bool zero_based = false;
   std::string filename, aFilename, bFilename;
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i],"-v") == 0) {
-      verbose = true;
+      cfg.verbose_ = true;
     } else if (strcmp(argv[i],"-i") == 0) {
       if (i+1 >= argc)
     	break;
-      filename = std::string(argv[i+1]);
+      cfg.filename_ = std::string(argv[i+1]);
       i++;
     } else if (strcmp(argv[i],"-b") == 0) {
       if (i+1 >= argc)
@@ -102,9 +103,6 @@ int main(int argc, char** argv)
       zero_based = true;
     }
   }
-  //Our main configuration object. We will set aspects where the
-  // default values are not what we desire.
-  FEMSolver cfg;
   //assuming our device is zero...
   cfg.device_ = 0;
   // Make sure part_max_size is representative of harware limits by default
@@ -134,15 +132,10 @@ int main(int argc, char** argv)
   cfg.cycleType_ = /*(CycleType::)*/V_CYCLE;
   //set the convergence tolerance algorithm
   cfg.convergeType_ = /*(ConvergenceType::)*/ABSOLUTE_CONVERGENCE;
-  //Now we read in the mesh of choice
-  //TriMesh* meshPtr = TriMesh::read("mesh.ply"); //-----if we were reading a Triangle mesh
-
   //read in the Tetmesh
   if (filename.empty())
-    filename = std::string("../example_data/CubeMesh_size256step16");
-  if (verbose)
-    std::cout << "Reading in file: " << filename << std::endl;
-  TetMesh* tetmeshPtr = TetMesh::read(
+    cfg.filename_ = "../src/test/test_data/CubeMesh_size256step16";
+  cfg.tetMesh_ = TetMesh::read(
       (filename + ".node").c_str(),
       (filename + ".ele").c_str(), zero_based, verbose);
   //The stiffness matrix A 
@@ -153,7 +146,7 @@ int main(int argc, char** argv)
   Vector_h_CG b_h(A_h.num_rows, 1.0);
   //The answer vector.
   Vector_h_CG x_h(A_h.num_rows, 0.0); //intial X vector
-  //************************ DEBUG : creating identity matrix for stiffness properties for now.
+  //********* DEBUG : creating identity matrix for stiffness properties for now.
   Matrix_ell_h identity(A_h.num_rows, A_h.num_rows, A_h.num_rows, 1);
   for (int i = 0; i < A_h.num_rows; i++) {
     identity.column_indices(i, 0) = i;
@@ -175,8 +168,6 @@ int main(int argc, char** argv)
   if( importStiffnessMatrixFromFile(aFilename, &A_h_imported, verbose) < 0 )
 	  return 0;
 
-  if( verbose )
-    std::cout << "Calling setup_solver." << std::endl;
   //The final call to the solver
   cfg.checkMatrixForValidContents(&A_h_imported);
   cfg.solveFEM(&A_h_imported, &x_h, &b_h);

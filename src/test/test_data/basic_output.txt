@@ -1,1 +1,0 @@
-sh: /home/sci/brig/SCI-Solver_FEM/build/test/cli: Is a directory

@@ -20,7 +20,7 @@ int main(int argc, char** argv)
   // default values are not what we desire.
   FEMSolver cfg;
   bool zero_based = false;
-  cfg.filename_ = std::string("../example_data/CubeMesh_size256step16");
+  cfg.filename_ = "../src/test/test_data/CubeMesh_size256step16";
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i], "-v") == 0) {
       cfg.verbose_ = true;

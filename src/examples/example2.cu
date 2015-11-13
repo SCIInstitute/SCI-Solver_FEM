@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 {
   //Verbose option
   FEMSolver cfg;
-  cfg.filename_ = "example_data/sphere_266verts.ply";
+  cfg.filename_ = "../src/test/test_data/sphere_290verts.ply";
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i], "-v") == 0) {
       cfg.verbose_ = true;

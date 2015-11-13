@@ -1,9 +1,0 @@
-solver=PCG
-max_levels=100
-cycle=F
-max_iters=100
-presweeps=1
-postsweeps=1
-norm=L2 
-convergence=ABSOLUTE
-tolerance=1e-6
