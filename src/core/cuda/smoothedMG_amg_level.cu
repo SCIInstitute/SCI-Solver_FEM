@@ -13,14 +13,10 @@
 using namespace std;
 
 template <class Matrix, class Vector>
-SmoothedMG_AMG_Level<Matrix, Vector>::SmoothedMG_AMG_Level(AMG<Matrix, Vector> *amg) : AMG_Level<Matrix, Vector>(amg)
+SmoothedMG_AMG_Level<Matrix, Vector>::SmoothedMG_AMG_Level(AMG<Matrix, Vector> *amg) 
+  : AMG_Level<Matrix, Vector>(amg)
 {
-   prosmoothomega = amg->cfg.AMG_Config::getParameter<double> ("pro_omega");
    aggregator = Aggregator<Matrix, Vector>::allocate(amg->cfg); // DHL
-   DS_type = amg->cfg.AMG_Config::getParameter<int> ("DS_type");
-   metis_size = amg->cfg.AMG_Config::getParameter<int> ("metis_size");
-   mesh_type = amg->cfg.AMG_Config::getParameter<int> ("mesh_type");
-   part_max_size = amg->cfg.AMG_Config::getParameter<int> ("part_max_size");
 }
 
 template <class Matrix, class Vector>
@@ -118,7 +114,8 @@ __global__ void matrixpermute_csr_kernel(int np, int num_entries,
 }
 
 template <>
-void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixCsr(IdxVector_d &permutation, IdxVector_d &aggregateIdx, IdxVector_d &partitionIdx, IdxVector_d &partitionlabel)
+void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixCsr(IdxVector_d &permutation,
+  IdxVector_d &aggregateIdx, IdxVector_d &partitionIdx, IdxVector_d &partitionlabel)
 {
 
    int numpart = partitionIdx.size() - 1;
@@ -311,7 +308,7 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateProlongatorFull_d(IdxVect
    thrust::sequence(T.row_indices.begin(), T.row_indices.end());
    cusp::detail::offsets_to_indices(aggregateIdx, T.column_indices);
    thrust::fill(T.values.begin(), T.values.end(), 1);
-   const AMGType lambda = prosmoothomega;
+   const AMGType lambda = this->amg->cfg->proOmega_;
 
    // temp <- -lambda * S(i,j) * T(j,k)
    Matrix_coo_d temp(S.num_rows, T.num_cols, S.num_entries + T.num_entries);
@@ -400,11 +397,13 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::createNextLevel(bool verbose)
    //compute permutation
    if(this->level_id == 0)
    {
-      if(mesh_type == 0)
+      if(this->amg->cfg->triMesh_ != NULL)
       {
          if (verbose)
            std::cout << "calling computePermutation_d with tri mesh." << std::endl;
-         aggregator->computePermutation_d(this->m_meshPtr, permutation_d, ipermutation_d, aggregateIdx_d, partitionIdx_d, partitionlabel_d, m_xadjout_d, m_adjncyout_d, metis_size, part_max_size, verbose);// DHL
+         aggregator->computePermutation_d(this->m_meshPtr, permutation_d, ipermutation_d,
+           aggregateIdx_d, partitionIdx_d, partitionlabel_d, m_xadjout_d, m_adjncyout_d,
+           this->amg->cfg->metisSize_, this->amg->cfg->partitionMaxSize_, verbose);// DHL
          if (verbose)
            std::cout << "computePermutation_d called with tri mesh." << std::endl;
       }
@@ -412,7 +411,10 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::createNextLevel(bool verbose)
       {
          if (verbose)
            std::cout << "calling computePermutation_d with tet mesh." << std::endl;
-         aggregator->computePermutation_d(this->m_tetmeshPtr, permutation_d, ipermutation_d, aggregateIdx_d, partitionIdx_d, partitionlabel_d, m_xadjout_d, m_adjncyout_d, metis_size, part_max_size, verbose); // DHL
+         aggregator->computePermutation_d(this->m_tetmeshPtr, permutation_d,
+           ipermutation_d, aggregateIdx_d, partitionIdx_d, partitionlabel_d,
+           m_xadjout_d, m_adjncyout_d, this->amg->cfg->metisSize_,
+           this->amg->cfg->partitionMaxSize_, verbose); // DHL
          if (verbose)
            std::cout << "computePermutation_d called with tet mesh." << std::endl;
       }
@@ -421,7 +423,10 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::createNextLevel(bool verbose)
    {
          if (verbose)
            std::cout << "calling computePermutation_d with level_id != 0." << std::endl;
-      aggregator->computePermutation_d(m_xadj_d, m_adjncy_d, permutation_d, ipermutation_d, aggregateIdx_d, partitionIdx_d, partitionlabel_d, m_xadjout_d, m_adjncyout_d, metis_size, part_max_size, verbose); // DHL
+      aggregator->computePermutation_d(m_xadj_d, m_adjncy_d, permutation_d,
+        ipermutation_d, aggregateIdx_d, partitionIdx_d, partitionlabel_d,
+        m_xadjout_d, m_adjncyout_d, this->amg->cfg->metisSize_, 
+        this->amg->cfg->partitionMaxSize_, verbose); // DHL
          if (verbose)
            std::cout << "computePermutation_d called with level_id != 0." << std::endl;
    }
@@ -441,7 +446,7 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::createNextLevel(bool verbose)
 
    //generate  matrix
    int num_per_thread;
-   switch(DS_type)
+   switch (amg->cfg->dsType_)
    {
 
    case 0:

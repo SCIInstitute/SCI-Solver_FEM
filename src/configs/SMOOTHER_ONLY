@@ -1,7 +1,0 @@
-max_levels=1
-max_iters=100
-presweeps=1
-postsweeps=0
-norm=L2 
-convergence=ABSOLUTE
-tolerance=1e-6

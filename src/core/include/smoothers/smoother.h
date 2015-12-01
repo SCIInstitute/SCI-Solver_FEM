@@ -7,53 +7,10 @@ enum SmootherType
   JACOBI, JACOBI_NO_CUSP, GAUSSSEIDEL, POLYNOMIAL, GSINNER
 };
 
-#include <getvalue.h>
 #include <error.h>
 #include <types.h>
 
-inline const char* getString(SmootherType p)
-{
-  switch (p)
-  {
-    case JACOBI:
-      return "JACOBI";
-    case JACOBI_NO_CUSP: //TODO remove cusp jacobi and rename
-      return "JACOBI_NO_CUSP";
-    case GAUSSSEIDEL:
-      return "GAUSSSEIDEL";
-    case POLYNOMIAL:
-      return "POLYNOMIAL";
-    case GSINNER:
-      return "GSINNER";
-    default:
-      return "UNKNOWN";
-  }
-}
-
-template <>
-inline SmootherType getValue<SmootherType>(const char* name)
-{
-  if (strncmp(name, "JACOBI", 100) == 0)
-    return JACOBI;
-
-  if (strncmp(name, "JACOBI_NO_CUSP", 100) == 0)
-    return JACOBI_NO_CUSP;
-
-  if (strncmp(name, "GAUSSSEIDEL", 100) == 0)
-    return GAUSSSEIDEL;
-
-  if (strncmp(name, "POLYNOMIAL", 100) == 0)
-    return POLYNOMIAL;
-
-  if (strncmp(name, "GSINNER", 100) == 0)
-    return GSINNER;
-
-  char error[100];
-  sprintf(error, "Smoother '%s' is not defined", name);
-  FatalError(error);
-}
-
-#include <amg_config.h>
+class FEMSolver;
 
 /*************************************
  * Smoother base class
@@ -192,7 +149,7 @@ public:
   virtual void smooth(const Matrix &A, const Vector &b, Vector &x) = 0;
   virtual void smooth_with_0_initial_guess(const Matrix &A, const Vector &b, Vector &x); //default initializes the vector to 0 and calls smooth
   virtual ~Smoother();
-  static Smoother<Matrix, Vector>* allocate(AMG_Config& cfg, const Matrix_d& A);
+  static Smoother<Matrix, Vector>* allocate(FEMSolver *cfg, const Matrix_d& A);
 	Vector diag;
 };
 #endif

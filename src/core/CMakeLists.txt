@@ -75,53 +75,25 @@ ENDIF()
 #END CMAKE SETTING CUDA_NVCC_FLAGS
 ###################
 
-include_directories(
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/include
-	${CMAKE_CURRENT_SOURCE_DIR}/include/cycles
-	${CMAKE_CURRENT_SOURCE_DIR}/include/smoothers
-	${CMAKE_CURRENT_SOURCE_DIR}/aggmis/include
-	${METIS_PATH}/Lib
-)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/cycles)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/smoothers)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/aggmis/include)
+include_directories(${METIS_PATH}/Lib)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-set(CORE_CUDA_SOURCES
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/aggregator.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/mis.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/randMIS.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/amg.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/amg_config.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/amg_level.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/amg_signal.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/cgcycle.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/allocator.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/ComputePermutationMethods.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/cutil.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/smoothedMG_amg_level.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/smoother.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/gauss_seidel.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/FEM2D.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/FEM3D.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/tetmesh.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/AggMIS_Types.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/misHelpers.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/randomizedMIS_GPU.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/setup_solver.cu"
-        "${CMAKE_CURRENT_SOURCE_DIR}/cuda/cuda_resources.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_Aggregation_CPU.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_Aggregation_GPU.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_GraphHelpers.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_IOHelpers.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_MergeSplitConditioner_CPU.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_MergeSplitConditioner.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_MIS_CPU.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/AggMIS_MIS_GPU.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/TriMesh_connectivity.cu"
-	"${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/TriMesh_io.cu"
-)
-
-set(CORE_CUDA_HEADERS
-	"${CMAKE_CURRENT_SOURCE_DIR}/cuda/perform_element_loop_3D.cuh"
-)
+FILE(GLOB CORE_CUDA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cuda/*.cu
+							${CMAKE_CURRENT_SOURCE_DIR}/aggmis/cuda/*.cu)
+							
+FILE(GLOB CORE_CUDA_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
+							${CMAKE_CURRENT_SOURCE_DIR}/include/smoothers/*.h
+							${CMAKE_CURRENT_SOURCE_DIR}/include/smoothedMG/*.h
+							${CMAKE_CURRENT_SOURCE_DIR}/include/smoothedMG/aggregators/*.h
+							${CMAKE_CURRENT_SOURCE_DIR}/include/FEM/*.h
+							${CMAKE_CURRENT_SOURCE_DIR}/include/cycles/*.h
+							${CMAKE_CURRENT_SOURCE_DIR}/aggmis/include/*.h
+							${CMAKE_CURRENT_SOURCE_DIR}/cuda/perform_element_loop_3D.cuh
+							${CMAKE_CURRENT_SOURCE_DIR}/cuda/perform_element_loop_2D.cuh)
 
 CUDA_ADD_LIBRARY(FEM_CORE STATIC ${CORE_CUDA_SOURCES} ${CORE_CUDA_HEADERS})
 ADD_DEPENDENCIES(FEM_CORE metis)
