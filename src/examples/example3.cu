@@ -29,21 +29,21 @@ void printMatlabReadContents(vector<double>& test)
     std::cout << "last element = " << test[test.size() - 1] << std::endl;
 }
 
-int importRhsVectorFromFile(string filename, Vector_h_CG& targetVector, bool verbose)
+int importRhsVectorFromFile(string filename, vector<double>* source,
+                            Vector_h_CG& targetVector, bool verbose)
 {
-  vector<double> sourceRead;
-
   if( filename.empty() ) {
     string errMsg = "No matlab file provided for RHS (b) vector.";
     errMsg += " Specify the file using argument at commandline using -b switch.";
     std::cerr << errMsg << std::endl;
     return -1;
   }
-  if (FEMSolver::readMatlabNormalMatrix(filename, &sourceRead) < 0) {
+  if (FEMSolver::readMatlabNormalMatrix(filename, source) < 0) {
     std::cerr << "Failed to read matlab file for RSH (b)." << std::endl;
     return -1;
   }
-  targetVector = sourceRead;
+//  targetVector = static_cast<const vector<double> >(*source);
+  targetVector = *source;
   if (verbose) {
     int sizeRead = targetVector.size();
     std::cout << "Finished reading RHS (b) data file with ";
@@ -151,42 +151,39 @@ int main(int argc, char** argv)
   cfg.tetMesh_ = TetMesh::read(
       (filename + ".node").c_str(),
       (filename + ".ele").c_str(), zero_based, verbose);
-
   //The stiffness matrix A 
   Matrix_ell_h A_h;
   //get the basic stiffness matrix (constant) by creating the mesh matrix
   cfg.getMatrixFromMesh(&A_h);
-
-  //Import right-hand-side single-column array (b)
-  Vector_h_CG b_h;
-  if( importRhsVectorFromFile(bFilename, b_h, verbose) < 0 )
-    return 0;
-
+  //intialize the b matrix to ones for now. TODO @DEBUG
+  Vector_h_CG b_h(A_h.num_rows, 1.0);
   //The answer vector.
   Vector_h_CG x_h(A_h.num_rows, 0.0); //intial X vector
-
-#define USE_IDENTITY_MATRIX_ONLY
-
-#ifndef USE_IDENTITY_MATRIX_ONLY
-  //Import stiffness matrix (A)
-  Matrix_ell_h A_h_import;
-  if( importStiffnessMatrixFromFile(aFilename, &A_h_import, verbose) < 0 )
-    return 0;
-#else //USE_IDENTITY_MATRIX_ONLY
-  Matrix_ell_h A_h_import(A_h.num_rows, A_h.num_rows, A_h.num_rows, 1.0);
+  //********* DEBUG : creating identity matrix for stiffness properties for now.
+  Matrix_ell_h identity(A_h.num_rows, A_h.num_rows, A_h.num_rows, 1);
   for (int i = 0; i < A_h.num_rows; i++) {
-    A_h_import.column_indices(i, 0) = i;
-    A_h_import.values(i, 0) = 1;
+    identity.column_indices(i, 0) = i;
+    identity.values(i, 0) = 1;
   }
-#endif //#ifdef USE_IDENTITY_MATRIX_ONLY
-
   //multiply the mesh matrix by the stiffness properties matrix.
-  Matrix_ell_h out;
-  cusp::multiply(A_h_import, A_h, out);
+  vector<double> test;
+  Matrix_ell_h out, A_fromFile;
+  Matrix_ell_h my_A(A_h);
+  cusp::multiply(identity, my_A, out);
   A_h = Matrix_ell_h(out);
+
+  //Import right-hand-side single-column array (b)
+  if( importRhsVectorFromFile(bFilename, &test, b_h, verbose) < 0 )
+    return 0;
+
+  Matrix_ell_h A_h_imported;
+  //Import stiffness matrix (A)
+  if( importStiffnessMatrixFromFile(aFilename, &A_h_imported, verbose) < 0 )
+    return 0;
+
   //The final call to the solver
-  cfg.checkMatrixForValidContents(&A_h);
-  cfg.solveFEM(&A_h, &x_h, &b_h);
+  cfg.checkMatrixForValidContents(&A_h_imported);
+  cfg.solveFEM(&A_h_imported, &x_h, &b_h);
   //At this point, you can do what you need with the matrices.
   if (cfg.writeMatlabArray("output.mat", x_h)) {
     std::cerr << "failed to write matlab file." << std::endl;
