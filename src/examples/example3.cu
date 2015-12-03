@@ -39,7 +39,7 @@ int importRhsVectorFromFile(string filename, vector<double>* source,
     return -1;
   }
   if (FEMSolver::readMatlabNormalMatrix(filename, source) < 0) {
-    std::cerr << "Failed to read matlab file for RSH (b)." << std::endl;
+    std::cerr << "Failed to read matlab file for RHS (b)." << std::endl;
     return -1;
   }
 //  targetVector = static_cast<const vector<double> >(*source);
@@ -149,8 +149,8 @@ int main(int argc, char** argv)
   if (filename.empty())
     cfg.filename_ = "../src/test/test_data/CubeMesh_size256step16";
   cfg.tetMesh_ = TetMesh::read(
-      (filename + ".node").c_str(),
-      (filename + ".ele").c_str(), zero_based, verbose);
+      (cfg.filename_ + ".node").c_str(),
+      (cfg.filename_ + ".ele").c_str(), zero_based, verbose);
   //The stiffness matrix A 
   Matrix_ell_h A_h;
   //get the basic stiffness matrix (constant) by creating the mesh matrix

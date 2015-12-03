@@ -384,9 +384,10 @@ int FEMSolver::readMatlabNormalMatrix(const std::string &filename, vector<double
   uint32_t arrayName_type;
   in.read((char*)&arrayName_type, 4);
   if (arrayName_type != 1 && arrayName_type != 2) {
-    std::cerr << "Invalid variable type for array name characters (Must be 8-bit)." << std::endl;
-    in.close();
-    return -1;
+    std::cerr << "WARNING: Invalid variable type (" << arrayName_type;
+    std::cerr << ") for array name characters (Must be 8-bit)." << std::endl;
+    //in.close();
+    //return -1;
   }
   uint32_t arrayName_length;
   in.read((char*)&arrayName_length, 4);
@@ -399,7 +400,8 @@ int FEMSolver::readMatlabNormalMatrix(const std::string &filename, vector<double
   //Data type in array field
   in.read((char*)&type, 4);
   if (type != 9) {
-    std::cerr << "Matrix data type must be miDOUBLE." << std::endl;
+    std::cerr << "Matrix data type must be miDOUBLE (type is ";
+    std::cerr << type << ")." << std::endl;
     in.close();
     return -1;
   }
