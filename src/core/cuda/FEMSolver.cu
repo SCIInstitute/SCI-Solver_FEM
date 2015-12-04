@@ -210,19 +210,20 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
   in.read((char*)&y_dim, 4);
 
   //Array name
-  uint32_t arrayName_type;
-  in.read((char*)&arrayName_type, 4);
+  uint32_t arrayName_type = 0;
+  in.read((char*)&arrayName_type, 2);
   if (arrayName_type != 1 && arrayName_type != 2) {
-    std::cerr << "Invalid variable type for array name characters (Must be 8-bit)." << std::endl;
+    std::cerr << "WARNING: Invalid variable type (" << arrayName_type;
+    std::cerr << ") for array name characters (Must be 8-bit)." << std::endl;
     in.close();
     return -1;
   }
-  uint32_t arrayName_length;
-  in.read((char*)&arrayName_length, 4);
-  //Account for padding of array name to match 64-bit requirement
-  int lenRemainder = arrayName_length % 8;
+  uint32_t arrayName_length = 0;
+  in.read((char*)&arrayName_length, 2);
+  //Account for padding of array name to match 32-bit requirement
+  int lenRemainder = arrayName_length % 4;
   if (lenRemainder != 0)
-    arrayName_length = arrayName_length + 8 - lenRemainder;
+    arrayName_length = arrayName_length + 4 - lenRemainder;
   in.read(buffer, arrayName_length); //Read the array name (ignore)
 
   //read in the row indices
@@ -381,20 +382,20 @@ int FEMSolver::readMatlabNormalMatrix(const std::string &filename, vector<double
   in.read((char*)&y_dim, 4);
 
   //Array name
-  uint32_t arrayName_type;
-  in.read((char*)&arrayName_type, 4);
+  uint32_t arrayName_type = 0;
+  in.read((char*)&arrayName_type, 2);
   if (arrayName_type != 1 && arrayName_type != 2) {
     std::cerr << "WARNING: Invalid variable type (" << arrayName_type;
     std::cerr << ") for array name characters (Must be 8-bit)." << std::endl;
-    //in.close();
-    //return -1;
+    in.close();
+    return -1;
   }
-  uint32_t arrayName_length;
-  in.read((char*)&arrayName_length, 4);
-  //Account for padding of array name to match 64-bit requirement
-  int lenRemainder = arrayName_length % 8;
+  uint32_t arrayName_length = 0;
+  in.read((char*)&arrayName_length, 2);
+  //Account for padding of array name to match 32-bit requirement
+  int lenRemainder = arrayName_length % 4;
   if (lenRemainder != 0)
-    arrayName_length = arrayName_length + 8 - lenRemainder;
+    arrayName_length = arrayName_length + 4 - lenRemainder;
   in.read(buffer, arrayName_length); //Read the array name (ignore)
 
   //Data type in array field
