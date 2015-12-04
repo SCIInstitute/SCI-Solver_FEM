@@ -20,6 +20,7 @@ int main(int argc, char** argv)
   // default values are not what we desire.
   FEMSolver cfg;
   bool zero_based = false;
+  std::string Aname = "test.mat";
   cfg.filename_ = "../src/test/test_data/CubeMesh_size256step16";
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i], "-v") == 0) {
@@ -27,6 +28,10 @@ int main(int argc, char** argv)
     } else if (strcmp(argv[i], "-i") == 0) {
       if (i + 1 >= argc) break;
       cfg.filename_ = std::string(argv[i + 1]);
+      i++;
+    } else if (strcmp(argv[i], "-A") == 0) {
+      if (i + 1 >= argc) break;
+      Aname = std::string(argv[i + 1]);
       i++;
     } else if (strcmp(argv[i], "-z") == 0) {
       zero_based = true;
@@ -87,7 +92,7 @@ int main(int argc, char** argv)
   cusp::multiply(identity, my_A, out);
   A_h = Matrix_ell_h(out);
 
-  if(FEMSolver::readMatlabSparseMatrix("mysparse.mat",&test)) {
+  if(FEMSolver::readMatlabSparseMatrix(Aname.c_str(),&test)) {
     std::cerr << "failed to read matlab file." << std::endl;
   }
   //************************ DEBUG*/
