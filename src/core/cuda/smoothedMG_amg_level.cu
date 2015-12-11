@@ -207,6 +207,12 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixSymmetric_d(IdxVect
    Acoo_d = A_d;
    cusp::array1d<int, cusp::device_memory> entrypartlabel(numentries, -1);
 
+   if (verbose)
+   {
+      printf("generateMatrixSymmetric_d: ");
+      printf("A_d has %d entries (%d x %d).\n", numentries, A_d.num_rows, A_d.num_cols);
+   }
+
    size_t blocksize = 256;
    size_t blocknum = ceil((float)numentries / (float)blocksize);
    if(blocknum > 65535) printf("too many blocks!!\n");
@@ -238,6 +244,13 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixSymmetric_d(IdxVect
    thrust::reduce_by_key(entrypartlabel.begin(), entrypartlabel.end(), redvalue.begin(), redoutputkey.begin(), redoutputvalue.begin());
    int innum = thrust::reduce(redoutputvalue.begin(), redoutputvalue.begin() + numpart);
    int outnum = numentries - innum - redoutputvalue[numpart * 2];
+   if (verbose)
+   {
+      printf("Size of redoutputkey: before thrust::reduce = %d, after = %d\n", 2 * numpart + 1, redoutputkey.size());
+      printf("Size of redoutputvalue: before thrust::reduce = %d, after = %d\n", 2 * numpart + 1, redoutputvalue.size());
+      printf("Results of thrust::reduce on redoutputvalue: innum = %d", innum);
+      printf(", outnum = %d\n", outnum);
+   }
    IntIterator res = thrust::max_element(redoutputvalue.begin(), redoutputvalue.begin() + numpart);
    largest_num_entries = *res;
 
