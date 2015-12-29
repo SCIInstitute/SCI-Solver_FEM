@@ -153,6 +153,10 @@ int main(int argc, char** argv)
       (cfg.filename_ + ".ele").c_str(), zero_based, verbose);
   //The stiffness matrix A 
   Matrix_ell_h A_h;
+  //Import stiffness matrix (A)
+  if( importStiffnessMatrixFromFile(aFilename, &A_h, verbose) < 0 )
+    return 0;
+
   //get the basic stiffness matrix (constant) by creating the mesh matrix
   cfg.getMatrixFromMesh(&A_h);
   //intialize the b matrix to ones for now. TODO @DEBUG
@@ -176,14 +180,9 @@ int main(int argc, char** argv)
   if( importRhsVectorFromFile(bFilename, &test, b_h, verbose) < 0 )
     return 0;
 
-  Matrix_ell_h A_h_imported;
-  //Import stiffness matrix (A)
-  if( importStiffnessMatrixFromFile(aFilename, &A_h_imported, verbose) < 0 )
-    return 0;
-
   //The final call to the solver
-  cfg.checkMatrixForValidContents(&A_h_imported);
-  cfg.solveFEM(&A_h_imported, &x_h, &b_h);
+  cfg.checkMatrixForValidContents(&A_h);
+  cfg.solveFEM(&A_h, &x_h, &b_h);
   //At this point, you can do what you need with the matrices.
   if (cfg.writeMatlabArray("output.mat", x_h)) {
     std::cerr << "failed to write matlab file." << std::endl;
