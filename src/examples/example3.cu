@@ -163,19 +163,19 @@ int main(int argc, char** argv)
   Vector_h_CG b_h(A_h.num_rows, 1.0);
   //The answer vector.
   Vector_h_CG x_h(A_h.num_rows, 0.0); //intial X vector
-  //********* DEBUG : creating identity matrix for stiffness properties for now.
+/*  //DEBUG : creating identity matrix for stiffness properties for now.
   Matrix_ell_h identity(A_h.num_rows, A_h.num_rows, A_h.num_rows, 1);
   for (int i = 0; i < A_h.num_rows; i++) {
     identity.column_indices(i, 0) = i;
     identity.values(i, 0) = 1;
   }
   //multiply the mesh matrix by the stiffness properties matrix.
-  vector<double> test;
   Matrix_ell_h out, A_fromFile;
   Matrix_ell_h my_A(A_h);
   cusp::multiply(identity, my_A, out);
   A_h = Matrix_ell_h(out);
-
+*/
+  vector<double> test;
   //Import right-hand-side single-column array (b)
   if( importRhsVectorFromFile(bFilename, &test, b_h, verbose) < 0 )
     return 0;
