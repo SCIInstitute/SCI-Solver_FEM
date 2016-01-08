@@ -140,7 +140,7 @@ void FEMSolver::getMatrixFromMesh(Matrix_ell_h* A_h) {
     Matrix_ell_d_CG Aell_d;
     Vector_d_CG RHS(this->tetMesh_->vertices.size(), 0.0);
     //generate the unit constant mesh stiffness matrix
-    tetmesh2ell<Matrix_ell_d_CG >(this->tetMesh_, Aell_d, this->verbose_);
+    tetmesh2ell<Matrix_ell_d_CG >(this->tetMesh_, A_h, Aell_d, this->verbose_);
     cudaThreadSynchronize();
     //assembly step
     fem3d->initializeWithTetMesh(this->tetMesh_);

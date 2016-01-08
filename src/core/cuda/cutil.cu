@@ -166,7 +166,7 @@ void __global__ compute_ele_indices_kernel(IndexType* tri0, IndexType* tri1, Ind
 //}
 
 template<>
-void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_d_CG &A_d, bool verbose)
+void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_h* Aimport, Matrix_ell_d_CG &A_d, bool verbose)
 {
   typedef typename Matrix_ell_d_CG::value_type ValueType;
   typedef typename Matrix_ell_d_CG::index_type IndexType;
@@ -200,6 +200,23 @@ void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_d_CG &A_d, bool v
   //A.resize(nv, nv, num_entries, maxsize, 32);
   if( verbose )
     std::cout << "Adding values to matrix A... ";
+
+  int maxsize = 0;
+  int currRowSize = 0;
+  int nRowsI = Aimport->num_rows;
+  int nColsI = Aimport->num_cols;
+  for (int m = 0; m < nRowsI; m++)
+  {
+    currRowSize = 0;
+	for (int n = 0; n < nColsI; n++)
+	{
+      if( Aimport->column_indices != X )
+        currRowSize++;
+	}
+	if( currRowSize > maxsize )
+      maxsize = currRowSize;
+  }
+
   for(int i = 0; i < nv; i++)
   {
     A.column_indices(i, 0) = i;
