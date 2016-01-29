@@ -211,19 +211,29 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
 
   //Array name
   uint32_t arrayName_type = 0;
+  uint32_t arrayName_length = 0;
+  uint8_t  byteAlignmentForPadding = 4;
   in.read((char*)&arrayName_type, 2);
+  in.read((char*)&arrayName_length, 2);
+
+  //If next 16-bits are zero, then MAT file is not using the small data
+  // element format for storing array name
+  if( arrayName_length == 0 ) {
+	in.read((char*)&arrayName_length, 4);
+	byteAlignmentForPadding = 8;
+  }
   if (arrayName_type != 1 && arrayName_type != 2) {
     std::cerr << "WARNING: Invalid variable type (" << arrayName_type;
     std::cerr << ") for array name characters (Must be 8-bit)." << std::endl;
     in.close();
     return -1;
   }
-  uint32_t arrayName_length = 0;
-  in.read((char*)&arrayName_length, 2);
-  //Account for padding of array name to match 32-bit requirement
-  int lenRemainder = arrayName_length % 4;
+
+  //Account for padding of array name to match the 32-bit or 64-bit requirement,
+  // depending on the short or normal format for the array name format.
+  int lenRemainder = arrayName_length % byteAlignmentForPadding;
   if (lenRemainder != 0)
-    arrayName_length = arrayName_length + 4 - lenRemainder;
+    arrayName_length = arrayName_length + byteAlignmentForPadding - lenRemainder;
   in.read(buffer, arrayName_length); //Read the array name (ignore)
 
   //read in the row indices
@@ -274,6 +284,8 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
     in.read((char*)&double_val, 8);
     double_vals.push_back(double_val);
   }
+  in.read(buffer, byte_per_element % 8); //read remainder to preserve alignment
+
   std::vector<SparseEntry_t> sparse_entries;
   int32_t num_entries = col_vals[y_dim];
   sparse_entries.reserve(num_entries);
@@ -281,7 +293,7 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
   row_max.resize(x_dim);
   for (size_t i = 0; i < row_max.size(); i++)
     row_max[i] = 0;
-  in.read(buffer, byte_per_element % 8);
+int cnt = 0;
   for (size_t i = 0; i < y_dim; i++) {
     int32_t idx = col_vals[i];
     int32_t idx_end = col_vals[i + 1] - 1;
@@ -291,6 +303,7 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
       sparse_entries.push_back(
         SparseEntry_t(row_vals[j], col,
         static_cast<float>(double_vals[j])));
+std::cout << "[s] " << row_vals[j] << ", " << col << ", " << static_cast<float>(double_vals[j]) << " (" << cnt++ << ")" << std::endl;
     }
   }
   //now set up the ell matrix.
@@ -309,18 +322,23 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
   for (size_t i = 0; i < sparse_entries.size(); i++) {
     A.column_indices(current_row, row_count) = sparse_entries[i].col_;
     A.values(current_row, row_count) = sparse_entries[i].val_;
+std::cout << "[" << A.column_indices(current_row, row_count) << "]" << A.values(current_row, row_count) << ", ";
+int32_t row_stop;
     row_count++;
     if (((i + 1 < sparse_entries.size()) && (current_row != sparse_entries[i + 1].row_))
       || (i + 1 == sparse_entries.size())) {
+row_stop = row_count;
       while (row_count < max_row) {
         A.column_indices(current_row, row_count) = bad_entry;
         A.values(current_row, row_count) = 0.f;
         row_count++;
       }
+if( row_stop < max_row )  std::cout << "(fill " << row_stop << " - " << max_row << " with " << row_count - row_stop << " bad entries).";
       if (i + 1 < sparse_entries.size())
         current_row = sparse_entries[i + 1].row_;
       row_count = 0;
     }
+std::cout << std::endl;
   }
   in.close();
   *A_h = Matrix_ell_h(A);
