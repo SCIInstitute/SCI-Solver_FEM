@@ -303,7 +303,7 @@ int cnt = 0;
       sparse_entries.push_back(
         SparseEntry_t(row_vals[j], col,
         static_cast<float>(double_vals[j])));
-std::cout << "[s] " << row_vals[j] << ", " << col << ", " << static_cast<float>(double_vals[j]) << " (" << cnt++ << ")" << std::endl;
+std::cout << "[s] " << row_vals[j] << "," << col << " = " << static_cast<float>(double_vals[j]) << " (" << cnt++ << ")" << std::endl;
     }
   }
   //now set up the ell matrix.
@@ -319,11 +319,16 @@ std::cout << "[s] " << row_vals[j] << ", " << col << ", " << static_cast<float>(
   // X is used to fill unused entries in the matrix
   const int bad_entry = Matrix_ell_h::invalid_index;
   int32_t current_row = 0, row_count = 0;
+int32_t total_count = 0;
+std::cout << "##Starting cusp sparse matrix storage loop with " << max_row << " values found." << std::endl;
   for (size_t i = 0; i < sparse_entries.size(); i++) {
     A.column_indices(current_row, row_count) = sparse_entries[i].col_;
     A.values(current_row, row_count) = sparse_entries[i].val_;
-std::cout << "[" << A.column_indices(current_row, row_count) << "]" << A.values(current_row, row_count) << ", ";
+if( row_count == 0 ) std::cout << "[" << current_row << ",]: ";
+std::cout << " [," << A.column_indices(current_row, row_count) << "]=";
+printf("%f", A.values(current_row, row_count));
 int32_t row_stop;
+total_count++;
     row_count++;
     if (((i + 1 < sparse_entries.size()) && (current_row != sparse_entries[i + 1].row_))
       || (i + 1 == sparse_entries.size())) {
@@ -333,13 +338,14 @@ row_stop = row_count;
         A.values(current_row, row_count) = 0.f;
         row_count++;
       }
-if( row_stop < max_row )  std::cout << "(fill " << row_stop << " - " << max_row << " with " << row_count - row_stop << " bad entries).";
+if( row_stop < max_row )  std::cout << "  fill " << row_count - row_stop;
       if (i + 1 < sparse_entries.size())
         current_row = sparse_entries[i + 1].row_;
       row_count = 0;
-    }
 std::cout << std::endl;
+    }
   }
+std::cout << "Total of " << total_count << " values processed." << std::endl;
   in.close();
   *A_h = Matrix_ell_h(A);
   return 0;
