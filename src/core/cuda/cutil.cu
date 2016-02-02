@@ -166,7 +166,7 @@ void __global__ compute_ele_indices_kernel(IndexType* tri0, IndexType* tri1, Ind
 //}
 
 template<>
-void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_h* Aimport, Matrix_ell_d_CG &A_d, bool verbose)
+void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_d_CG &A_d, bool verbose)
 {
   typedef typename Matrix_ell_d_CG::value_type ValueType;
   typedef typename Matrix_ell_d_CG::index_type IndexType;
@@ -198,66 +198,8 @@ void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_h* Aimport, Matri
   if( verbose )
     std::cout << "done." << std::endl;
   //A.resize(nv, nv, num_entries, maxsize, 32);
-  //if( verbose )
-  //  std::cout << "Adding values to matrix A... ";
-
-
-
-  maxsize = 0;
-  int currRowSize = 0;
-  //Loop through imported A[] to get the max number of valid entries in
-  // a single row, which will ultimately be the width of the A matrix.
-  for (int i = 0; i < Aimport->num_rows; i++)
-  {
-    currRowSize = 0;
-    /*for (int j = 0; j < Aimport->num_cols; j++)
-    {
-      //Need to read value here and check if it is valid, and if so row size++
-      if( Aimport != X )
-        currRowSize++;
-    }*/
-    if( currRowSize > maxsize )
-      maxsize = currRowSize;
-  }
   if( verbose )
-    std::cout << "Finished obtaining maxsize(A)" << std::endl;
-
-  //Now construct A[] in sparse matrix format.
-  int AcolIdx = 0;
-  for (int i = 0; i < Aimport->num_rows; i++)
-  {
-    for (int j = 0; j < Aimport->num_cols; j++)
-    {
-      //If a valid entry in the matrix, enter it in sparse matrix
-      // format (with column index & value).
-      if( Aimport->column_indices(i, j) != X )
-      {
-        A.column_indices(i, AcolIdx) = j;
-        A.values(i, AcolIdx) = Aimport->values(i, j);
-        AcolIdx++;
-      }
-
-      //Fill the remainder of this row with invalid (X) values
-      for (; AcolIdx < maxsize; AcolIdx++)
-      {
-        A.values(i, AcolIdx) = 0;
-        A.column_indices(i, AcolIdx) = X;
-      }
-	}
-
-	std::cout << "A[" << i << ",:] = ";
-	for (int j = 0; j < maxsize; j++)
-    {
-      std::cout << A.values(i, j) << "(";
-      if( A.column_indices(i, j) == X )
-        std::cout << "X";
-      else
-        std::cout << A.column_indices(i, j);
-      std::cout << ")";
-    }
-	std::cout << std::endl;
-  }
-
+    std::cout << "Adding values to matrix A... ";
   for(int i = 0; i < nv; i++)
   {
     A.column_indices(i, 0) = i;
