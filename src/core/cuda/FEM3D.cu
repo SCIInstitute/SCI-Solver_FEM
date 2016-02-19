@@ -529,19 +529,7 @@ void FEM3D::assemble(TetMesh* meshPtr, Matrix_ell_d_CG &A, Vector_d_CG &b, bool 
 
   CGType phiTet[DEGREE][DEGREE][DEGREE][4];
 
-
   EvalBasisTet(coefmatBaseTet, qdTet, phiTet);
-
-  //  Vector_h_CG Integration(10);
-  //
-  //  int cnt = 0;
-  //  for(int p =0;p<4; p++)
-  //  {
-  //    for(int q = p; q<4; q++)
-  //    {
-  //       IntegrationInTet(phiTet, weight_x, weight_y, weight_z, integrand[cnt++]);
-  //    }
-  //  }
 
   Vector_h_CG phi(DEGREE * DEGREE * DEGREE * 4);
   for(int l = 0; l < 4; l++)
@@ -550,14 +538,8 @@ void FEM3D::assemble(TetMesh* meshPtr, Matrix_ell_d_CG &A, Vector_d_CG &b, bool 
         for(int k = 0; k < DEGREE; k++)
           phi[l * DEGREE * DEGREE * DEGREE + i * DEGREE * DEGREE + j * DEGREE + k] = phiTet[i][j][k][l];
 
-  //  Vector_d_CG phi_d = phi;
-  //  phi.clear();
-
   Vector_h_CG integrandMass(10);
   IntegrationInTet(phi, weight_x, weight_y, weight_z, integrandMass);
-
-  //  Vector_h_CG integrandForce(10);
-  //  IntegrationForce(phi, weight_x, weight_y, weight_z, integrandForce);
 
   ValueType * tmp_w_x = thrust::raw_pointer_cast(&weight_x[0]);
   ValueType* tmp_w_y = thrust::raw_pointer_cast(&weight_y[0]);
@@ -566,7 +548,9 @@ void FEM3D::assemble(TetMesh* meshPtr, Matrix_ell_d_CG &A, Vector_d_CG &b, bool 
   IdxVector_d matlabels = meshPtr->matlabels;
   Vector_d_CG integrandMass_d = integrandMass;
 
-  perform_element_loop_3d(d_vx, d_vy, d_vz, d_tri0, d_tri1, d_tri2, d_tri3, A, b, phi, weight_x, weight_y, weight_z, matlabels, integrandMass_d, isdevice);
+  perform_element_loop_3d(d_vx, d_vy, d_vz, d_tri0,
+    d_tri1, d_tri2, d_tri3, A, b, phi, weight_x, 
+    weight_y, weight_z, matlabels, integrandMass_d, isdevice);
   phi.clear();
 
 }

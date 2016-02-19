@@ -43,13 +43,20 @@ public:
     bool verbose = false);
   virtual ~FEMSolver();
 public:
-  void solveFEM(Matrix_ell_h* A_d, Vector_h_CG* x_h, Vector_h_CG* b_h);
+  void solveFEM(Matrix_ell_h* A_h, Vector_h_CG* x_h, Vector_h_CG* b_h);
   void getMatrixFromMesh(Matrix_ell_h* A_h);
   static int readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h *A_h);
   static int readMatlabNormalMatrix(const std::string &filename, vector<double> *A_h);
   int writeMatlabArray(const std::string &filename, const Vector_h_CG &array);
   void checkMatrixForValidContents(Matrix_ell_h* A_h);
-  void writeVTK(std::vector <float> values, std::string fname);
+  void writeVTK(std::vector <float> values, std::string fname); 
+  void printElementWithHeader(vector<double>& test, unsigned int index);
+  void printMatlabReadContents(vector<double>& test);
+  int importRhsVectorFromFile(std::string filename, 
+    Vector_h_CG& targetVector, bool verbose);
+  int FEMSolver::importStiffnessMatrixFromFile(std::string filename,
+    Matrix_ell_h* targetMatrix, bool verbose);
+  void FEMSolver::debugPrintMatlabels(TetMesh* mesh);
 private:
   bool InitCUDA();
   static bool compare_sparse_entry(SparseEntry_t a, SparseEntry_t b);
@@ -75,7 +82,7 @@ public:
   double smootherWeight_;         // the weight parameter used in a smoother
   double proOmega_;               // the weight parameter used in prolongator smoother
   int device_;                    // the GPU device number to specify
-  //The static pointer to the mesh
+  //The pointers to the meshes
   TetMesh * tetMesh_;
   TriMesh * triMesh_;
 };

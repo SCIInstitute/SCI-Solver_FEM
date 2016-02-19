@@ -10,7 +10,7 @@
  *  2. We set all of the parameters we want. (Otherwise defaults used.)
  *  3. We read in our input data mesh.
  *  4. We declare all the variables we need for the solver (matrices).
- *  5. We invoke the "setup_solver" call, which does all of the work.
+ *  5. We invoke the "setupFEM" call, which does all of the work.
  */
 
 int main(int argc, char** argv)
@@ -20,7 +20,7 @@ int main(int argc, char** argv)
   // default values are not what we desire.
   FEMSolver cfg;
   bool zero_based = false;
-  std::string Aname = "test.mat";
+  std::string Aname = "", bName;
   cfg.filename_ = "../src/test/test_data/CubeMesh_size256step16";
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i], "-v") == 0) {
@@ -28,6 +28,10 @@ int main(int argc, char** argv)
     } else if (strcmp(argv[i], "-i") == 0) {
       if (i + 1 >= argc) break;
       cfg.filename_ = std::string(argv[i + 1]);
+      i++;
+    } else if (strcmp(argv[i], "-b") == 0) {
+      if (i + 1 >= argc) break;
+      bName = std::string(argv[i + 1]);
       i++;
     } else if (strcmp(argv[i], "-A") == 0) {
       if (i + 1 >= argc) break;
@@ -44,28 +48,16 @@ int main(int argc, char** argv)
   // device. We can set our max allocation based on that number
   int max_registers_used = 64;
   cfg.partitionMaxSize_ = getMaxThreads(max_registers_used, cfg.device_);
-  //set the convergence tolerance
   cfg.tolerance_= 1e-8;
-  //set the weight parameter used in a smoother
   cfg.smootherWeight_ = 0.7;
-  //set the weight parameter used in a prolongator smoother
   cfg.proOmega_ =  0.7;
-  //set the maximum solve iterations
   cfg.maxIters_ = 10;
-  //set the pre inner iterations for GSINNER
   cfg.preInnerIters_ = 2;
-  //set the post inner iterations for GSINNER
   cfg.postInnerIters_ = 3;
-  //set the Aggregator METIS (0) or MIS (1)
   cfg.aggregatorType_ = 1;
-  //set the Max size of coarsest level
-  cfg.metisSize_ = 90102;
-  //set the solving algorithm
-  cfg.solverType_ = /*(SolverType::)*/PCG_SOLVER;
-  //set the cycle algorithm
-  cfg.cycleType_ = /*(CycleType::)*/V_CYCLE;
-  //set the convergence tolerance algorithm
-  cfg.convergeType_ = /*(ConvergenceType::)*/ABSOLUTE_CONVERGENCE;
+  cfg.solverType_ = PCG_SOLVER;
+  cfg.cycleType_ = V_CYCLE;
+  cfg.convergeType_ = ABSOLUTE_CONVERGENCE;
   //Now we read in the mesh of choice
   //TriMesh* meshPtr = TriMesh::read("mesh.ply"); //-----if we were reading a Triangle mesh
   //read in the Tetmesh
@@ -74,28 +66,23 @@ int main(int argc, char** argv)
     (cfg.filename_ + ".ele").c_str(), zero_based, cfg.verbose_);
   //The stiffness matrix A 
   Matrix_ell_h A_h;
-  //get the basic stiffness matrix (constant) by creating the mesh matrix
-  cfg.getMatrixFromMesh(&A_h);
+  if (Aname.empty()) {
+    //get the basic stiffness matrix (constant) by creating the mesh matrix
+    cfg.getMatrixFromMesh(&A_h);
+  } else {
+    //Import stiffness matrix (A)
+    if (cfg.importStiffnessMatrixFromFile(Aname, &A_h, cfg.verbose_) < 0)
+      return 0;
+  }
   //intialize the b matrix to ones for now.
   Vector_h_CG b_h(A_h.num_rows, 1.0);
+  if (!bName.empty()) {
+    //Import right-hand-side single-column array (b)
+    if (cfg.importRhsVectorFromFile(bName, b_h, cfg.verbose_) < 0)
+      return 0;
+  }
   //The answer vector.
   Vector_h_CG x_h(A_h.num_rows, 0.0); //intial X vector
-  //************************ DEBUG : creating identity matrix for stiffness properties for now.
-  Matrix_ell_h identity(A_h.num_rows, A_h.num_rows, A_h.num_rows, 1);
-  for (int i = 0; i < A_h.num_rows; i++) {
-	  identity.column_indices(i, 0) = i;
-	  identity.values(i, 0) = 1;
-  }
-  //multiply the mesh matrix by the stiffness properties matrix.
-  Matrix_ell_h out, test;
-  Matrix_ell_h my_A(A_h);
-  cusp::multiply(identity, my_A, out);
-  A_h = Matrix_ell_h(out);
-
-  if(FEMSolver::readMatlabSparseMatrix(Aname.c_str(),&test)) {
-    std::cerr << "failed to read matlab file." << std::endl;
-  }
-  //************************ DEBUG*/
   //The final call to the solver
   cfg.checkMatrixForValidContents(&A_h);
   cfg.solveFEM(&A_h, &x_h, &b_h);

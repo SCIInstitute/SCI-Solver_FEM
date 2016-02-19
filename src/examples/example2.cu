@@ -49,7 +49,7 @@ int main(int argc, char** argv)
   A = Matrix_ell_h(out);
   //************************ DEBUG*/
   //The final call to the solver
-  cfg.checkMatrixForValidContents(&A);
+  cfg.checkMatrixForValidContents(&my_A);
   cfg.solveFEM(&A, &x_h, &b_h);
   //At this point, you can do what you need with the matrices.
   cfg.writeMatlabArray("output.mat", x_h);

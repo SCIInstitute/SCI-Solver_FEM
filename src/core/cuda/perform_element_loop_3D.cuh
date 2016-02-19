@@ -755,8 +755,12 @@ void element_loop_3d_host(Vector_h_CG &nx, Vector_h_CG &ny, Vector_h_CG &nz, Idx
   }
 }
 
-void perform_element_loop_3d(Vector_d_CG &nx, Vector_d_CG &ny, Vector_d_CG &nz, IdxVector_d &tri0, IdxVector_d &tri1, IdxVector_d &tri2, IdxVector_d &tri3, Matrix_ell_d_CG &A, Vector_d_CG &b,
-    Vector_h_CG & phi, Vector_h_CG &weight_x, Vector_h_CG &weight_y, Vector_h_CG & weight_z, IdxVector_d &matlabels, Vector_d_CG &integrand, bool isdevice)
+void perform_element_loop_3d(Vector_d_CG &nx, Vector_d_CG &ny,
+  Vector_d_CG &nz, IdxVector_d &tri0, IdxVector_d &tri1,
+  IdxVector_d &tri2, IdxVector_d &tri3, Matrix_ell_d_CG &A,
+  Vector_d_CG &b, Vector_h_CG & phi, Vector_h_CG &weight_x,
+  Vector_h_CG &weight_y, Vector_h_CG & weight_z,
+  IdxVector_d &matlabels, Vector_d_CG &integrand, bool isdevice)
 {
   typedef typename Matrix_ell_d_CG::index_type IndexType;
   typedef typename Matrix_ell_d_CG::value_type ValueType;
