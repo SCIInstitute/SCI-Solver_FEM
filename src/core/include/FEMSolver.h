@@ -29,38 +29,38 @@
 /** The class that represents all of the available options for FEM */
 class FEMSolver {
   class SparseEntry_t {
-  public:
-    int32_t row_;
-    int32_t col_;
-    float   val_;
-    SparseEntry_t(int32_t r, int32_t c, int32_t v) : row_(r), col_(c), val_(
-      static_cast<float>(v)) {}
-    ~SparseEntry_t() {}
+    public:
+      int32_t row_;
+      int32_t col_;
+      float   val_;
+      SparseEntry_t(int32_t r, int32_t c, int32_t v) : row_(r), col_(c), val_(
+          static_cast<float>(v)) {}
+      ~SparseEntry_t() {}
   };
 
-public:
+  public:
   FEMSolver(std::string fname = "../src/test/test_data/sphere334",
-    bool verbose = false);
+      bool verbose = false);
   virtual ~FEMSolver();
-public:
+  public:
   void solveFEM(Matrix_ell_h* A_h, Vector_h_CG* x_h, Vector_h_CG* b_h);
   void getMatrixFromMesh(Matrix_ell_h* A_h);
   static int readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h *A_h);
   static int readMatlabNormalMatrix(const std::string &filename, vector<double> *A_h);
   int writeMatlabArray(const std::string &filename, const Vector_h_CG &array);
   void checkMatrixForValidContents(Matrix_ell_h* A_h);
-  void writeVTK(std::vector <float> values, std::string fname); 
+  void writeVTK(std::vector <float> values, std::string fname);
   void printElementWithHeader(vector<double>& test, unsigned int index);
   void printMatlabReadContents(vector<double>& test);
-  int importRhsVectorFromFile(std::string filename, 
-    Vector_h_CG& targetVector, bool verbose);
-  int FEMSolver::importStiffnessMatrixFromFile(std::string filename,
-    Matrix_ell_h* targetMatrix, bool verbose);
-  void FEMSolver::debugPrintMatlabels(TetMesh* mesh);
-private:
+  int importRhsVectorFromFile(std::string filename,
+      Vector_h_CG& targetVector, bool verbose);
+  int importStiffnessMatrixFromFile(std::string filename,
+      Matrix_ell_h* targetMatrix, bool verbose);
+  void debugPrintMatlabels(TetMesh* mesh);
+  private:
   bool InitCUDA();
   static bool compare_sparse_entry(SparseEntry_t a, SparseEntry_t b);
-public:
+  public:
   //data
   bool verbose_;                  // output verbosity
   std::string filename_;          // mesh file name
