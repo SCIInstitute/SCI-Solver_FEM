@@ -262,27 +262,37 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixSymmetric_d(IdxVect
    thrust::copy(redoutputvalue.begin(), redoutputvalue.begin() + numpart, AinBlockIdx.begin());
    thrust::exclusive_scan(AinBlockIdx.begin(), AinBlockIdx.end(), AinBlockIdx.begin());
    AinBlockIdx[numpart] = innum;
+   if (verbose)
+      printf("finished with AinBlock\n");
 
    IdxVector_d AoutBlockIdx(numpart + 1);
    thrust::copy(redoutputvalue.begin() + numpart, redoutputvalue.begin() + 2 * numpart, AoutBlockIdx.begin());
    thrust::exclusive_scan(AoutBlockIdx.begin(), AoutBlockIdx.end(), AoutBlockIdx.begin());
    AoutBlockIdx[numpart] = outnum;
+   if (verbose)
+      printf("finished with AoutBlock\n");
 
    AinBlockIdx_d = AinBlockIdx;
    AoutBlockIdx_d = AoutBlockIdx;
 
    AinSysCoo_d = Matrix_coo_d(A_d.num_rows, A_d.num_cols, innum);
    AoutSys_d = Matrix_coo_d(A_d.num_rows, A_d.num_cols, outnum);
+   if (verbose)
+      printf("Created A_Sys_d Matrix_coo_d objects\n");
 
    thrust::copy_n(Acoo_d.row_indices.begin(), innum, AinSysCoo_d.row_indices.begin());
    thrust::copy_n(Acoo_d.column_indices.begin(), innum, AinSysCoo_d.column_indices.begin());
    thrust::copy_n(Acoo_d.values.begin(), innum, AinSysCoo_d.values.begin());
    AinSysCoo_d.sort_by_row_and_column();
+   if (verbose)
+      printf("Sorted AinSysCoo_d\n");
 
    thrust::copy_n(Acoo_d.row_indices.begin() + innum, outnum, AoutSys_d.row_indices.begin());
    thrust::copy_n(Acoo_d.column_indices.begin() + innum, outnum, AoutSys_d.column_indices.begin());
    thrust::copy_n(Acoo_d.values.begin() + innum, outnum, AoutSys_d.values.begin());
    AoutSys_d.sort_by_row_and_column();
+   if (verbose)
+      printf("Sorted AoutSysCoo_d\n");
 
    //pack column of Ain to row
    blocknum = ceil((float)innum / (float)blocksize);
@@ -294,8 +304,12 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixSymmetric_d(IdxVect
          thrust::raw_pointer_cast(&aggregateIdx[0]),
          thrust::raw_pointer_cast(&partitionIdx[0]),
          thrust::raw_pointer_cast(&partitionlabel[0]));
+   if (verbose)
+      printf("Finished packcoo_kernel.\n");
    Acoo_d.sort_by_row_and_column();
    A_d = Acoo_d;
+   if (verbose)
+      printf("Finished Acoo_d sort & copy to A_d.\n");
 }
 
 template <typename T>
