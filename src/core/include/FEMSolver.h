@@ -33,7 +33,7 @@ class FEMSolver {
     int32_t row_;
     int32_t col_;
     float   val_;
-    SparseEntry_t(int32_t r, int32_t c, int32_t v) : row_(r), col_(c), val_(
+    SparseEntry_t(int32_t r, int32_t c, float v) : row_(r), col_(c), val_(
       static_cast<float>(v)) {}
     ~SparseEntry_t() {}
   };

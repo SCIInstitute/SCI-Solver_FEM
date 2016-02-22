@@ -46,7 +46,7 @@ int main(int argc, char** argv)
   // Make sure part_max_size is representative of harware limits by default
   // when compiling the library, up to 64 registers were seen to be used on the
   // device. We can set our max allocation based on that number
-  int max_registers_used = 64;
+  /*int max_registers_used = 64;
   cfg.partitionMaxSize_ = getMaxThreads(max_registers_used, cfg.device_);
   cfg.tolerance_= 1e-8;
   cfg.smootherWeight_ = 0.7;
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
   cfg.aggregatorType_ = 1;
   cfg.solverType_ = PCG_SOLVER;
   cfg.cycleType_ = V_CYCLE;
-  cfg.convergeType_ = ABSOLUTE_CONVERGENCE;
+  cfg.convergeType_ = ABSOLUTE_CONVERGENCE;*/
   //Now we read in the mesh of choice
   //TriMesh* meshPtr = TriMesh::read("mesh.ply"); //-----if we were reading a Triangle mesh
   //read in the Tetmesh

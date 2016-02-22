@@ -2,9 +2,9 @@
 
 FEMSolver::FEMSolver(
   std::string fname, bool verbose) :
-  verbose_(verbose),
-  filename_(fname),
-  maxLevels_(100),
+  verbose_(verbose),                  // output verbosity
+  filename_(fname),                   // mesh file name
+  maxLevels_(100),                    // the maximum number of levels
   maxIters_(100),                     // the maximum solve iterations
   preInnerIters_(5),                  // the pre inner iterations for GSINNER
   postInnerIters_(5),                 // the post inner iterations for GSINNER
