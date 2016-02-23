@@ -21,4 +21,23 @@ ExternalProject_Add_Step( gtest copy_deps
 )
 include_directories("${GTEST_INSTALL_DIR}/include")
 SET(GTEST_LIBRARY "${GTEST_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX};${GTEST_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}")
-add_subdirectory(cli)
+########################################################################
+
+# Definitions for Tests
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test/bin)
+add_definitions(-DTEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/test_data/")
+include_directories(${CMAKE_SOURCE_DIR}/core/include)
+include_directories(${CMAKE_SOURCE_DIR})
+#test macro
+function(NEWTEST name)
+  add_executable(${name} ${name}.cc)
+  if (NOT WIN32)
+    target_link_libraries(${name} ${GTEST_LIBRARY} FEM_CORE -lpthread)
+  else ()
+    target_link_libraries(${name} ${GTEST_LIBRARY} FEM_CORE )
+  endif()
+  add_test(${name} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${name}) 
+  add_dependencies(${name} gtest FEM_CORE)
+endfunction()
+#the tests
+newtest(sanity)

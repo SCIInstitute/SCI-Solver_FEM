@@ -303,15 +303,15 @@ void FEM3D::JacobiGLZW(Vector_h_CG& Z, Vector_h_CG& weight, int degree, int alph
     //Z(2:degree-1) = JacobiGZeros(degree-2,alpha+one,beta+one);
     JacobiPoly(degree - 1, Z, alpha, beta, weight);
 
-    ValueType tmp1 = pow(ValueType(2), ValueType(apb + 1));
-    ValueType tmp2 = compute_gamma_3d(alpha + degree);
+    Matrix_ell_d_CG::value_type tmp1 = pow(Matrix_ell_d_CG::value_type(2), Matrix_ell_d_CG::value_type(apb + 1));
+    Matrix_ell_d_CG::value_type tmp2 = compute_gamma_3d(alpha + degree);
 
     fac = tmp1 * tmp2 * compute_gamma_3d(beta + degree);
     fac = fac / ((degree - 1) * compute_gamma_3d(degree) * compute_gamma_3d(alpha + beta + degree + 1));
 
     for(int j = 0; j < degree; j++)
     {
-      weight[j] = ValueType(fac) / (weight[j] * weight[j]);
+      weight[j] = Matrix_ell_d_CG::value_type(fac) / (weight[j] * weight[j]);
     }
     //weight = fac./(w.*w);
     weight[0] = weight[0]*(beta + 1);
@@ -326,7 +326,7 @@ void FEM3D::JacobiGRZW(Vector_h_CG& Z, Vector_h_CG& weight, int degree, int alph
   Z.resize(degree);
   weight.resize(degree);
 
-  ValueType fac = 0;
+  Matrix_ell_d_CG::value_type fac = 0;
 
 
   if(degree == 1)
@@ -351,14 +351,14 @@ void FEM3D::JacobiGRZW(Vector_h_CG& Z, Vector_h_CG& weight, int degree, int alph
     }
     //Z(2:degree-1) = JacobiGZeros(degree-1,alpha+one,beta+one);
     JacobiPoly(degree - 1, Z, alpha, beta, weight);
-    ValueType tmp = compute_gamma_3d(alpha + degree);
+    Matrix_ell_d_CG::value_type tmp = compute_gamma_3d(alpha + degree);
 
-    fac = pow(ValueType(2), ValueType(apb)) * tmp * compute_gamma_3d(beta + degree);
+    fac = pow(Matrix_ell_d_CG::value_type(2), Matrix_ell_d_CG::value_type(apb)) * tmp * compute_gamma_3d(beta + degree);
     fac = fac / (compute_gamma_3d(degree)*(beta + degree) * compute_gamma_3d(apb + degree + 1));
 
     for(int j = 0; j < degree; j++)
     {
-      weight[j] = ValueType(fac)*(1 - Z[j]) / (weight[j] * weight[j]);
+      weight[j] = Matrix_ell_d_CG::value_type(fac)*(1 - Z[j]) / (weight[j] * weight[j]);
     }
 
     weight[0] = weight[0]*(beta + 1);
@@ -422,10 +422,11 @@ void FEM3D::EvalBasisTet(CGType(*coefmat)[4], const CGType(*VecXYZ)[DEGREE][DEGR
 }
 
 
-CGType FEM3D::Integration_Quadrilateral_3d(ValueType(*fx)[DEGREE][DEGREE], Vector_h_CG &w_x, Vector_h_CG &w_y, Vector_h_CG &w_z)
+CGType FEM3D::Integration_Quadrilateral_3d(Matrix_ell_d_CG::value_type(*fx)[DEGREE][DEGREE],
+  Vector_h_CG &w_x, Vector_h_CG &w_y, Vector_h_CG &w_z)
 {
-  ValueType integral = 0;
-  ValueType tmp_y, tmp_z;
+  Matrix_ell_d_CG::value_type integral = 0;
+  Matrix_ell_d_CG::value_type tmp_y, tmp_z;
 
   for (int i = 0; i < DEGREE; i++)
   {
@@ -541,9 +542,9 @@ void FEM3D::assemble(TetMesh* meshPtr, Matrix_ell_d_CG &A, Vector_d_CG &b, bool 
   Vector_h_CG integrandMass(10);
   IntegrationInTet(phi, weight_x, weight_y, weight_z, integrandMass);
 
-  ValueType * tmp_w_x = thrust::raw_pointer_cast(&weight_x[0]);
-  ValueType* tmp_w_y = thrust::raw_pointer_cast(&weight_y[0]);
-  ValueType* tmp_w_z = thrust::raw_pointer_cast(&weight_z[0]);
+  Matrix_ell_d_CG::value_type * tmp_w_x = thrust::raw_pointer_cast(&weight_x[0]);
+  Matrix_ell_d_CG::value_type* tmp_w_y = thrust::raw_pointer_cast(&weight_y[0]);
+  Matrix_ell_d_CG::value_type* tmp_w_z = thrust::raw_pointer_cast(&weight_z[0]);
 
   IdxVector_d matlabels = meshPtr->matlabels;
   Vector_d_CG integrandMass_d = integrandMass;

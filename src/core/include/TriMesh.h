@@ -404,7 +404,7 @@ public:
     vector<Face> t_faces;
 
     // get adjacent faces
-    int naf = this->adjacentfaces[v].size();
+    size_t naf = this->adjacentfaces[v].size();
 
     if (!naf)
     {
@@ -443,7 +443,7 @@ public:
   void InitializeAttributes(std::vector<int> &seeds)
   {
     // initialize the travel times over all vertices...
-    int nv = this->vertices.size();
+    size_t nv = this->vertices.size();
 
     for (int v = 0; v < nv; v++)
     {
@@ -475,7 +475,7 @@ public:
     this->need_face_virtual_faces();
 
     // for all faces: initialize per-vertex travel time and face-speed		
-    int nf = this->faces.size();
+    size_t nf = this->faces.size();
     for (int f = 0; f < nf; f++)
     {
       Face cf = this->faces[f];

@@ -289,15 +289,15 @@ void FEM2D::JacobiGLZW(Vector_h_CG&  Z,Vector_h_CG& weight,  int degree, int alp
 		//Z(2:degree-1) = JacobiGZeros(degree-2,alpha+one,beta+one);    
 		JacobiPoly(degree-1,Z,alpha,beta, weight);
 
-		ValueType tmp1 = pow(ValueType(2),ValueType(apb + 1));
-		ValueType tmp2 = compute_gamma(alpha + degree);
+    Matrix_ell_d_CG::value_type tmp1 = pow(Matrix_ell_d_CG::value_type(2), Matrix_ell_d_CG::value_type(apb + 1));
+    Matrix_ell_d_CG::value_type tmp2 = compute_gamma(alpha + degree);
 
 		 fac =  tmp1 * tmp2 * compute_gamma(beta + degree);
 		fac = fac / ((degree-1)*compute_gamma(degree)*compute_gamma(alpha + beta + degree + 1));
 
 		for (int j =0; j< degree; j++)
 		{
-			weight[j] = ValueType(fac) / (weight[j]*weight[j]);
+      weight[j] = Matrix_ell_d_CG::value_type(fac) / (weight[j] * weight[j]);
 		}
 		//weight = fac./(w.*w);
 		weight[0] = weight[0]*(beta+1);
@@ -313,7 +313,7 @@ void FEM2D::JacobiGRZW(Vector_h_CG&  Z, Vector_h_CG& weight,  int degree, int al
 	Z.resize(degree);
 	weight.resize(degree);
 
-	ValueType fac=0 ;
+  Matrix_ell_d_CG::value_type fac = 0;
 
 
 	if (degree == 1)
@@ -338,14 +338,14 @@ void FEM2D::JacobiGRZW(Vector_h_CG&  Z, Vector_h_CG& weight,  int degree, int al
 		}
 		//Z(2:degree-1) = JacobiGZeros(degree-1,alpha+one,beta+one);    
 		JacobiPoly(degree-1,Z,alpha,beta, weight);
-		ValueType tmp = compute_gamma(alpha + degree);
+    Matrix_ell_d_CG::value_type tmp = compute_gamma(alpha + degree);
 
-		fac = pow(ValueType(2),ValueType(apb)) * tmp *compute_gamma(beta + degree);
+    fac = pow(Matrix_ell_d_CG::value_type(2), Matrix_ell_d_CG::value_type(apb)) * tmp *compute_gamma(beta + degree);
 		fac = fac / (compute_gamma(degree)*(beta+degree)*compute_gamma(apb+degree + 1));
 
 		for (int j =0; j< degree; j++)
 		{
-			weight[j] = ValueType(fac)*(1-Z[j]) / (weight[j]*weight[j]);
+      weight[j] = Matrix_ell_d_CG::value_type(fac)*(1 - Z[j]) / (weight[j] * weight[j]);
 		}
 		
 		weight[0] = weight[0]*(beta+1);
@@ -369,10 +369,10 @@ void FEM2D::assemble(TriMesh* meshPtr, Matrix_ell_d_CG &A, Vector_d_CG &b)
 	JacobiGLZW(z_x,  weight_x, degree_x, alpha1, beta1);
 	JacobiGRZW(z_y,  weight_y, degree_y, alpha2, beta2);
 
-	ValueType* tmp_w_x = thrust::raw_pointer_cast(&weight_x[0]);
-	ValueType* tmp_w_y = thrust::raw_pointer_cast(&weight_y[0]);
-	ValueType* tmp_z_x = thrust::raw_pointer_cast(&z_x[0]);
-	ValueType* tmp_z_y = thrust::raw_pointer_cast(&z_y[0]);
+  Matrix_ell_d_CG::value_type* tmp_w_x = thrust::raw_pointer_cast(&weight_x[0]);
+  Matrix_ell_d_CG::value_type* tmp_w_y = thrust::raw_pointer_cast(&weight_y[0]);
+  Matrix_ell_d_CG::value_type* tmp_z_x = thrust::raw_pointer_cast(&z_x[0]);
+  Matrix_ell_d_CG::value_type* tmp_z_y = thrust::raw_pointer_cast(&z_y[0]);
 
  perform_element_loop_2d(d_vx, d_vy, d_tri0, d_tri1, d_tri2, A, b, z_x, z_y, weight_x, weight_y);
 }

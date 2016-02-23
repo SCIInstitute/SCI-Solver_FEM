@@ -8,7 +8,7 @@ endif()
 SET(BUILD_EXAMPLES false CACHE BOOL "Build sample executables")
 
 find_package(CUDA REQUIRED)
-
+include_directories(${CUDA_INCLUDE_DIRS})
 ###################
 # Externals
 include(ExternalProject)

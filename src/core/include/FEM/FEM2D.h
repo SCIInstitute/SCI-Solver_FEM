@@ -4,17 +4,11 @@
 #include <TriMesh.h>
 #include <types.h>
 #include <vector>
-using namespace std;
 
 class FEM2D
 {
 public:
-  typedef typename Matrix_ell_d_CG::index_type IndexType;
-  typedef typename Matrix_ell_d_CG::value_type ValueType;
-
-  FEM2D()
-  {
-  };
+  FEM2D() {};
   FEM2D(TriMesh* meshPtr);
   void initializeWithTriMesh(TriMesh* meshPtr);
   void assemble(TriMesh* meshPtr, Matrix_ell_d_CG &A, Vector_d_CG &b);
@@ -24,7 +18,6 @@ public:
   void JacobiPoly(int degree, Vector_h_CG x, int alpha, int beta, Vector_h_CG &y);
   void JacobiPolyDerivative(int degree, Vector_h_CG &x, int alpha, int beta, Vector_h_CG &y);
   void JacobiGZeros(int degree, int alpha, int beta, Vector_h_CG &z);
-
 
   IdxVector_d d_tri0;
   IdxVector_d d_tri1;
