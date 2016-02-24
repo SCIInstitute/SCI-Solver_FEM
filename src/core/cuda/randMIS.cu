@@ -551,19 +551,29 @@ void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(IdxVector_d &adjIn
 }
 
 template <class Matrix, class Vector>
-void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(TriMesh *meshPtr, IdxVector_d &permutation, IdxVector_d &ipermutation, IdxVector_d &aggregateIdx, IdxVector_d &partitionIdx, IdxVector_d &partitionLabel, IdxVector_d &adjIndexesOut, IdxVector_d &adjacencyOut, int parameters, int part_max_size, bool verbose)
+void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(TriMesh *meshPtr,
+  IdxVector_d &permutation, IdxVector_d &ipermutation, IdxVector_d &aggregateIdx,
+  IdxVector_d &partitionIdx, IdxVector_d &partitionLabel, IdxVector_d &adjIndexesOut, 
+  IdxVector_d &adjacencyOut, int parameters, int part_max_size, bool verbose)
 {
    IdxVector_d adjIndexesIn, adjacencyIn;
    misHelpers::getAdjacency(meshPtr, adjIndexesIn, adjacencyIn);
-   computePermutation_d(adjIndexesIn, adjacencyIn, permutation, ipermutation, aggregateIdx, partitionIdx, partitionLabel, adjIndexesOut, adjacencyOut, parameters, part_max_size, verbose);
+   computePermutation_d(adjIndexesIn, adjacencyIn, permutation, ipermutation, 
+     aggregateIdx, partitionIdx, partitionLabel, adjIndexesOut,
+     adjacencyOut, parameters, part_max_size, verbose);
 }
 
 template <class Matrix, class Vector>
-void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(TetMesh *meshPtr, IdxVector_d &permutation, IdxVector_d &ipermutation, IdxVector_d &aggregateIdx, IdxVector_d &partitionIdx, IdxVector_d &partitionLabel, IdxVector_d &adjIndexesOut, IdxVector_d &adjacencyOut, int parameters, int part_max_size, bool verbose)
+void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(TetMesh *meshPtr, 
+  IdxVector_d &permutation, IdxVector_d &ipermutation, IdxVector_d &aggregateIdx,
+  IdxVector_d &partitionIdx, IdxVector_d &partitionLabel, IdxVector_d &adjIndexesOut,
+  IdxVector_d &adjacencyOut, int parameters, int part_max_size, bool verbose)
 {
    IdxVector_d adjIndexesIn, adjacencyIn;
    misHelpers::getAdjacency(meshPtr, adjIndexesIn, adjacencyIn);
-   computePermutation_d(adjIndexesIn, adjacencyIn, permutation, ipermutation, aggregateIdx, partitionIdx, partitionLabel, adjIndexesOut, adjacencyOut, parameters, part_max_size, verbose);
+   computePermutation_d(adjIndexesIn, adjacencyIn, permutation, ipermutation,
+     aggregateIdx, partitionIdx, partitionLabel, adjIndexesOut, adjacencyOut,
+     parameters, part_max_size, verbose);
 }
 
 template <class Matrix, class Vector>

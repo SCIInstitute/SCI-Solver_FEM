@@ -10,7 +10,24 @@ TEST(SanityTests, EggCarton) {
   cfg.tetMesh_ = TetMesh::read(
     (cfg.filename_ + ".node").c_str(),
     (cfg.filename_ + ".ele").c_str(), true, cfg.verbose_);
-  cfg.topSize_ = 275;
+  cfg.maxLevels_ = 100;
+  cfg.maxIters_ = 100;
+  cfg.preInnerIters_ = 5;
+  cfg.postInnerIters_ = 5;
+  cfg.postRelaxes_ = 1;
+  cfg.cycleIters_ = 1;
+  cfg.dsType_ = 0;
+  cfg.topSize_ = 280;
+  cfg.metisSize_ = 90102;
+  cfg.partitionMaxSize_ = 512;
+  cfg.aggregatorType_ = 1;
+  cfg.convergeType_ = 0;
+  cfg.tolerance_ = 1e-6;
+  cfg.cycleType_ = 0;
+  cfg.solverType_ = 0;
+  cfg.smootherWeight_ = 1;
+  cfg.proOmega_ = .67;
+
   size_t num_vert = cfg.tetMesh_->vertices.size();
   float lambda = 1.f;
   //create the A matrix
@@ -43,7 +60,7 @@ TEST(SanityTests, EggCarton) {
     error += (x_h[i] - x_answer[i]) * (x_h[i] - x_answer[i]);
     x_actual.push_back(x_h[i]);
   }
+  std::cout << "The error is : " << std::sqrt(error) << std::endl;
   cfg.writeVTK(x_actual, "test_egg_carton2");
   ASSERT_TRUE(std::sqrt(error) < 1.);
-  std::cout << "The error is : " << std::sqrt(error) << std::endl;
 }
