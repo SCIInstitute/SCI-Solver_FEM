@@ -8,8 +8,6 @@ enum ConvergenceType { ABSOLUTE_CONVERGENCE, RELATIVE_CONVERGENCE };
 
 #include <cusp/detail/lu.h>
 #include <error.h>
-
-#include <FEMSolver.h>
 #include <cycles/cycle.h>
 #include <smoothedMG/smoothedMG_amg_level.h>
 #include "TriMesh.h"
@@ -28,7 +26,12 @@ class AMG
   friend class SmoothedMG_AMG_Level<Matrix,Vector>;
 
   public:
-  AMG(FEMSolver * cfg);
+    AMG(bool verbose, int convergeType, int cycleType,
+      int solverType, double tolerance, int cycleIters, int maxIters,
+      int maxLevels, int topSize, double smootherWeight,
+    int preInnerIters, int postInnerIters, int postRelaxes,
+    int dsType, int metisSize, int partitionMaxSize, double proOmega,
+    int aggregatorType, TriMesh* triMesh, TetMesh* tetMesh);
   ~AMG();
 
   void solve(const Vector_d_CG &b, Vector_d_CG &x);
@@ -42,8 +45,27 @@ class AMG
   void printProfile();
   void printCoarsePoints();
   void printConnections();
-  //config pointer
-  FEMSolver * cfg;
+  //config parameters
+  bool verbose_;
+  ConvergenceType convergeType_;
+  CycleType cycleType_;
+  SolverType solverType_;
+  double tolerance_;
+  int cycleIters_;
+  int maxIters_;
+  int maxLevels_;
+  int topSize_;
+  double smootherWeight_;
+  int preInnerIters_;             // the pre inner iterations for GSINNER
+  int postInnerIters_;            // the post inner iterations for GSINNER
+  int postRelaxes_;               // the number of post relax iterations
+  int dsType_;
+  int metisSize_;
+  int partitionMaxSize_;
+  double proOmega_;
+  int aggregatorType_;
+  TriMesh* triMesh_;
+  TetMesh* tetMesh_;
   private:
   bool converged(const Vector &r, ValueType &nrm);
 

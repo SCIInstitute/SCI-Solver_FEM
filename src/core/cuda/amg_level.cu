@@ -31,7 +31,7 @@ void AMG_Level<Matrix, Vector>::cycle(CycleType cycle, Vector_d& b_d, Vector_d& 
     return;
   } else
   {
-    switch (amg->cfg->dsType_)
+    switch (amg->dsType_)
     {
     case 0:
       smoother->preRRRFullSymmetric(AinSysCoo_d, AoutSys_d, AinBlockIdx_d, AoutBlockIdx_d, aggregateIdx_d, partitionIdx_d, restrictorFull_d, ipermutation_d, b_d, x_d, bc_d,
@@ -49,7 +49,7 @@ void AMG_Level<Matrix, Vector>::cycle(CycleType cycle, Vector_d& b_d, Vector_d& 
 
     }
     next->cycle(V_CYCLE, bc_d, xc_d, verbose);
-    switch (amg->cfg->dsType_)
+    switch (amg->dsType_)
     {
     case 0:
       smoother->postPCRFullSymmetric(AinSysCoo_d, AinBlockIdx_d, AoutSys_d, AoutBlockIdx_d, aggregateIdx_d, partitionIdx_d, prolongatorFull_d, ipermutation_d, b_d, x_d, xc_d,
@@ -86,7 +86,7 @@ void AMG_Level<Matrix, Vector>::cycle_level0(CycleType cycle, Vector_d_CG &b_d_C
   {
     Vector_d b_d = b_d_CG;
     Vector_d x_d(x_d_CG.size(), 0.0);
-    switch (amg->cfg->dsType_)
+    switch (amg->dsType_)
     {
     case 0:
       smoother->preRRRFullSymmetric(AinSysCoo_d, AoutSys_d, AinBlockIdx_d, AoutBlockIdx_d, aggregateIdx_d, partitionIdx_d, restrictorFull_d, ipermutation_d, b_d, x_d, bc_d,
@@ -104,7 +104,7 @@ void AMG_Level<Matrix, Vector>::cycle_level0(CycleType cycle, Vector_d_CG &b_d_C
 
     }
     next->cycle(V_CYCLE, bc_d, xc_d, verbose);
-    switch (amg->cfg->dsType_)
+    switch (amg->dsType_)
     {
     case 0:
       smoother->postPCRFullSymmetric(AinSysCoo_d, AinBlockIdx_d, AoutSys_d, AoutBlockIdx_d, aggregateIdx_d, partitionIdx_d, prolongatorFull_d, ipermutation_d, b_d, x_d, xc_d,
@@ -132,7 +132,8 @@ void AMG_Level<Matrix, Vector>::cycle_level0(CycleType cycle, Vector_d_CG &b_d_C
 template <class Matrix, class Vector>
 void AMG_Level<Matrix, Vector>::setup()
 {
-  smoother = Smoother<Matrix_d, Vector_d>::allocate(amg->cfg, A_d);
+  smoother = Smoother<Matrix_d, Vector_d>::allocate(amg->smootherWeight_,
+    amg->preInnerIters_, amg->postInnerIters_, amg->postRelaxes_, A_d);
 }
 
 template <class Matrix, class Vector>

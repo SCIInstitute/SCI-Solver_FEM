@@ -17,6 +17,7 @@ int main(int argc, char** argv)
   cfg.tetMesh_ = TetMesh::read(
     (cfg.filename_ + ".node").c_str(),
     (cfg.filename_ + ".ele").c_str(), true, cfg.verbose_);
+  cfg.topSize_ = 275;
   size_t num_vert = cfg.tetMesh_->vertices.size();
   float lambda = 1.f;
   //create the A matrix
@@ -49,5 +50,6 @@ int main(int argc, char** argv)
     error += (x_h[i] - x_answer[i]) * (x_h[i] - x_answer[i]);
     x_actual.push_back(x_h[i]);
   }
-  cfg.writeVTK(x_actual, "test_egg_carton");
+  std::cout << "The error is : " << std::sqrt(error) << std::endl;
+  cfg.writeVTK(x_actual, "test_egg_carton2");
 }

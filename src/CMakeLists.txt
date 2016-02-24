@@ -44,6 +44,13 @@ include_directories("${CUSP_INSTALL_DIR}/src")
 # Core / Examples
 add_subdirectory(core)
 
+include_directories(core/include)
+include_directories(${CMAKE_CURRENT_DIRECTORY})
+
+CUDA_ADD_LIBRARY(FEM_SOLVER FEMSolver.cu FEMSolver.h)
+TARGET_LINK_LIBRARIES(FEM_SOLVER FEM_CORE)
+ADD_DEPENDENCIES(FEM_SOLVER FEM_CORE)
+
 if (${BUILD_EXAMPLES})
   add_subdirectory(examples)
 endif()

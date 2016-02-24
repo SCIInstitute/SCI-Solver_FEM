@@ -22,9 +22,11 @@ void Smoother<Matrix,Vector>::smooth_with_0_initial_guess(const Matrix &A, const
  * Allocates smoothers based on passed in type
  *********************************************/
 template <class Matrix, class Vector>
-Smoother<Matrix,Vector>* Smoother<Matrix,Vector>::allocate(FEMSolver * cfg, const Matrix_d& A)
+Smoother<Matrix, Vector>* Smoother<Matrix, Vector>::allocate(double smootherWeight,
+  int preInnerIters, int postInnerIters, int postRelaxes, const Matrix_d& A)
 {
-  return new gauss_seidel<Matrix, Vector>(cfg, A);
+  return new gauss_seidel<Matrix, Vector>( smootherWeight,
+    preInnerIters, postInnerIters, postRelaxes, A);
 }
 
 /****************************************

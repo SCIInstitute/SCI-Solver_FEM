@@ -59,13 +59,14 @@
  * Source Definitions
  ***************************************/
 template <class Matrix, class Vector>
-gauss_seidel<Matrix, Vector>::gauss_seidel(FEMSolver *cfg, const Matrix_d& Ainit)
+gauss_seidel<Matrix, Vector>::gauss_seidel(double smoothWeight,
+  int preInnerIters, int postInnerIters, int postRelaxes, const Matrix_d& Ainit)
 {
    cusp::detail::extract_diagonal(Ainit, this->diag);
-   post_relaxes = cfg->postRelaxes_;
-   smootherWeight = cfg->smootherWeight_;
-   nPreInnerIter = cfg->preInnerIters_;
-   nPostInnerIter = cfg->postInnerIters_;
+   smootherWeight_ = smoothWeight;
+   nPreInnerIter_ = preInnerIters;
+   nPostInnerIter_ = postInnerIters;
+   post_relaxes_ = postRelaxes;
 }
 
 template<>
@@ -128,7 +129,7 @@ void gauss_seidel<Matrix_d, Vector_d>::smooth(const Matrix_d &A, const Vector_d 
        thrust::raw_pointer_cast(&A.values[0]),
        thrust::raw_pointer_cast(&diag[0]),
        thrust::raw_pointer_cast(&b[0]),
-       smootherWeight,
+       smootherWeight_,
        thrust::raw_pointer_cast(&x[0]));
 }
 
@@ -416,10 +417,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -432,10 +433,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
 
 
@@ -454,10 +455,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -470,10 +471,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -490,10 +491,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -506,10 +507,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -526,10 +527,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -542,10 +543,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -563,10 +564,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -579,10 +580,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -599,10 +600,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -615,10 +616,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -635,10 +636,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -651,10 +652,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -671,10 +672,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -687,10 +688,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -707,10 +708,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -723,10 +724,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -743,10 +744,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -759,10 +760,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -780,10 +781,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -796,10 +797,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -817,10 +818,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -833,10 +834,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -853,10 +854,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -869,10 +870,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -890,10 +891,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -906,10 +907,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -926,10 +927,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -942,10 +943,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -963,10 +964,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -979,10 +980,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -999,10 +1000,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       else
       {
@@ -1015,10 +1016,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullCsr(const cusp::csr_matrix<Inde
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       }
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
@@ -2076,10 +2077,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
    else if(num_entries_per_thread < 21)
@@ -2094,10 +2095,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
    }
@@ -2114,10 +2115,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
    }
@@ -2134,10 +2135,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
    }
@@ -2154,10 +2155,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
    }
@@ -2174,10 +2175,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
    }
@@ -2194,10 +2195,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
    }
@@ -2213,10 +2214,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
    }
@@ -2232,10 +2233,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetric(const cusp::coo_matri
             thrust::raw_pointer_cast(&permutation[0]),
             thrust::raw_pointer_cast(&AinBlockIdx[0]),
             thrust::raw_pointer_cast(&b[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
    }
@@ -2479,10 +2480,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
             thrust::raw_pointer_cast(&b[0]),
             thrust::raw_pointer_cast(&segSyncIdx[0]),
             thrust::raw_pointer_cast(&partSyncIdx[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
    else if(num_entries_per_thread < 21)
@@ -2499,10 +2500,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
             thrust::raw_pointer_cast(&b[0]),
             thrust::raw_pointer_cast(&segSyncIdx[0]),
             thrust::raw_pointer_cast(&partSyncIdx[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
    }
@@ -2520,10 +2521,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
             thrust::raw_pointer_cast(&b[0]),
             thrust::raw_pointer_cast(&segSyncIdx[0]),
             thrust::raw_pointer_cast(&partSyncIdx[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
    }
@@ -2541,10 +2542,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
             thrust::raw_pointer_cast(&b[0]),
             thrust::raw_pointer_cast(&segSyncIdx[0]),
             thrust::raw_pointer_cast(&partSyncIdx[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
    }
@@ -2562,10 +2563,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
             thrust::raw_pointer_cast(&b[0]),
             thrust::raw_pointer_cast(&segSyncIdx[0]),
             thrust::raw_pointer_cast(&partSyncIdx[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
    }
@@ -2583,10 +2584,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
             thrust::raw_pointer_cast(&b[0]),
             thrust::raw_pointer_cast(&segSyncIdx[0]),
             thrust::raw_pointer_cast(&partSyncIdx[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
    }
@@ -2604,10 +2605,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFullSymmetricSync(const cusp::coo_m
             thrust::raw_pointer_cast(&b[0]),
             thrust::raw_pointer_cast(&segSyncIdx[0]),
             thrust::raw_pointer_cast(&partSyncIdx[0]),
-            smootherWeight,
+            smootherWeight_,
             thrust::raw_pointer_cast(&x[0]),
             thrust::raw_pointer_cast(&residual[0]),
-            nPreInnerIter);
+            nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
    }
@@ -2688,10 +2689,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
 
       else
          preRR_kernel<IndexType, ValueType, 9, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -2705,10 +2706,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
    else if(NUMPERROW < 15)
@@ -2725,10 +2726,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 14, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -2741,10 +2742,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
    else if(NUMPERROW < 20)
@@ -2761,10 +2762,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 19, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -2777,10 +2778,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
    else if(NUMPERROW < 25)
@@ -2797,10 +2798,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 24, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -2813,10 +2814,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
 
@@ -2834,10 +2835,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 29, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -2850,10 +2851,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
    else if(NUMPERROW < 35)
@@ -2870,10 +2871,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 34, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -2886,10 +2887,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
    else if(NUMPERROW < 40)
@@ -2906,10 +2907,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 39, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -2922,10 +2923,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
    else if(NUMPERROW < 45)
@@ -2942,10 +2943,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 44, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -2958,10 +2959,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
    else if(NUMPERROW < 50)
@@ -2978,10 +2979,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 49, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -2994,10 +2995,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
    else if(NUMPERROW < 55)
@@ -3014,10 +3015,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 54, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -3030,10 +3031,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
 
@@ -3051,10 +3052,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 59, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -3067,10 +3068,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
 
@@ -3088,10 +3089,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 64, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -3104,10 +3105,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
    else if(NUMPERROW < 70)
@@ -3124,10 +3125,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 69, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -3140,10 +3141,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
 
@@ -3161,10 +3162,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 75, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -3177,10 +3178,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
    else if(NUMPERROW < 80)
@@ -3197,10 +3198,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 79, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -3213,10 +3214,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
 
@@ -3234,10 +3235,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 85, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -3250,10 +3251,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
 
@@ -3271,10 +3272,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       else
          preRR_kernel<IndexType, ValueType, 220, shared_size, 10 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
                AinEll.num_cols,
@@ -3287,10 +3288,10 @@ void gauss_seidel<Matrix_d, Vector_d>::preRRRFull(const cusp::ell_matrix<IndexTy
                thrust::raw_pointer_cast(&partitionIdx[0]),
                thrust::raw_pointer_cast(&permutation[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&residual[0]),
-               nPreInnerIter);
+               nPreInnerIter_);
       AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
    }
 
@@ -4436,7 +4437,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
    cudaThreadSetCacheConfig(cudaFuncCachePreferL1);
 
    Vector_d xout(x.size());
-   for(int i = 0; i < post_relaxes; i++)
+   for(int i = 0; i < post_relaxes_; i++)
    {
       if(num_entries_per_thread < 11)
       {
@@ -4454,10 +4455,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(num_entries_per_thread < 21)
@@ -4476,10 +4477,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
 
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -4499,10 +4500,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
 
@@ -4522,10 +4523,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(num_entries_per_thread < 51)
@@ -4544,10 +4545,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(num_entries_per_thread < 61)
@@ -4566,10 +4567,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
 
@@ -4589,10 +4590,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
 
@@ -4612,10 +4613,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
 
@@ -4635,10 +4636,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetric(const cusp::coo_matr
                thrust::raw_pointer_cast(&AinBlockIdx[0]),
                thrust::raw_pointer_cast(&AoutBlockIdx[0]),
                thrust::raw_pointer_cast(&b[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
 
@@ -4829,7 +4830,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
    const size_t shared_size = 1024;
 
    Vector_d xout(x.size());
-   for(int i = 0; i < post_relaxes; i++)
+   for(int i = 0; i < post_relaxes_; i++)
    {
       if(num_entries_per_thread < 11)
       {
@@ -4849,10 +4850,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
                thrust::raw_pointer_cast(&b[0]),
                thrust::raw_pointer_cast(&segSyncIdx[0]),
                thrust::raw_pointer_cast(&partSyncIdx[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(num_entries_per_thread < 21)
@@ -4873,10 +4874,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
                thrust::raw_pointer_cast(&b[0]),
                thrust::raw_pointer_cast(&segSyncIdx[0]),
                thrust::raw_pointer_cast(&partSyncIdx[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
       }
@@ -4898,10 +4899,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
                thrust::raw_pointer_cast(&b[0]),
                thrust::raw_pointer_cast(&segSyncIdx[0]),
                thrust::raw_pointer_cast(&partSyncIdx[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
       }
@@ -4923,10 +4924,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
                thrust::raw_pointer_cast(&b[0]),
                thrust::raw_pointer_cast(&segSyncIdx[0]),
                thrust::raw_pointer_cast(&partSyncIdx[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
       }
@@ -4948,10 +4949,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
                thrust::raw_pointer_cast(&b[0]),
                thrust::raw_pointer_cast(&segSyncIdx[0]),
                thrust::raw_pointer_cast(&partSyncIdx[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
       }
@@ -4973,10 +4974,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
                thrust::raw_pointer_cast(&b[0]),
                thrust::raw_pointer_cast(&segSyncIdx[0]),
                thrust::raw_pointer_cast(&partSyncIdx[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
       }
@@ -4998,10 +4999,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullSymmetricSync(const cusp::coo_
                thrust::raw_pointer_cast(&b[0]),
                thrust::raw_pointer_cast(&segSyncIdx[0]),
                thrust::raw_pointer_cast(&partSyncIdx[0]),
-               smootherWeight,
+               smootherWeight_,
                thrust::raw_pointer_cast(&x[0]),
                thrust::raw_pointer_cast(&xout[0]),
-               nPostInnerIter);
+               nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
       }
@@ -5069,7 +5070,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
 
    Vector_d xout(x.size());
 
-   for(int i = 0; i < post_relaxes; i++)
+   for(int i = 0; i < post_relaxes_; i++)
    {
       if(NUMPERROW < 10)
       {
@@ -5090,10 +5091,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 9 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5112,10 +5113,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 15)
@@ -5137,10 +5138,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 14 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5159,10 +5160,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 20)
@@ -5184,10 +5185,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 19 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5206,10 +5207,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 25)
@@ -5231,10 +5232,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 24 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5253,10 +5254,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 30)
@@ -5278,10 +5279,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 29 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5300,10 +5301,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 35)
@@ -5325,10 +5326,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 34 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5347,10 +5348,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 40)
@@ -5372,10 +5373,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 39 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5394,10 +5395,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 45)
@@ -5419,10 +5420,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 44 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5441,10 +5442,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 50)
@@ -5466,10 +5467,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 49 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5488,10 +5489,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 55)
@@ -5513,10 +5514,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 54 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5535,10 +5536,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 60)
@@ -5560,10 +5561,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 59 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5582,10 +5583,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 65)
@@ -5607,10 +5608,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 64 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5629,10 +5630,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 70)
@@ -5654,10 +5655,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 69 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5676,10 +5677,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
 
@@ -5702,10 +5703,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 75 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5724,10 +5725,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 80)
@@ -5749,10 +5750,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 79 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5771,10 +5772,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 86)
@@ -5796,10 +5797,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 85 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5818,10 +5819,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else if(NUMPERROW < 221)
@@ -5843,10 +5844,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          else
             postRelax_kernel<IndexType, ValueType, 220 > << <NUM_BLOCKS, THREADS_PER_BLOCK >> >(AinEll.num_rows,
@@ -5865,10 +5866,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFull(const cusp::ell_matrix<IndexT
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
       else
@@ -6154,7 +6155,7 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
 
    Vector_d xout(x.size());
 
-   for(int i = 0; i < post_relaxes; i++)
+   for(int i = 0; i < post_relaxes_; i++)
    {
       if(NUMPERROW < 10)
       {
@@ -6174,10 +6175,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6196,10 +6197,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6221,10 +6222,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6243,10 +6244,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6268,10 +6269,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6290,10 +6291,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6315,10 +6316,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6337,10 +6338,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6362,10 +6363,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6384,10 +6385,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6409,10 +6410,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6431,10 +6432,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6456,10 +6457,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6478,10 +6479,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6503,10 +6504,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6525,10 +6526,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6550,10 +6551,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6572,10 +6573,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6597,10 +6598,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6619,10 +6620,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6644,10 +6645,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6666,10 +6667,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6691,10 +6692,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6713,10 +6714,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6738,10 +6739,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6760,10 +6761,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6786,10 +6787,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6808,10 +6809,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6833,10 +6834,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6855,10 +6856,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6880,10 +6881,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6902,10 +6903,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }
@@ -6927,10 +6928,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
 
          }
          else
@@ -6949,10 +6950,10 @@ void gauss_seidel<Matrix_d, Vector_d>::postPCRFullCsr(const cusp::csr_matrix<Ind
                   thrust::raw_pointer_cast(&partitionIdx[0]),
                   thrust::raw_pointer_cast(&permutation[0]),
                   thrust::raw_pointer_cast(&b[0]),
-                  smootherWeight,
+                  smootherWeight_,
                   thrust::raw_pointer_cast(&x[0]),
                   thrust::raw_pointer_cast(&xout[0]),
-                  nPostInnerIter);
+                  nPostInnerIter_);
          }
          AggMIS::CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
       }

@@ -4,9 +4,9 @@
  * Allocates selector based on passed in type
  *********************************************/
 template <class Matrix, class Vector>
-Aggregator<Matrix, Vector>* Aggregator<Matrix, Vector>::allocate(FEMSolver *cfg)
+Aggregator<Matrix, Vector>* Aggregator<Matrix, Vector>::allocate(int type)
 {
-  if (cfg->aggregatorType_ == 0)
+  if (type == 0)
     return new MIS_Aggregator < Matrix, Vector > ;
   else
     return new RandMIS_Aggregator < Matrix, Vector > ;

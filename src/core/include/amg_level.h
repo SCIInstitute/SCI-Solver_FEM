@@ -5,7 +5,6 @@ template <class Matrix, class Vector> class AMG_Level;
 #include <amg.h>
 #include <smoothers/smoother.h>
 #include <cycles/cycle.h>
-#include <FEMSolver.h>
 #include <my_timer.h>
 #include <vector>
 #include <types.h>

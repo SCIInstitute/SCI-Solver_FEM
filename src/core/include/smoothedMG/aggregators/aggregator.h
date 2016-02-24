@@ -6,7 +6,6 @@ template <class Matrix, class Vector> class Aggregator;
 #include <types.h>
 #include <TriMesh.h>
 #include <tetmesh.h>
-#include <FEMSolver.h>
 
 template <class Matrix, class Vector>
 class Aggregator
@@ -24,7 +23,7 @@ class Aggregator
   virtual ~Aggregator()
   {
   }
-  static Aggregator<Matrix, Vector>* allocate(FEMSolver * cfg);
+  static Aggregator<Matrix, Vector>* allocate(int type);
 
 };
 #endif

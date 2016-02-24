@@ -11,7 +11,36 @@
 #include <my_timer.h>
 
 template<class Matrix, class Vector>
-AMG<Matrix, Vector>::AMG(FEMSolver * cfg) : fine(0), cfg(cfg) {
+AMG<Matrix, Vector>::AMG(bool verbose, int convergeType, int cycleType,
+  int solverType, double tolerance, int cycleIters, int maxIters,
+  int maxLevels, int topSize, double smootherWeight,
+  int preInnerIters, int postInnerIters, int postRelaxes,
+  int dsType, int metisSize, int partitionMaxSize, double proOmega,
+  int aggregatorType, TriMesh* triMesh, TetMesh* tetMesh) :
+  fine(0), verbose_(verbose),
+  convergeType_(convergeType == 0 ? ABSOLUTE_CONVERGENCE : RELATIVE_CONVERGENCE),
+  solverType_(solverType == 0 ? AMG_SOLVER : PCG_SOLVER),
+  tolerance_(tolerance), cycleIters_(cycleIters),
+  maxIters_(maxIters), maxLevels_(maxLevels), topSize_(topSize),
+  smootherWeight_(smootherWeight), preInnerIters_(preInnerIters),
+  postInnerIters_(postInnerIters), postRelaxes_(postRelaxes),
+  dsType_(dsType), metisSize_(metisSize), partitionMaxSize_(partitionMaxSize),
+  proOmega_(proOmega), aggregatorType_(aggregatorType),
+  triMesh_(triMesh), tetMesh_(tetMesh) {
+  switch (cycleType) {
+  case 0:
+    this->cycleType_ = V_CYCLE;
+    break;
+  case 1:
+    this->cycleType_ = W_CYCLE;
+    break;
+  case 2:
+    this->cycleType_ = F_CYCLE;
+    break;
+  case 3:
+    this->cycleType_ = K_CYCLE;
+    break;
+  }
 }
 
 template<class Matrix, class Vector>
@@ -26,9 +55,9 @@ bool AMG<Matrix, Vector>::converged(const Vector &r, ValueType &nrm)
   //  nrm = get_norm(r, norm);
 
   nrm = cusp::blas::nrm2(r);
-  if (this->cfg->convergeType_ == ABSOLUTE_CONVERGENCE)
+  if (this->convergeType_ == ABSOLUTE_CONVERGENCE)
   {
-    return nrm <= this->cfg->tolerance_;
+    return nrm <= this->tolerance_;
   } else //if (convergence==RELATIVE)
   {
     if (initial_nrm == -1)
@@ -37,7 +66,7 @@ bool AMG<Matrix, Vector>::converged(const Vector &r, ValueType &nrm)
       return false;
     }
     //if the norm has been reduced by the tolerance then return true
-    if (nrm / initial_nrm <= this->cfg->tolerance_)
+    if (nrm / initial_nrm <= this->tolerance_)
       return true;
     else
       return false;
@@ -61,14 +90,14 @@ void AMG<Matrix, Vector>::setup(const Matrix_d &Acsr_d) {
   level->level_id = 0;
   level->nn = Acsr_d.num_rows;
 
-  level->m_meshPtr = this->cfg->triMesh_;
-  level->m_tetmeshPtr = this->cfg->tetMesh_;
+  level->m_meshPtr = this->triMesh_;
+  level->m_tetmeshPtr = this->tetMesh_;
 
-  if (this->cfg->verbose_)  std::cout << "Entering AMG setup loop." << std::endl;
+  if (this->verbose_)  std::cout << "Entering AMG setup loop." << std::endl;
   while (true)
   {
     int N = level->A_d.num_rows;
-    if (N < this->cfg->topSize_ || num_levels >= this->cfg->maxLevels_)
+    if (N < this->topSize_ || num_levels >= this->maxLevels_)
     {
       coarsestlevel = num_levels - 1;
       Matrix_h Atmp = level->A_d;
@@ -76,40 +105,40 @@ void AMG<Matrix, Vector>::setup(const Matrix_d &Acsr_d) {
       LU = cusp::detail::lu_solver<ValueType, cusp::host_memory >(coarse_dense);
       break;
     }
-    if (this->cfg->verbose_)  std::cout << "Finished with lu_solver." << std::endl;
+    if (this->verbose_)  std::cout << "Finished with lu_solver." << std::endl;
 
     level->next = AMG_Level<Matrix, Vector>::allocate(this);
-    if (this->cfg->verbose_)  std::cout << "Finished with AMG_Level_allocate." << std::endl;
-    level->createNextLevel(this->cfg->verbose_);
-    if (this->cfg->verbose_)  std::cout << "Finished with createNextLevel call." << std::endl;
+    if (this->verbose_)  std::cout << "Finished with AMG_Level_allocate." << std::endl;
+    level->createNextLevel(this->verbose_);
+    if (this->verbose_)  std::cout << "Finished with createNextLevel call." << std::endl;
 
     if (level->level_id == 0)
     {
       Ahyb_d_CG = level->A_d;
     }
-    if (this->cfg->verbose_)  std::cout << "Copied A_d." << std::endl;
+    if (this->verbose_)  std::cout << "Copied A_d." << std::endl;
 
     level->setup(); //allocate smoother !! must be after createNextLevel since A_d is used
-    if (this->cfg->verbose_)  std::cout << "level->setup." << std::endl;
+    if (this->verbose_)  std::cout << "level->setup." << std::endl;
 
     level->next->level_id = num_levels;
     level->next->nn = level->nnout;
     level->next->m_xadj_d = level->m_xadjout_d;
     level->next->m_adjncy_d = level->m_adjncyout_d;
     int nextN = level->next->A_d.num_rows;
-    if (this->cfg->verbose_)  std::cout << "level->next finished" << std::endl;
+    if (this->verbose_)  std::cout << "level->next finished" << std::endl;
 
     //resize vectors
     level->xc_d = Vector_d(nextN, -1);
     level->bc_d = Vector_d(nextN, -1);
-    if (this->cfg->verbose_)  std::cout << "resize vectors finished" << std::endl;
+    if (this->verbose_)  std::cout << "resize vectors finished" << std::endl;
 
     //advance to the next level
     level = level->next;
 
     //increment the level counter
     num_levels++;
-    if (this->cfg->verbose_)
+    if (this->verbose_)
       std::cout << "Looping with num_levels=" << num_levels << std::endl;
   }
 
@@ -123,17 +152,17 @@ void AMG<Matrix, Vector>::solve_iteration(const Vector_d_CG &b, Vector_d_CG &x)
 {
   Vector_d b_d(b);
   Vector_d x_d(x);
-  switch (this->cfg->solverType_)
+  switch (this->solverType_)
   {
   case AMG_SOLVER:
     //perform a single cycle on the amg hierarchy
-    fine->cycle(this->cfg->cycleType_, b_d, x_d, this->cfg->verbose_);
+    fine->cycle(this->cycleType_, b_d, x_d, this->verbose_);
     x = Vector_d_CG(x_d);
     break;
   case PCG_SOLVER:
     //create a single CG cycle (this will run CG immediatly)
-    CG_Flex_Cycle<Matrix_h_CG, Vector_h_CG >(this->cfg->cycleType_, this->cfg->cycleIters_,
-      fine, Ahyb_d_CG, b, x, this->cfg->tolerance_, this->cfg->maxIters_, this->cfg->verbose_); //DHL
+    CG_Flex_Cycle<Matrix_h_CG, Vector_h_CG >(this->cycleType_, this->cycleIters_,
+      fine, Ahyb_d_CG, b, x, this->tolerance_, this->maxIters_, this->verbose_); //DHL
     break;
   }
 }
@@ -145,12 +174,12 @@ void AMG<Matrix, Vector>::solve_iteration(const Vector_d_CG &b, Vector_d_CG &x)
 template <class Matrix, class Vector>
 void AMG<Matrix, Vector>::solve(const Vector_d_CG &b_d, Vector_d_CG &x_d)
 {
-  if (this->cfg->verbose_)
+  if (this->verbose_)
     printf("AMG Solve:\n");
   iterations = 0;
   initial_nrm = -1;
 
-  if (this->cfg->verbose_) {
+  if (this->verbose_) {
     std::cout << std::setw(15) << "iter" << std::setw(15) << "time(s)" << std::setw(15)
       << "residual" << std::setw(15) << "rate" << std::setw(15) << std::endl;
     std::cout << "         ----------------------------------------------------\n";
@@ -163,8 +192,8 @@ void AMG<Matrix, Vector>::solve(const Vector_d_CG &b_d, Vector_d_CG &x_d)
     solve_iteration(b_d, x_d);
 
     done = true; //converged(r_d, nrm);
-  } while (++iterations < this->cfg->maxIters_ && !done);
-  if (this->cfg->verbose_)
+  } while (++iterations < this->maxIters_ && !done);
+  if (this->verbose_)
     std::cout << "         ----------------------------------------------------\n";
 
   solve_stop = CLOCK();

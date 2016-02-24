@@ -5,7 +5,6 @@
 #include <smoothers/smoother.h>
 #include <cusp/multiply.h>
 #include <my_timer.h>
-#include <FEMSolver.h>
 
 /*****************************************************
  * Jacobi smoother
@@ -18,7 +17,9 @@ public:
   typedef typename Matrix::index_type IndexType;
   typedef typename Matrix::memory_space MemorySpace;
 
-  gauss_seidel(FEMSolver * cfg, const Matrix_d& Ainit);
+  gauss_seidel(double smootherWeight,
+    int preInnerIters, int postInnerIters, int postRelaxes, 
+    const Matrix_d& Ainit);
   void find_diag(const Matrix_ell_d& A);
   void smooth(const Matrix& A, const Vector& b, Vector& x);
   void smooth_with_0_initial(const Matrix& A, const Vector &b, Vector &x);
@@ -150,10 +151,10 @@ public:
     int largestnumentries);
 
 public:
-  double smootherWeight;
-  int nPreInnerIter;
-  int nPostInnerIter;
-  int post_relaxes;
+  double smootherWeight_;
+  int nPreInnerIter_;
+  int nPostInnerIter_;
+  int post_relaxes_;
 
 };
 #endif

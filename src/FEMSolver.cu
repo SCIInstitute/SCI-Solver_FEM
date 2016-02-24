@@ -1,4 +1,9 @@
-#include <FEMSolver.h>
+#include "FEMSolver.h"
+#include "FEM/FEM2D.h"
+#include "FEM/FEM3D.h"
+#include "cutil.h"
+#include "amg.h"
+#include <time.h>
 
 FEMSolver::FEMSolver(
   std::string fname, bool verbose) :
@@ -15,10 +20,10 @@ FEMSolver::FEMSolver(
   metisSize_(90102),                  // the Max size of coarsest level
   partitionMaxSize_(512),             // the largest partition size (use getMaxThreads() to determine for your device)
   aggregatorType_(1),                 // the Aggregator METIS (0) or MIS (1)
-  convergeType_(ABSOLUTE_CONVERGENCE),// Convergence tolerance algo [ABSOLUTE_CONVERGENCE, RELATIVE_CONVERGENCE]
+  convergeType_(0),                   // Convergence tolerance algo [ABSOLUTE_CONVERGENCE (0), RELATIVE_CONVERGENCE (1)]
   tolerance_(1e-6),                   // the convergence tolerance
-  cycleType_(V_CYCLE),                //set the cycle algorithm
-  solverType_(AMG_SOLVER),            // the solving algorithm [AMG_SOLVER,PCG_SOLVER]
+  cycleType_(0),                      // set the cycle algorithm
+  solverType_(0),                     // the solving algorithm [AMG_SOLVER (0),PCG_SOLVER (1)]
   smootherWeight_(1.0),               // the weight parameter used in a smoother
   proOmega_(0.67),                    // the weight parameter used in a prolongator smoother
   device_(0),                         // the device number to run on
@@ -46,23 +51,28 @@ void FEMSolver::solveFEM(Matrix_ell_h* A_h,
   //assembly step
   if (this->triMesh_ != NULL) {
     // 2D fem solving object
-    FEM2D* fem2d = new FEM2D;
+    FEM2D fem2d;
     Vector_d_CG RHS(this->triMesh_->vertices.size(), 0.0);
-    fem2d->initializeWithTriMesh(this->triMesh_);
-    fem2d->assemble(this->triMesh_, A_device, RHS);
-    delete fem2d;
+    fem2d.initializeWithTriMesh(this->triMesh_);
+    fem2d.assemble(this->triMesh_, A_device, RHS);
   } else {
     // 3D fem solving object
-    FEM3D* fem3d = new FEM3D;
+    FEM3D fem3d;
     Vector_d_CG RHS(this->tetMesh_->vertices.size(), 0.0);
-    fem3d->initializeWithTetMesh(this->tetMesh_);
-    fem3d->assemble(this->tetMesh_, A_device, RHS, true);
-    delete fem3d;
+    fem3d.initializeWithTetMesh(this->tetMesh_);
+    fem3d.assemble(this->tetMesh_, A_device, RHS, true);
   }
   //copy back to the host
   cudaThreadSynchronize();
   //register configuration parameters
-  AMG<Matrix_h, Vector_h> amg(this);
+  AMG<Matrix_h, Vector_h> amg(this->verbose_, this->convergeType_,
+    this->cycleType_, this->solverType_, this->tolerance_,
+    this->cycleIters_, this->maxIters_, this->maxLevels_,
+    this->topSize_, this->smootherWeight_, this->preInnerIters_,
+    this->postInnerIters_, this->postRelaxes_, this->dsType_,
+    this->metisSize_, this->partitionMaxSize_, this->proOmega_,
+    this->aggregatorType_,
+    this->triMesh_, this->tetMesh_);
   //setup device
   Matrix_ell_d A_d(A_device);
   amg.setup(A_d);
@@ -127,7 +137,6 @@ void FEMSolver::checkMatrixForValidContents(Matrix_ell_h* A_h) {
 }
 
 void FEMSolver::getMatrixFromMesh(Matrix_ell_h* A_h) {
-  srand48(0);
   if (this->triMesh_ == NULL && this->tetMesh_ == NULL)
     exit(0);
   Matrix_ell_d_CG Aell_d;
@@ -323,7 +332,7 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
   return 0;
 }
 
-int FEMSolver::readMatlabNormalMatrix(const std::string &filename, vector<double> *A_h) {
+int FEMSolver::readMatlabNormalMatrix(const std::string &filename, std::vector<double> *A_h) {
   //read in the description header
   std::ifstream in(filename.c_str());
   if (!in.is_open()) {
@@ -553,12 +562,12 @@ void FEMSolver::writeVTK(std::vector <float> values, std::string fname)
   }
 }
 
-void FEMSolver::printElementWithHeader(vector<double>& test, unsigned int index)
+void FEMSolver::printElementWithHeader(std::vector<double>& test, unsigned int index)
 {
   std::cout << "element #" << index << " = " << test[index] << std::endl;
 }
 
-void FEMSolver::printMatlabReadContents(vector<double>& test)
+void FEMSolver::printMatlabReadContents(std::vector<double>& test)
 {
   std::cout << "test result vector is size = " << test.size() << std::endl;
   int incr = test.size() / 5;
@@ -573,7 +582,7 @@ int FEMSolver::importRhsVectorFromFile(std::string filename,
   Vector_h_CG& targetVector, bool verbose)
 {
   if (filename.empty()) {
-    string errMsg = "No matlab file provided for RHS (b) vector.";
+    std::string errMsg = "No matlab file provided for RHS (b) vector.";
     errMsg += " Specify the file using argument at commandline using -b switch.";
     std::cerr << errMsg << std::endl;
     return -1;
@@ -597,7 +606,7 @@ int FEMSolver::importStiffnessMatrixFromFile(std::string filename,
   Matrix_ell_h* targetMatrix, bool verbose)
 {
   if (filename.empty()) {
-    string errMsg = "No matlab file provided for stiffness matrix (A).";
+    std::string errMsg = "No matlab file provided for stiffness matrix (A).";
     errMsg += " Specify the file using argument at commandline using -A switch.";
     std::cerr << errMsg << std::endl;
     return -1;
@@ -607,7 +616,7 @@ int FEMSolver::importStiffnessMatrixFromFile(std::string filename,
     return -1;
   }
   if (verbose) {
-    string msg = "Finished reading stiffness matrix.";
+    std::string msg = "Finished reading stiffness matrix.";
     std::cout << msg << std::endl;
   }
   return 0;
