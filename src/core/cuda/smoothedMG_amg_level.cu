@@ -200,7 +200,9 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixCsr(IdxVector_d &pe
 }
 
 template <>
-void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixSymmetric_d(IdxVector_d &permutation, IdxVector_d &aggregateIdx, IdxVector_d &partitionIdx, IdxVector_d &partitionlabel, bool verbose)
+void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixSymmetric_d(
+  IdxVector_d &permutation, IdxVector_d &aggregateIdx, IdxVector_d &partitionIdx,
+  IdxVector_d &partitionlabel, bool verbose)
 {
    int numpart = partitionIdx.size() - 1;
    int numentries = A_d.num_entries;
@@ -224,7 +226,8 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixSymmetric_d(IdxVect
    typedef thrust::tuple<IntIterator, IntIterator, FloatIterator> IteratorTuple;
 
    typedef thrust::zip_iterator<IteratorTuple> ZipIterator;
-   ZipIterator iter(thrust::make_tuple(Acoo_d.row_indices.begin(), Acoo_d.column_indices.begin(), Acoo_d.values.begin()));
+   ZipIterator iter(thrust::make_tuple(Acoo_d.row_indices.begin(),
+     Acoo_d.column_indices.begin(), Acoo_d.values.begin()));
 
    thrust::sort_by_key(entrypartlabel.begin(), entrypartlabel.end(), iter);
    if (verbose)
@@ -235,7 +238,8 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixSymmetric_d(IdxVect
    IdxVector_d redoutputkey(2 * numpart + 1);
    IdxVector_d redoutputvalue(2 * numpart + 1);
 
-   thrust::reduce_by_key(entrypartlabel.begin(), entrypartlabel.end(), redvalue.begin(), redoutputkey.begin(), redoutputvalue.begin());
+   thrust::reduce_by_key(entrypartlabel.begin(), entrypartlabel.end(), redvalue.begin(),
+     redoutputkey.begin(), redoutputvalue.begin());
    int innum = thrust::reduce(redoutputvalue.begin(), redoutputvalue.begin() + numpart);
    int outnum = numentries - innum - redoutputvalue[numpart * 2];
    IntIterator res = thrust::max_element(redoutputvalue.begin(), redoutputvalue.begin() + numpart);

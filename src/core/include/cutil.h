@@ -151,7 +151,5 @@ void trimesh2csr(TriMesh* meshPtr, Matrix &A);
 template<class Matrix>
 void tetmesh2ell(TetMesh* meshPtr, Matrix &A, bool verbose);
 
-
-
 void convertSym2gen(Matrix_d_CG &Acsr, Matrix_coo_d_CG &Aout);
 #endif

@@ -162,7 +162,7 @@ bool FEMSolver::compare_sparse_entry(SparseEntry_t a, SparseEntry_t b) {
 
 int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h *A_h) {
   //read in the description header
-  std::ifstream in(filename.c_str());
+  std::ifstream in(filename.c_str(), std::ios::binary);
   if (!in.is_open()) {
     std::cerr << "could not open file: " << filename << std::endl;
     return 1;
@@ -240,12 +240,9 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
   }
   in.read((char*)&byte_per_element, 4);
   int32_t num_rows = byte_per_element / 4;
-  std::vector<int32_t> row_vals;
-  for (int i = 0; i < num_rows; i++) {
-    int32_t val;
-    in.read((char*)&val, 4);
-    row_vals.push_back(val);
-  }
+  std::vector<int32_t> row_vals(num_rows, 0);
+  in.read(reinterpret_cast<char*>(row_vals.data()), 4 * num_rows);
+  //read in remaining bytes
   in.read(buffer, byte_per_element % 8);
   //read in the column indices
   in.read((char*)&type, 4);
@@ -256,12 +253,9 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
   }
   in.read((char*)&byte_per_element, 4);
   int32_t num_cols = byte_per_element / 4;
-  std::vector<int32_t> col_vals;
-  for (int i = 0; i < num_cols; i++) {
-    int32_t val;
-    in.read((char*)&val, 4);
-    col_vals.push_back(val);
-  }
+  std::vector<int32_t> col_vals(num_cols, 0);
+  in.read(reinterpret_cast<char*>(col_vals.data()), 4 * num_cols);
+  //read in remaining bytes
   in.read(buffer, byte_per_element % 8);
   //read in the data values
   in.read((char*)&type, 4);
@@ -273,12 +267,9 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
   }
   in.read((char*)&byte_per_element, 4);
   int32_t val_count = byte_per_element / 8;
-  std::vector<float> double_vals;
-  for (int i = 0; i < val_count; i++) {
-    double double_val;
-    in.read((char*)&double_val, 8);
-    double_vals.push_back(double_val);
-  }
+  std::vector<float> double_vals(val_count, 0);
+  in.read(reinterpret_cast<char*>(double_vals.data()), 8 * val_count);
+  in.close();
   std::vector<SparseEntry_t> sparse_entries;
   int32_t num_entries = col_vals[y_dim];
   sparse_entries.reserve(num_entries);
@@ -286,7 +277,6 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
   row_max.resize(x_dim);
   for (size_t i = 0; i < row_max.size(); i++)
     row_max[i] = 0;
-  in.read(buffer, byte_per_element % 8);
   for (size_t i = 0; i < y_dim; i++) {
     int32_t idx = col_vals[i];
     int32_t idx_end = col_vals[i + 1] - 1;
@@ -327,7 +317,6 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
       row_count = 0;
     }
   }
-  in.close();
   *A_h = Matrix_ell_h(A);
   return 0;
 }

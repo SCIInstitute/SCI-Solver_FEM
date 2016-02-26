@@ -42,14 +42,9 @@ int main(int argc, char** argv)
 	  identity.column_indices(i, 0) = i;
 	  identity.values(i, 0) = 1;
   }
-  //multiply the mesh matrix by the stiffness properties matrix.
-  Matrix_ell_h out;
-  Matrix_ell_h my_A(A);
-  cusp::multiply(identity, my_A, out);
-  A = Matrix_ell_h(out);
   //************************ DEBUG*/
   //The final call to the solver
-  cfg.checkMatrixForValidContents(&my_A);
+  cfg.checkMatrixForValidContents(&A);
   cfg.solveFEM(&A, &x_h, &b_h);
   //At this point, you can do what you need with the matrices.
   cfg.writeMatlabArray("output.mat", x_h);
