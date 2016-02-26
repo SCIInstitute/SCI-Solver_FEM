@@ -241,7 +241,7 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
   in.read((char*)&byte_per_element, 4);
   int32_t num_rows = byte_per_element / 4;
   std::vector<int32_t> row_vals(num_rows, 0);
-  in.read(reinterpret_cast<char*>(row_vals.data()), 4 * num_rows);
+  in.read(reinterpret_cast<char*>(row_vals.data()), 4 * x_dim);
   //read in remaining bytes
   in.read(buffer, byte_per_element % 8);
   //read in the column indices
@@ -254,7 +254,7 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
   in.read((char*)&byte_per_element, 4);
   int32_t num_cols = byte_per_element / 4;
   std::vector<int32_t> col_vals(num_cols, 0);
-  in.read(reinterpret_cast<char*>(col_vals.data()), 4 * num_cols);
+  in.read(reinterpret_cast<char*>(col_vals.data()), 4 * y_dim);
   //read in remaining bytes
   in.read(buffer, byte_per_element % 8);
   //read in the data values
