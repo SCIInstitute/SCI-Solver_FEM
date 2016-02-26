@@ -97,15 +97,17 @@ void AMG<Matrix, Vector>::setup(const Matrix_d &Acsr_d) {
   while (true)
   {
     int N = level->A_d.num_rows;
+    if (this->verbose_) 
+      std::cout << "Rows: " << N << " of max: " << this->topSize_ << std::endl;
     if (N < this->topSize_ || num_levels >= this->maxLevels_)
     {
       coarsestlevel = num_levels - 1;
       Matrix_h Atmp = level->A_d;
       cusp::array2d<ValueType, cusp::host_memory> coarse_dense(Atmp);
       LU = cusp::detail::lu_solver<ValueType, cusp::host_memory >(coarse_dense);
+      if (this->verbose_)  std::cout << "Finished with lu_solver." << std::endl;
       break;
     }
-    if (this->verbose_)  std::cout << "Finished with lu_solver." << std::endl;
 
     level->next = AMG_Level<Matrix, Vector>::allocate(this);
     if (this->verbose_)  std::cout << "Finished with AMG_Level_allocate." << std::endl;

@@ -18,7 +18,7 @@ TEST(SanityTests, EggCarton) {
   cfg.postRelaxes_ = 1;
   cfg.cycleIters_ = 1;
   cfg.dsType_ = 0;
-  cfg.topSize_ = 256;
+  cfg.topSize_ = 280;
   cfg.metisSize_ = 90102;
   cfg.partitionMaxSize_ = 512;
   cfg.aggregatorType_ = 1;
@@ -35,17 +35,6 @@ TEST(SanityTests, EggCarton) {
   Matrix_ell_h  A_h;
   //cfg.getMatrixFromMesh(&A_h);
   cfg.readMatlabSparseMatrix(std::string(TEST_DATA_DIR) + "/simple.mat", &A_h);
-  cusp::print(A_h);
-  /*for (size_t i = 0; i < num_vert; i++) {
-    size_t j = 0;
-    while (A_gen.values(i, j) != Matrix_ell_h::invalid_index) {
-      if (A_gen.column_indices(i, j) == i) {
-        A_gen.values = 8. * M_PI * M_PI + lambda;
-        break;
-      }
-      j++;
-    }
-  }*/
   //create the b vector
   Vector_h_CG b_h(num_vert, 1.0), x_h(num_vert, 0.0);
   for (int i = 0; i < num_vert; i++) {

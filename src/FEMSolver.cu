@@ -73,9 +73,9 @@ void FEMSolver::solveFEM(Matrix_ell_h* A_h,
     this->metisSize_, this->partitionMaxSize_, this->proOmega_,
     this->aggregatorType_,
     this->triMesh_, this->tetMesh_);
-  //setup device
-  Matrix_ell_d A_d(A_device);
-  amg.setup(A_d);
+  //setup multi grid for solver
+  Matrix_ell_d_CG A_test(*A_h);
+  amg.setup(A_test);
   //print info
   if (this->verbose_)
     amg.printGridStatistics();
@@ -156,6 +156,7 @@ void FEMSolver::getMatrixFromMesh(Matrix_ell_h* A_h) {
   cudaThreadSynchronize();
   *A_h = Matrix_ell_h(Aell_d);
 }
+
 bool FEMSolver::compare_sparse_entry(SparseEntry_t a, SparseEntry_t b) {
   return ((a.row_ != b.row_) ? (a.row_ < b.row_) : (a.col_ < b.col_));
 }
@@ -216,19 +217,29 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
 
   //Array name
   uint32_t arrayName_type = 0;
+  uint32_t arrayName_length = 0;
+  uint8_t  byteAlignmentForPadding = 4;
   in.read((char*)&arrayName_type, 2);
+  in.read((char*)&arrayName_length, 2);
+
+  //If next 16-bits are zero, then MAT file is not using the small data
+  // element format for storing array name
+  if (arrayName_length == 0) {
+    in.read((char*)&arrayName_length, 4);
+    byteAlignmentForPadding = 8;
+  }
   if (arrayName_type != 1 && arrayName_type != 2) {
     std::cerr << "WARNING: Invalid variable type (" << arrayName_type;
     std::cerr << ") for array name characters (Must be 8-bit)." << std::endl;
     in.close();
     return -1;
   }
-  uint32_t arrayName_length = 0;
-  in.read((char*)&arrayName_length, 2);
-  //Account for padding of array name to match 32-bit requirement
-  int lenRemainder = arrayName_length % 4;
+
+  //Account for padding of array name to match the 32-bit or 64-bit requirement,
+  // depending on the short or normal format for the array name format.
+  int lenRemainder = arrayName_length % byteAlignmentForPadding;
   if (lenRemainder != 0)
-    arrayName_length = arrayName_length + 4 - lenRemainder;
+    arrayName_length = arrayName_length + byteAlignmentForPadding - lenRemainder;
   in.read(buffer, arrayName_length); //Read the array name (ignore)
 
   //read in the row indices
@@ -239,9 +250,8 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
     return 1;
   }
   in.read((char*)&byte_per_element, 4);
-  int32_t num_rows = byte_per_element / 4;
-  std::vector<int32_t> row_vals(num_rows, 0);
-  in.read(reinterpret_cast<char*>(row_vals.data()), 4 * x_dim);
+  std::vector<int32_t> row_vals(byte_per_element / 4, 0);
+  in.read(reinterpret_cast<char*>(row_vals.data()), byte_per_element);
   //read in remaining bytes
   in.read(buffer, byte_per_element % 8);
   //read in the column indices
@@ -252,9 +262,8 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
     return 1;
   }
   in.read((char*)&byte_per_element, 4);
-  int32_t num_cols = byte_per_element / 4;
-  std::vector<int32_t> col_vals(num_cols, 0);
-  in.read(reinterpret_cast<char*>(col_vals.data()), 4 * y_dim);
+  std::vector<int32_t> col_vals(byte_per_element / 4, 0);
+  in.read(reinterpret_cast<char*>(col_vals.data()), byte_per_element);
   //read in remaining bytes
   in.read(buffer, byte_per_element % 8);
   //read in the data values
@@ -266,9 +275,8 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
     return 1;
   }
   in.read((char*)&byte_per_element, 4);
-  int32_t val_count = byte_per_element / 8;
-  std::vector<float> double_vals(val_count, 0);
-  in.read(reinterpret_cast<char*>(double_vals.data()), 8 * val_count);
+  std::vector<double> double_vals(byte_per_element / 8, 0);
+  in.read(reinterpret_cast<char*>(double_vals.data()), byte_per_element);
   in.close();
   std::vector<SparseEntry_t> sparse_entries;
   int32_t num_entries = col_vals[y_dim];
