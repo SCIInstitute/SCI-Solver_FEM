@@ -18,10 +18,10 @@ TEST(SanityTests, EggCarton) {
   cfg.postRelaxes_ = 1;
   cfg.cycleIters_ = 1;
   cfg.dsType_ = 0;
-  cfg.topSize_ = 280;
-  cfg.metisSize_ = 90102;
+  cfg.topSize_ = 256;
+  cfg.randMisParameters_ = 90102;
   cfg.partitionMaxSize_ = 512;
-  cfg.aggregatorType_ = 1;
+  cfg.aggregatorType_ = 0;
   cfg.convergeType_ = 0;
   cfg.tolerance_ = 1e-6;
   cfg.cycleType_ = 0;

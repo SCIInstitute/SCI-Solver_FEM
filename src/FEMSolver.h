@@ -56,9 +56,10 @@ class FEMSolver {
   int cycleIters_;                // the number of CG iterations per outer iteration
   int dsType_;                    // data structure type
   int topSize_;                   // max size of coarsest level
-  int metisSize_;                 // max size of coarsest level
+  int randMisParameters_;         // max size of coarsest level
   int partitionMaxSize_;          // max size of of the partition
-  int aggregatorType_;            // aggregator metis (0) mis (1)
+  int aggregatorType_;            // aggregator oldMis (0), metis bottom up (1), 
+                                  //   metis top down (2), aggMisGPU (3), aggMisCPU (4), newMisLight (5)
   int convergeType_;              // the convergence tolerance algorithm <absolute (0)|relative (1)>
   double tolerance_;              // the convergence tolerance
   int cycleType_;                 // the cycle algorithm <V (0) | W (1) | F (2) | K (3)>

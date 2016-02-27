@@ -227,7 +227,7 @@ namespace AggMIS {
         void getPartIndicesNegStart(IntVector_d& sortedPartition, 
                                 IntVector_d& partIndices) {
             // Sizing the array:
-            int maxPart = sortedPartition[sortedPartition.size() - 1];
+            int maxPart = max(0,sortedPartition[sortedPartition.size() - 1]);
             partIndices.resize(maxPart + 2, 0);
 
             // Figuring out block sizes for kernel call:

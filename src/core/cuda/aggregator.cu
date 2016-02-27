@@ -6,10 +6,10 @@
 template <class Matrix, class Vector>
 Aggregator<Matrix, Vector>* Aggregator<Matrix, Vector>::allocate(int type)
 {
-  if (type == 0)
-    return new MIS_Aggregator < Matrix, Vector > ;
-  else
-    return new RandMIS_Aggregator < Matrix, Vector > ;
+  //if (type == 0)
+  //  return new MIS_Aggregator < Matrix, Vector > ;
+  //else
+  return new RandMIS_Aggregator < Matrix, Vector > ;
 }
 
 /****************************************

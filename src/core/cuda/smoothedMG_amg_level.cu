@@ -407,7 +407,8 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::createNextLevel(bool verbose)
            std::cout << "calling computePermutation_d with tri mesh." << std::endl;
          aggregator->computePermutation_d(this->m_meshPtr, permutation_d, ipermutation_d,
            aggregateIdx_d, partitionIdx_d, partitionlabel_d, m_xadjout_d, m_adjncyout_d,
-           this->amg->metisSize_, this->amg->partitionMaxSize_, verbose);// DHL
+           this->amg->aggregatorType_, this->amg->randMisParameters_,
+           this->amg->partitionMaxSize_, verbose);// DHL
          if (verbose)
            std::cout << "computePermutation_d called with tri mesh." << std::endl;
       }
@@ -417,7 +418,7 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::createNextLevel(bool verbose)
            std::cout << "calling computePermutation_d with tet mesh." << std::endl;
          aggregator->computePermutation_d(this->m_tetmeshPtr, permutation_d,
            ipermutation_d, aggregateIdx_d, partitionIdx_d, partitionlabel_d,
-           m_xadjout_d, m_adjncyout_d, this->amg->metisSize_,
+           m_xadjout_d, m_adjncyout_d, this->amg->aggregatorType_, this->amg->randMisParameters_,
            this->amg->partitionMaxSize_, verbose); // DHL
          if (verbose)
            std::cout << "computePermutation_d called with tet mesh." << std::endl;
@@ -429,7 +430,7 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::createNextLevel(bool verbose)
            std::cout << "calling computePermutation_d with level_id != 0." << std::endl;
       aggregator->computePermutation_d(m_xadj_d, m_adjncy_d, permutation_d,
         ipermutation_d, aggregateIdx_d, partitionIdx_d, partitionlabel_d,
-        m_xadjout_d, m_adjncyout_d, this->amg->metisSize_, 
+        m_xadjout_d, m_adjncyout_d, this->amg->aggregatorType_, this->amg->randMisParameters_,
         this->amg->partitionMaxSize_, verbose); // DHL
          if (verbose)
            std::cout << "computePermutation_d called with level_id != 0." << std::endl;

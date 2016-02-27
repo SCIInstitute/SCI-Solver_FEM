@@ -565,17 +565,27 @@ void MIS_Aggregator<Matrix, Vector>::aggregateGraphMIS(int n, int *adjIndexes, i
 }
 
 template <class Matrix, class Vector>
-void MIS_Aggregator<Matrix, Vector>::computePermutation_d(IdxVector_d &adjIndexesIn, IdxVector_d &adjacencyIn, IdxVector_d &permutation, IdxVector_d &ipermutation, IdxVector_d &aggregateIdx, IdxVector_d &partitionIdx, IdxVector_d &partitionLabel, IdxVector_d &adjIndexesOut, IdxVector_d &adjacencyOut, int parameters, int part_max_size, bool verbose)
+void MIS_Aggregator<Matrix, Vector>::computePermutation_d(IdxVector_d &adjIndexesIn, 
+  IdxVector_d &adjacencyIn, IdxVector_d &permutation, IdxVector_d &ipermutation,
+  IdxVector_d &aggregateIdx, IdxVector_d &partitionIdx, IdxVector_d &partitionLabel, 
+  IdxVector_d &adjIndexesOut, IdxVector_d &adjacencyOut, int aggregation_type,
+  int parameters, int part_max_size, bool verbose)
 {
 }
 
 template <class Matrix, class Vector>
-void MIS_Aggregator<Matrix, Vector>::computePermutation_d(TriMesh *meshPtr, IdxVector_d &permutation, IdxVector_d &ipermutation, IdxVector_d &aggregateIdx, IdxVector_d &partitionIdx, IdxVector_d &partitionLabel, IdxVector_d &adjIndexesOut, IdxVector_d &adjacencyOut, int parameters, int part_max_size, bool verbose)
+void MIS_Aggregator<Matrix, Vector>::computePermutation_d(TriMesh *meshPtr, 
+  IdxVector_d &permutation, IdxVector_d &ipermutation, IdxVector_d &aggregateIdx,
+  IdxVector_d &partitionIdx, IdxVector_d &partitionLabel, IdxVector_d &adjIndexesOut, IdxVector_d &adjacencyOut, 
+  int aggregation_type, int parameters, int part_max_size, bool verbose)
 {
 }
 
 template <class Matrix, class Vector>
-void MIS_Aggregator<Matrix, Vector>::computePermutation_d(TetMesh *meshPtr, IdxVector_d &permutation, IdxVector_d &ipermutation, IdxVector_d &aggregateIdx, IdxVector_d &partitionIdx, IdxVector_d &partitionLabel, IdxVector_d &adjIndexesOut, IdxVector_d &adjacencyOut, int parameters, int part_max_size, bool verbose)
+void MIS_Aggregator<Matrix, Vector>::computePermutation_d(TetMesh *meshPtr, 
+  IdxVector_d &permutation, IdxVector_d &ipermutation, IdxVector_d &aggregateIdx, 
+  IdxVector_d &partitionIdx, IdxVector_d &partitionLabel, IdxVector_d &adjIndexesOut, 
+  IdxVector_d &adjacencyOut, int aggregation_type, int parameters, int part_max_size, bool verbose)
 {
 }
 

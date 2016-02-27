@@ -437,11 +437,11 @@ void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(IdxVector_d &adjIn
       IdxVector_d &partitionLabel,
       IdxVector_d &adjIndexesOut,
       IdxVector_d &adjacencyOut,
+      int agg_type,
       int parameters,
       int part_max_size,
       bool verbose) {
-   int AggregatorMethod = (parameters / 100000000);       // The type of Aggregation method to use (0 = MIS unprocessed)
-   if (AggregatorMethod == 0)
+  if (agg_type == 0)
    {
       if (verbose)
          printf("Calling Old MIS Aggregation method.\n");
@@ -458,10 +458,10 @@ void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(IdxVector_d &adjIn
             part_max_size,
             verbose);
    }
-   else if (AggregatorMethod == 1)
+  else if (agg_type == 1)
    {
       if (verbose)
-         printf("Calling Metis bottom up method");
+         printf("Calling Metis bottom up method\n");
       misHelpers::CP::MetisBottomUp(adjIndexesIn,
             adjacencyIn,
             permutation,
@@ -475,10 +475,10 @@ void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(IdxVector_d &adjIn
             part_max_size,
             verbose);
    }
-   else if (AggregatorMethod == 2)
+  else if (agg_type == 2)
    {
       if (verbose)
-         printf("Calling Metis top down method");
+         printf("Calling Metis top down method\n");
       misHelpers::CP::MetisTopDown(adjIndexesIn,
             adjacencyIn,
             permutation,
@@ -492,10 +492,10 @@ void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(IdxVector_d &adjIn
             part_max_size,
             verbose);
    }
-   else if (AggregatorMethod == 3)
+  else if (agg_type == 3)
    {
       if (verbose)
-         printf("Calling AggMIS GPU method");
+         printf("Calling AggMIS GPU method\n");
       misHelpers::CP::NewMIS(adjIndexesIn,
             adjacencyIn,
             permutation,
@@ -509,10 +509,10 @@ void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(IdxVector_d &adjIn
             part_max_size,
             verbose);
    }
-   else if (AggregatorMethod == 4)
+  else if (agg_type == 4)
    {
       if (verbose)
-         printf("Calling AggMIS CPU method");
+         printf("Calling AggMIS CPU method\n");
       misHelpers::CP::NewMIS_CPU(adjIndexesIn,
             adjacencyIn,
             permutation,
@@ -526,10 +526,10 @@ void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(IdxVector_d &adjIn
             part_max_size,
             verbose);
    }
-   else if (AggregatorMethod == 5)
+  else if (agg_type == 5)
    {
       if (verbose)
-         printf("Calling AggMIS Light CPU method");
+         printf("Calling AggMIS Light CPU method\n");
       misHelpers::CP::LightMIS_CPU(adjIndexesIn,
             adjacencyIn,
             permutation,
@@ -544,7 +544,7 @@ void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(IdxVector_d &adjIn
             verbose);
    }
    else if (verbose)
-      printf("Aggregation method %d not recognized!\n", AggregatorMethod);
+     printf("Aggregation method %d not recognized!\n", agg_type);
 
    if (verbose)
       std::cout << "Finished with RandMIS_Aggregator::computePermutation_d" << std::endl;
@@ -554,26 +554,26 @@ template <class Matrix, class Vector>
 void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(TriMesh *meshPtr,
   IdxVector_d &permutation, IdxVector_d &ipermutation, IdxVector_d &aggregateIdx,
   IdxVector_d &partitionIdx, IdxVector_d &partitionLabel, IdxVector_d &adjIndexesOut, 
-  IdxVector_d &adjacencyOut, int parameters, int part_max_size, bool verbose)
+  IdxVector_d &adjacencyOut, int aggregation_type, int parameters, int part_max_size, bool verbose)
 {
    IdxVector_d adjIndexesIn, adjacencyIn;
    misHelpers::getAdjacency(meshPtr, adjIndexesIn, adjacencyIn);
    computePermutation_d(adjIndexesIn, adjacencyIn, permutation, ipermutation, 
      aggregateIdx, partitionIdx, partitionLabel, adjIndexesOut,
-     adjacencyOut, parameters, part_max_size, verbose);
+     adjacencyOut, aggregation_type, parameters, part_max_size, verbose);
 }
 
 template <class Matrix, class Vector>
 void RandMIS_Aggregator<Matrix, Vector>::computePermutation_d(TetMesh *meshPtr, 
   IdxVector_d &permutation, IdxVector_d &ipermutation, IdxVector_d &aggregateIdx,
   IdxVector_d &partitionIdx, IdxVector_d &partitionLabel, IdxVector_d &adjIndexesOut,
-  IdxVector_d &adjacencyOut, int parameters, int part_max_size, bool verbose)
+  IdxVector_d &adjacencyOut, int aggregation_type, int parameters, int part_max_size, bool verbose)
 {
    IdxVector_d adjIndexesIn, adjacencyIn;
    misHelpers::getAdjacency(meshPtr, adjIndexesIn, adjacencyIn);
    computePermutation_d(adjIndexesIn, adjacencyIn, permutation, ipermutation,
      aggregateIdx, partitionIdx, partitionLabel, adjIndexesOut, adjacencyOut,
-     parameters, part_max_size, verbose);
+     aggregation_type, parameters, part_max_size, verbose);
 }
 
 template <class Matrix, class Vector>

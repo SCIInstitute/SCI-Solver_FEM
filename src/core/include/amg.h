@@ -30,7 +30,7 @@ class AMG
       int solverType, double tolerance, int cycleIters, int maxIters,
       int maxLevels, int topSize, double smootherWeight,
     int preInnerIters, int postInnerIters, int postRelaxes,
-    int dsType, int metisSize, int partitionMaxSize, double proOmega,
+    int dsType, int randMisParameters, int partitionMaxSize, double proOmega,
     int aggregatorType, TriMesh* triMesh, TetMesh* tetMesh);
   ~AMG();
 
@@ -60,7 +60,7 @@ class AMG
   int postInnerIters_;            // the post inner iterations for GSINNER
   int postRelaxes_;               // the number of post relax iterations
   int dsType_;
-  int metisSize_;
+  int randMisParameters_;
   int partitionMaxSize_;
   double proOmega_;
   int aggregatorType_;

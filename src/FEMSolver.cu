@@ -17,9 +17,10 @@ FEMSolver::FEMSolver(
   cycleIters_(1),                     // The number of CG iterations per outer iteration
   dsType_(0),                         // Data Structure Type
   topSize_(256),                      // the Max size of coarsest level
-  metisSize_(90102),                  // the Max size of coarsest level
+  randMisParameters_(90102),          // the Max size of coarsest level
   partitionMaxSize_(512),             // the largest partition size (use getMaxThreads() to determine for your device)
-  aggregatorType_(1),                 // the Aggregator METIS (0) or MIS (1)
+  aggregatorType_(0),                 // aggregator oldMis (0), metis bottom up (1), 
+                                      //   metis top down (2), aggMisGPU (3), aggMisCPU (4), newMisLight (5)
   convergeType_(0),                   // Convergence tolerance algo [ABSOLUTE_CONVERGENCE (0), RELATIVE_CONVERGENCE (1)]
   tolerance_(1e-6),                   // the convergence tolerance
   cycleType_(0),                      // set the cycle algorithm
@@ -70,7 +71,7 @@ void FEMSolver::solveFEM(Matrix_ell_h* A_h,
     this->cycleIters_, this->maxIters_, this->maxLevels_,
     this->topSize_, this->smootherWeight_, this->preInnerIters_,
     this->postInnerIters_, this->postRelaxes_, this->dsType_,
-    this->metisSize_, this->partitionMaxSize_, this->proOmega_,
+    this->randMisParameters_, this->partitionMaxSize_, this->proOmega_,
     this->aggregatorType_,
     this->triMesh_, this->tetMesh_);
   //setup multi grid for solver

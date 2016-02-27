@@ -179,6 +179,7 @@ namespace misHelpers {
          int fineSize, coarseSize;
          coarseSize = part_max_size % 1000;
          fineSize = (part_max_size / 1000) % 1000;
+         fineSize = fineSize <= 0 ? 1 : fineSize;
 
 
          // Getting the fine aggregation with Metis
