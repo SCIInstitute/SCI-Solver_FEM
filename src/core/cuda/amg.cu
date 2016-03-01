@@ -16,7 +16,7 @@ AMG<Matrix, Vector>::AMG(bool verbose, int convergeType, int cycleType,
   int maxLevels, int topSize, double smootherWeight,
   int preInnerIters, int postInnerIters, int postRelaxes,
   int dsType, int randMisParameters, int partitionMaxSize, double proOmega,
-  int aggregatorType, TriMesh* triMesh, TetMesh* tetMesh) :
+  int aggregatorType, int blockSize, TriMesh* triMesh, TetMesh* tetMesh) :
   fine(0), verbose_(verbose),
   convergeType_(convergeType == 0 ? ABSOLUTE_CONVERGENCE : RELATIVE_CONVERGENCE),
   solverType_(solverType == 0 ? AMG_SOLVER : PCG_SOLVER),
@@ -25,7 +25,7 @@ AMG<Matrix, Vector>::AMG(bool verbose, int convergeType, int cycleType,
   smootherWeight_(smootherWeight), preInnerIters_(preInnerIters),
   postInnerIters_(postInnerIters), postRelaxes_(postRelaxes),
   dsType_(dsType), randMisParameters_(randMisParameters), partitionMaxSize_(partitionMaxSize),
-  proOmega_(proOmega), aggregatorType_(aggregatorType),
+  proOmega_(proOmega), aggregatorType_(aggregatorType), blockSize_(blockSize),
   triMesh_(triMesh), tetMesh_(tetMesh) {
   switch (cycleType) {
   case 0:

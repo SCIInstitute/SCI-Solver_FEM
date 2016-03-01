@@ -28,6 +28,7 @@ TEST(SanityTests, EggCarton) {
   cfg.solverType_ = 0;
   cfg.smootherWeight_ = 1;
   cfg.proOmega_ = .67;
+  cfg.blockSize_ = 128;
 
   size_t num_vert = cfg.tetMesh_->vertices.size();
   float lambda = 1.f;

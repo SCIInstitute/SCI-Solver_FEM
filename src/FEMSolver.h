@@ -67,6 +67,7 @@ class FEMSolver {
   double smootherWeight_;         // the weight parameter used in a smoother
   double proOmega_;               // the weight parameter used in prolongator smoother
   int device_;                    // the GPU device number to specify
+  int blockSize_;
   //The pointers to the meshes
   TetMesh * tetMesh_;
   TriMesh * triMesh_;

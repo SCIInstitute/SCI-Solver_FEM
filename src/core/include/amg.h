@@ -31,7 +31,7 @@ class AMG
       int maxLevels, int topSize, double smootherWeight,
     int preInnerIters, int postInnerIters, int postRelaxes,
     int dsType, int randMisParameters, int partitionMaxSize, double proOmega,
-    int aggregatorType, TriMesh* triMesh, TetMesh* tetMesh);
+    int aggregatorType, int blockSize, TriMesh* triMesh, TetMesh* tetMesh);
   ~AMG();
 
   void solve(const Vector_d_CG &b, Vector_d_CG &x);
@@ -64,6 +64,7 @@ class AMG
   int partitionMaxSize_;
   double proOmega_;
   int aggregatorType_;
+  int blockSize_;
   TriMesh* triMesh_;
   TetMesh* tetMesh_;
   private:

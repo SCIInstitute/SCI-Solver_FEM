@@ -123,7 +123,7 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixCsr(IdxVector_d &pe
    Acoo_d = A_d;
    cusp::array1d<int, cusp::device_memory> entrypartlabel(numentries, -1);
 
-   size_t blocksize = 256;
+   size_t blocksize = this->amg->blockSize_;
    size_t blocknum = ceil((float)numentries / (float)blocksize);
    if(blocknum > 65535) printf("too many blocks!!\n");
 
@@ -209,7 +209,7 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixSymmetric_d(
    Acoo_d = A_d;
    cusp::array1d<int, cusp::device_memory> entrypartlabel(numentries, -1);
 
-   size_t blocksize = 256;
+   size_t blocksize = this->amg->blockSize_;
    size_t blocknum = ceil((float)numentries / (float)blocksize);
    if(blocknum > 65535) printf("too many blocks!!\n");
 
@@ -242,13 +242,21 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixSymmetric_d(
    if (verbose)
       printf("partition number is %d\n", numpart);
 
-   IdxVector_d redoutput(numentries);
    IdxVector_d redvalue(numentries, 1);
    IdxVector_d redoutputkey(2 * numpart + 1);
    IdxVector_d redoutputvalue(2 * numpart + 1);
 
    thrust::reduce_by_key(entrypartlabel.begin(), entrypartlabel.end(), redvalue.begin(),
      redoutputkey.begin(), redoutputvalue.begin());
+   std::vector<int> redvaluevec, redoutputkeyvec, redoutputvaluevec;
+   IdxVector_h redvalue_h(redvalue), redoutputkey_h(redoutputkey), redoutputvalue_h(redoutputvalue);
+   for (size_t i = 0; i < redoutputkey_h.size(); i++) {
+     redoutputkeyvec.push_back(redoutputkey_h[i]);
+     redoutputvaluevec.push_back(redoutputvalue_h[i]);
+   }
+   for (size_t i = 0; i < redvalue_h.size(); i++) {
+     redvaluevec.push_back(redvalue_h[i]);
+   }
    int innum = thrust::reduce(redoutputvalue.begin(), redoutputvalue.begin() + numpart);
    int outnum = numentries - innum - redoutputvalue[numpart * 2];
    IntIterator res = thrust::max_element(redoutputvalue.begin(), redoutputvalue.begin() + numpart);

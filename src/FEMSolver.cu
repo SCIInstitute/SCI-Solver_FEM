@@ -28,6 +28,7 @@ FEMSolver::FEMSolver(
   smootherWeight_(1.0),               // the weight parameter used in a smoother
   proOmega_(0.67),                    // the weight parameter used in a prolongator smoother
   device_(0),                         // the device number to run on
+  blockSize_(256),                    // maximum size of a block
   tetMesh_(NULL),                     // the tetmesh pointer
   triMesh_(NULL)                      // the trimesh pointer
 {}
@@ -72,7 +73,7 @@ void FEMSolver::solveFEM(Matrix_ell_h* A_h,
     this->topSize_, this->smootherWeight_, this->preInnerIters_,
     this->postInnerIters_, this->postRelaxes_, this->dsType_,
     this->randMisParameters_, this->partitionMaxSize_, this->proOmega_,
-    this->aggregatorType_,
+    this->aggregatorType_, this->blockSize_,
     this->triMesh_, this->tetMesh_);
   //setup multi grid for solver
   Matrix_ell_d_CG A_test(*A_h);
