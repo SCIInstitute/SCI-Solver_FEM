@@ -220,7 +220,11 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixSymmetric_d(
          thrust::raw_pointer_cast(&entrypartlabel[0]),
          thrust::raw_pointer_cast(&permutation[0]),
          thrust::raw_pointer_cast(&partitionlabel[0]));
-
+   std::vector<int> entrypartlabelvec;
+   cusp::array1d<int, cusp::host_memory> entrypartlabel_h(entrypartlabel);
+   for (size_t i = 0; i < entrypartlabel_h.size(); i++) {
+     entrypartlabelvec.push_back(entrypartlabel_h[i]);
+   }
    typedef IdxVector_d::iterator IntIterator;
    typedef Vector_d::iterator FloatIterator;
    typedef thrust::tuple<IntIterator, IntIterator, FloatIterator> IteratorTuple;
@@ -230,6 +234,11 @@ void SmoothedMG_AMG_Level<Matrix_h, Vector_h>::generateMatrixSymmetric_d(
      Acoo_d.column_indices.begin(), Acoo_d.values.begin()));
 
    thrust::sort_by_key(entrypartlabel.begin(), entrypartlabel.end(), iter);
+   std::vector<int> entrypartlabelvec2;
+   entrypartlabel_h = cusp::array1d<int, cusp::host_memory>(entrypartlabel);
+   for (size_t i = 0; i < entrypartlabel_h.size(); i++) {
+     entrypartlabelvec2.push_back(entrypartlabel_h[i]);
+   }
    if (verbose)
       printf("partition number is %d\n", numpart);
 
