@@ -1,7 +1,7 @@
-SCI-Solver_FEM
+GPUTUM : FEM Solver
 ==============
 
-SCI-Solver_FEM is a C++/CUDA library written to solve an FEM linear system. It is designed to solve the FEM system quickly by using GPU hardware.
+GPUTUM FEM Solver is a C++/CUDA library written to solve an FEM linear system. It is designed to solve the FEM system quickly by using GPU hardware.
 
 The code was written by Zhisong Fu and T. James Lewis. The theory behind this code is published in the paper:
 "Architecting the Finite Element Method Pipeline for the GPU"
