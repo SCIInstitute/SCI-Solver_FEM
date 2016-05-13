@@ -1145,7 +1145,7 @@ void misHelpers::checkPartConnectivity(int partCount, IdxVector_d partition, Idx
 {
    // Debugging check on part connectivity:
    std::cout << message << "\n";
-   vector<int> nodesToExplore, exploredNodes;
+    std::vector<int> nodesToExplore, exploredNodes;
    for(int i = 0; i < partCount; i++)
    {
       nodesToExplore.clear();

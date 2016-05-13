@@ -1,8 +1,6 @@
 #include <smoothedMG/aggregators/mis.h>
 #include <algorithm>
 #include <queue>
-using namespace std;
-
 
 template <class Matrix, class Vector>
 void MIS_Aggregator<Matrix, Vector>::computePermutation(TetMesh* meshPtr, IdxVector_h &permutation, IdxVector_h &ipermutation, IdxVector_h &aggregateIdx, IdxVector_h &partitionIdx, int* partitionlabel, int* nnout, int* &xadjout, int* &adjncyout, int metissize)
@@ -108,16 +106,16 @@ void MIS_Aggregator<Matrix, Vector>::computePermutation(int nn, int* xadj, int* 
     METIS_PartGraphKway(&nn, xadj, adjncy, NULL, NULL, &wgtflag, &pnumflag, &nparts, options, &edgecut, npart);
     
     // Finding partitions that have vertices assigned:
-    vector<int> realParts;
+    std::vector<int> realParts;
     realParts.resize(nn);
     for (int i=0; i<nn; i++)
     {
         realParts[i] = npart[i];
     }
-    sort(realParts.begin(), realParts.end());
+    std::sort(realParts.begin(), realParts.end());
     
-    // Scanning for gaps in the sorted array
-    vector<int> empties;
+    // Scanning for gaps in the std::sorted array
+    std::vector<int> empties;
     if (realParts[0] > 0)
         for (int i = 0; i < realParts[0]; i++)
             empties.push_back(i);
@@ -152,7 +150,7 @@ void MIS_Aggregator<Matrix, Vector>::computePermutation(int nn, int* xadj, int* 
     int partCount = *(realParts.end() - 1) - empties.size() + 1;
     
     //Building a structure of sub-graphs to aggregate:
-    vector< vector<int> > blocks;
+    std::vector< std::vector<int> > blocks;
     blocks.resize(partCount);
     for (int i = 0; i < nn; i++)
         blocks[npart[i]].push_back(i);
@@ -160,7 +158,7 @@ void MIS_Aggregator<Matrix, Vector>::computePermutation(int nn, int* xadj, int* 
     // Creating the sub graphs for each block
     // subgraphs[n][0] = pointer to xadj, [1] = pointer to adjncy [2]= pointer to npart [3]= number of aggregates
     int aggregateCount = 0;
-    vector< vector<int *> > subGraphs(partCount);
+    std::vector< std::vector<int *> > subGraphs(partCount);
     for (int bIt = 0; bIt < blocks.size(); bIt++)
     {
         // Resizing to hold all the pointers
@@ -170,7 +168,7 @@ void MIS_Aggregator<Matrix, Vector>::computePermutation(int nn, int* xadj, int* 
         int adjacencySize = 0;
         
         // Temporary vector to hold adjacency;
-        vector< vector<int> > adjacency(blocks[bIt].size());
+        std::vector< std::vector<int> > adjacency(blocks[bIt].size());
         
         // For every vertex add it's in-block neighbors to the adjacency list:
         for (int vIt = 0; vIt < blocks[bIt].size(); vIt++)
@@ -224,8 +222,8 @@ void MIS_Aggregator<Matrix, Vector>::computePermutation(int nn, int* xadj, int* 
 	}
         
         // Checking if the block's subgraph is connected:
-        queue<int> toCheck;
-        vector<int> visited(blocks[bIt].size());
+        std::queue<int> toCheck;
+        std::vector<int> visited(blocks[bIt].size());
         for (int i=0; i < blocks[bIt].size(); i++)
             visited[i] = -1;
         int nextRoot = 0;
@@ -263,10 +261,10 @@ void MIS_Aggregator<Matrix, Vector>::computePermutation(int nn, int* xadj, int* 
         }
         if (!connected)
         {
-            cout << "Block: " << bIt << " is an unconnected graph:\n";
+            std::cout << "Block: " << bIt << " is an unconnected graph:\n";
             for (int i = 0; i < blocks[bIt].size(); i++)
-                cout << visited[i] << ", ";
-            cout << "\n";
+                std::cout << visited[i] << ", ";
+            std::cout << "\n";
         }
         
         // Calling the mis_subroutine to partition
@@ -280,7 +278,7 @@ void MIS_Aggregator<Matrix, Vector>::computePermutation(int nn, int* xadj, int* 
         for (int vIt=0; vIt < blocks[bIt].size(); vIt++)
         {
             if (subGraphs[bIt][2][vIt] < 0)
-                cout << "There is a problem with block: " << bIt << " of " << blocks.size() << " vertex: " << vIt << " in partition: " << subGraphs[bIt][2][vIt] << "?\n";
+                std::cout << "There is a problem with block: " << bIt << " of " << blocks.size() << " vertex: " << vIt << " in partition: " << subGraphs[bIt][2][vIt] << "?\n";
         }
     }
     
@@ -320,11 +318,11 @@ void MIS_Aggregator<Matrix, Vector>::computePermutation(int nn, int* xadj, int* 
     partitionIdx[blocks.size()] = aggregateCount;
     
     // Finding the adjacency for the graph of aggregates:
-    vector< vector <int> > aggregateAdjacency(aggregateCount);
+    std::vector< std::vector <int> > aggregateAdjacency(aggregateCount);
     int edgeCount = 0;
     for (int aIt = 0; aIt < aggregateCount; aIt++)
     {
-        set<int> partEdges;
+         std::set<int> partEdges;
         int begin = aggregateIdx[aIt];
         int end = aggregateIdx[aIt + 1];
         for (int vIt = begin; vIt < end; vIt++)
@@ -339,7 +337,7 @@ void MIS_Aggregator<Matrix, Vector>::computePermutation(int nn, int* xadj, int* 
                     partEdges.insert(aggregatelabel[ adjncy[nIt] ]);
             }
         }
-        for (set<int>::iterator i=partEdges.begin(); i != partEdges.end(); i++)
+        for ( std::set<int>::iterator i=partEdges.begin(); i != partEdges.end(); i++)
         {
             aggregateAdjacency[aIt].push_back(*i);
             edgeCount++;
@@ -378,7 +376,7 @@ template <class Matrix, class Vector>
 void MIS_Aggregator<Matrix, Vector>::aggregateGraphMIS(int n, int *adjIndexes, int *adjacency, int *partition, int *partCount)
 {
     // Creating a graph with edges for every 2-path in original:
-    vector< vector<int> > inducedAdj(n);
+    std::vector< std::vector<int> > inducedAdj(n);
 
     // Every Vertex
     for (int i=0; i<n; i++) {
@@ -417,8 +415,8 @@ void MIS_Aggregator<Matrix, Vector>::aggregateGraphMIS(int n, int *adjIndexes, i
     }
 
     // Picking a better maximal independent set:
-    vector<int> mis(n, -1);
-    vector<int> rootDistance(n, -1);
+    std::vector<int> mis(n, -1);
+    std::vector<int> rootDistance(n, -1);
     bool incomplete = true;
     int nextVertex = 0;
     int curPart = 0;
@@ -443,7 +441,7 @@ void MIS_Aggregator<Matrix, Vector>::aggregateGraphMIS(int n, int *adjIndexes, i
             curPart++;
 
             // Getting a list of potential next nodes:
-            vector<int> potentialNodes;
+            std::vector<int> potentialNodes;
             for (int i = 0; i < n; i++) {
                 // For every node known to be outside MIS:
                 if (mis[i] == 0) {
@@ -460,7 +458,7 @@ void MIS_Aggregator<Matrix, Vector>::aggregateGraphMIS(int n, int *adjIndexes, i
             if (potentialNodes.size() > 0) 
             {
                 incomplete = true;
-                sort(potentialNodes.begin(), potentialNodes.end());
+                std::sort(potentialNodes.begin(), potentialNodes.end());
                 int occurs = 0;
                 int maxOccur = 0;
                 int curNode = potentialNodes[0];

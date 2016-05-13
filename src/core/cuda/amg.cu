@@ -233,19 +233,16 @@ void AMG<Matrix, Vector>::printGridStatistics()
 
 }
 
-using std::scientific;
-using std::fixed;
-
 // print a line of length l, starting at character s
 
 void printLine(const int l, const int s)
 {
-  cout << setw(s) << " ";
+  std::cout << std::setw(s) << " ";
   for (int i = 0; i < l; i++)
   {
-    cout << "-";
+    std::cout << "-";
   }
-  cout << endl;
+  std::cout << std::endl;
 }
 
 template <class Matrix, class Vector>

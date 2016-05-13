@@ -49,11 +49,6 @@ fract, clamp, mix, step, smoothstep, and trinorm
 #include <cmath>
 #include <iostream>
 #include <algorithm>
-using std::min;
-using std::max;
-using std::swap;
-using std::sqrt;
-
 
 // Let gcc optimize conditional branches a bit better...
 #ifndef likely
@@ -403,7 +398,7 @@ static inline const T len2(const Vec<D,T> &v)
 template <int D, class T>
 static inline const T len(const Vec<D,T> &v)
 {
-	return sqrt(len2(v));
+	return std::sqrt(len2(v));
 }
 
 template <int D, class T>
@@ -418,7 +413,7 @@ static inline const T dist2(const Vec<D,T> &v1, const Vec<D,T> &v2)
 template <int D, class T>
 static inline const T dist(const Vec<D,T> &v1, const Vec<D,T> &v2)
 {
-	return sqrt(dist2(v1,v2));
+	return std::sqrt(dist2(v1,v2));
 }
 
 template <int D, class T>
@@ -443,7 +438,7 @@ template <int D, class T>
 static inline void swap(const Vec<D,T> &v1, const Vec<D,T> &v2)
 {
 	for (int i = 0; i < D; i++)
-		swap(v1[i], v2[i]);
+		std::swap(v1[i], v2[i]);
 }
 
 template <int D, class T>

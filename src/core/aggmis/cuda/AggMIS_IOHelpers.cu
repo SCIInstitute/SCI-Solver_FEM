@@ -7,40 +7,40 @@
 #include "AggMIS_IOHelpers.h"
 namespace AggMIS {
     namespace InputHelpers {
-        string GetNonEmptyLineCIN() {
-            string b;
+        std::string GetNonEmptyLineCIN() {
+            std::string b;
             char dumb;
-            while (cin.peek() == '\n')
-                cin.get(dumb);
-            getline(cin, b);
+            while (std::cin.peek() == '\n')
+              std::cin.get(dumb);
+            std::getline(std::cin, b);
             return b;
         }
-        int GetSingleIntegerValueCIN() {
-            string input;
+        int GetSingleIntegerValuecin() {
+            std::string input;
             char dumb;
             while (true)
             {
-                while (cin.peek() == '\n')
-                    cin.get(dumb);
-                getline(cin, input);
-                stringstream str(input);
+              while (std::cin.peek() == '\n')
+                    std::cin.get(dumb);
+                std::getline(std::cin, input);
+                std::stringstream str(input);
                 int result;
                 if (str >> result)
                     return result;
-                cout << "Please enter a number\n:";
+                std::cout << "Please enter a number\n:";
             }
         }
-        vector<int> GetIntegerValuesCIN() {
-            string input;
+        std::vector<int> GetIntegerValuescin() {
+            std::string input;
             char dumb;
             int value;
-            vector<int> values;
+            std::vector<int> values;
             while (true)
             {
-                while (cin.peek() == '\n')
-                    cin.get(dumb);
-                getline(cin, input);
-                stringstream stream(input);
+                while (std::cin.peek() == '\n')
+                    std::cin.get(dumb);
+                std::getline(std::cin, input);
+                std::stringstream stream(input);
                 while(!stream.eof())
                 {
                     if (stream >> value)
@@ -48,13 +48,13 @@ namespace AggMIS {
                     else
                     {
                         stream.clear();
-                        string dumber;
+                        std::string dumber;
                         stream >> dumber;
                     }
                 }
                 if (values.size() > 0)
                     return values;
-                cout << "Please enter at least one number\n:";
+                std::cout << "Please enter at least one number\n:";
             }
         }       
     }

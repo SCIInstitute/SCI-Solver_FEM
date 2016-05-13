@@ -625,7 +625,7 @@ void FEMSolver::debugPrintMatlabels(TetMesh* mesh)
 {
   std::cout << "Found " << mesh->matlabels.size() << " elements in matlabels." << std::endl;
   unsigned int numZeros = 0;
-  for (vector<int>::iterator it = mesh->matlabels.begin(); it != mesh->matlabels.end(); ++it)
+  for (std::vector<int>::iterator it = mesh->matlabels.begin(); it != mesh->matlabels.end(); ++it)
   {
     if ((*it) == 0)
       numZeros++;

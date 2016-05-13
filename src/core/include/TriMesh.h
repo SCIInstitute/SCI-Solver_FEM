@@ -23,7 +23,6 @@ Class for triangle meshes.
 #include <vector>
 #include <string>
 #include <list>
-using std::vector;
 
 #define  PI 3.1415927
 
@@ -141,60 +140,60 @@ public:
 
   char* filenamepre;
   // The basics: vertices and faces
-  vector<point> vertices;
-  vector<Face> faces;
+  std::vector<point> vertices;
+  std::vector<Face> faces;
 
 
 
   // Triangle strips
-  vector<int> tstrips;
+  std::vector<int> tstrips;
 
   // Grid, if present
-  vector<int> grid;
+  std::vector<int> grid;
   int grid_width, grid_height;
 
   // Other per-vertex properties
-  vector<Color> colors;
-  vector<double> confidences;
-  vector<unsigned> flags;
+  std::vector<Color> colors;
+  std::vector<double> confidences;
+  std::vector<unsigned> flags;
   unsigned flag_curr;
 
   // Computed per-vertex properties
-  vector<vec> normals;
-  vector<vec> pdir1, pdir2;
-  vector<double> curv1, curv2;
-  vector< Vec < 4, double> > dcurv;
-  vector<vec> cornerareas;
-  vector<double> pointareas;
-  vector<double> vertT;
+  std::vector<vec> normals;
+  std::vector<vec> pdir1, pdir2;
+  std::vector<double> curv1, curv2;
+  std::vector< Vec < 4, double> > dcurv;
+  std::vector<vec> cornerareas;
+  std::vector<double> pointareas;
+  std::vector<double> vertT;
 
   // Bounding structures
   BBox bbox;
   BSphere bsphere;
 
-  vector< vector<Face> > faceVirtualFaces;
+  std::vector< std::vector<Face> > faceVirtualFaces;
 
   // Connectivity structures:
   //  For each vertex, all neighboring vertices
-  vector< vector<int> > neighbors;
+  std::vector< std::vector<int> > neighbors;
 
-  vector< vector<int*> > NonObtuseNeighborFaces;
+  std::vector< std::vector<int*> > NonObtuseNeighborFaces;
 
   //  For each vertex, all neighboring faces
-  vector< vector<int> > adjacentfaces;
+  std::vector< std::vector<int> > adjacentfaces;
   //  For each face, the three faces attached to its edges
   //  (for example, across_edge[3][2] is the number of the face
   //   that's touching the edge opposite vertex 2 of face 3)
-  vector<Face> across_edge;
+  std::vector<Face> across_edge;
 
-  vector< vector<double> > stiffMat;
-  vector< vector<double> > massMat;
-  vector< vector<double> > forceMat;
-  vector< vector<double> > FEMMat;
-  vector< double > GlobalForce;
-  vector< vector<double> > linearBaseCoeff;
-  vector< vector<double> > GlobalFEMMat; //stored in COO format!!
-  vector< double > eleMaterial;
+  std::vector< std::vector<double> > stiffMat;
+  std::vector< std::vector<double> > massMat;
+  std::vector< std::vector<double> > forceMat;
+  std::vector< std::vector<double> > FEMMat;
+  std::vector< double > GlobalForce;
+  std::vector< std::vector<double> > linearBaseCoeff;
+  std::vector< std::vector<double> > GlobalFEMMat; //stored in COO format!!
+  std::vector< double > eleMaterial;
 
   // Compute all this stuff...
   void need_tstrips();
@@ -284,7 +283,7 @@ public:
 
   // FIM: given a vertex, find an all-acute neighborhood of faces
 
-  void SplitFace(vector<Face> &acFaces, int v, Face cf, int nfAdj)
+  void SplitFace(std::vector<Face> &acFaces, int v, Face cf, int nfAdj)
   {
     // get all the four vertices in order
     /* v1         v4
@@ -393,15 +392,15 @@ public:
 
   // FIM: one ring function
 
-  vector<Face> GetOneRing(int v)
+  std::vector<Face> GetOneRing(int v)
   {
     // make sure we have the across-edge map
     if (this->across_edge.empty())
       this->need_across_edge();
 
     // variables required
-    vector<Face> oneRingFaces;
-    vector<Face> t_faces;
+    std::vector<Face> oneRingFaces;
+    std::vector<Face> t_faces;
 
     // get adjacent faces
     size_t naf = this->adjacentfaces[v].size();
@@ -450,7 +449,7 @@ public:
       this->vertT.push_back(LARGENUM); //modified from this->vertT[v] = 1000000.0)
     }
 
-    //vector<int> nb;
+    //std::vector<int> nb;
 
     // initialize seed points if present...
     if (!seeds.empty())

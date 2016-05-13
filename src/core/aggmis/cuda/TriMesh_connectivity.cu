@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include "TriMesh.h"
 #include <algorithm>
-using std::find;
 
 void TriMesh::need_meshquality()
 {
@@ -102,7 +101,7 @@ void TriMesh::need_neighbors()
   printf("Finding vertex neighbors... ");
   int nv = vertices.size(), nf = faces.size();
 
-  vector<int> numneighbors(nv);
+  std::vector<int> numneighbors(nv);
   for (int i = 0; i < nf; i++) {
     numneighbors[faces[i][0]]++;
     numneighbors[faces[i][1]]++;
@@ -115,12 +114,12 @@ void TriMesh::need_neighbors()
 
   for (int i = 0; i < nf; i++) {
     for (int j = 0; j < 3; j++) {
-      vector<int> &me = neighbors[faces[i][j]];
+      std::vector<int> &me = neighbors[faces[i][j]];
       int n1 = faces[i][(j+1)%3];
       int n2 = faces[i][(j+2)%3];
-      if (find(me.begin(), me.end(), n1) == me.end())
+      if (std::find(me.begin(), me.end(), n1) == me.end())
         me.push_back(n1);
-      if (find(me.begin(), me.end(), n2) == me.end())
+      if (std::find(me.begin(), me.end(), n2) == me.end())
         me.push_back(n2);
     }
   }
@@ -216,7 +215,7 @@ void TriMesh::need_adjacentfaces()
   printf("Finding vertex to triangle maps... ");
   int nv = vertices.size(), nf = faces.size();
 
-  vector<int> numadjacentfaces(nv);
+  std::vector<int> numadjacentfaces(nv);
   for (int i = 0; i < nf; i++) {
     numadjacentfaces[faces[i][0]]++;
     numadjacentfaces[faces[i][1]]++;
@@ -254,14 +253,14 @@ void TriMesh::need_across_edge()
         continue;
       int v1 = faces[i][(j+1)%3];
       int v2 = faces[i][(j+2)%3];
-      const vector<int> &a1 = adjacentfaces[v1];
-      const vector<int> &a2 = adjacentfaces[v2];
+      const std::vector<int> &a1 = adjacentfaces[v1];
+      const std::vector<int> &a2 = adjacentfaces[v2];
       for (int k1 = 0; k1 < a1.size(); k1++) {
         int other = a1[k1];
         if (other == i)
           continue;
-        vector<int>::const_iterator it =
-          find(a2.begin(), a2.end(), other);
+        std::vector<int>::const_iterator it =
+          std::find(a2.begin(), a2.end(), other);
         if (it == a2.end())
           continue;
         int ind = (faces[other].indexof(v1)+1)%3;

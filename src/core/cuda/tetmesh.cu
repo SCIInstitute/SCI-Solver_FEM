@@ -118,7 +118,7 @@ void TetMesh::need_neighbors()
     std::cout << "Finding vertex neighbors... " << std::endl;
   int nv = vertices.size(), nt = tets.size();
 
-  vector<int> numneighbors(nv, 0);
+   std::vector<int> numneighbors(nv, 0);
   for(int i = 0; i < nt; i++)
   {
     numneighbors[tets[i][0]]++;
@@ -152,16 +152,16 @@ void TetMesh::need_neighbors()
   {
     for(int j = 0; j < 4; j++)
     {
-      vector<int> &me = neighbors[tets[i][j]];
+       std::vector<int> &me = neighbors[tets[i][j]];
       int n1 = tets[i][(j + 1) % 4];
       int n2 = tets[i][(j + 2) % 4];
       int n3 = tets[i][(j + 3) % 4];
 
-      if(find(me.begin(), me.end(), n1) == me.end())
+      if( std::find(me.begin(), me.end(), n1) == me.end())
         me.push_back(n1);
-      if(find(me.begin(), me.end(), n2) == me.end())
+      if( std::find(me.begin(), me.end(), n2) == me.end())
         me.push_back(n2);
-      if(find(me.begin(), me.end(), n3) == me.end())
+      if( std::find(me.begin(), me.end(), n3) == me.end())
         me.push_back(n3);
     }
   }
@@ -219,19 +219,19 @@ void TetMesh::need_across_face()
       int v1 = tets[i][(j + 1) % 4];
       int v2 = tets[i][(j + 2) % 4];
       int v3 = tets[i][(j + 3) % 4];
-      const vector<int> &a1 = adjacenttets[v1];
-      const vector<int> &a2 = adjacenttets[v2];
-      const vector<int> &a3 = adjacenttets[v3];
+      const  std::vector<int> &a1 = adjacenttets[v1];
+      const  std::vector<int> &a2 = adjacenttets[v2];
+      const  std::vector<int> &a3 = adjacenttets[v3];
       for(int k1 = 0; k1 < a1.size(); k1++)
       {
         int other = a1[k1];
         if(other == i)
           continue;
-        vector<int>::const_iterator it =
-          find(a2.begin(), a2.end(), other);
+         std::vector<int>::const_iterator it =
+           std::find(a2.begin(), a2.end(), other);
 
-        vector<int>::const_iterator it2 =
-          find(a3.begin(), a3.end(), other);
+         std::vector<int>::const_iterator it2 =
+           std::find(a3.begin(), a3.end(), other);
 
         if(it == a2.end() || it2 == a3.end())
           continue;
@@ -249,7 +249,7 @@ void TetMesh::need_across_face()
 }
 
 TetMesh *TetMesh::read(const char *nodefilename,
-    const char* elefilename, const bool zero_based, const bool verb) {
+    const char* elefilename, const bool verb) {
   TetMesh *mesh = new TetMesh();
   mesh->set_verbose(verb);
   std::ifstream nodefile(nodefilename);
@@ -273,11 +273,6 @@ TetMesh *TetMesh::read(const char *nodefilename,
     break;
   }
   mesh->vertices.resize(nv);
-  int invalidNodeReferenceValue;
-  if( zero_based )
-	  invalidNodeReferenceValue = nv;
-  else
-	  invalidNodeReferenceValue = 0;
 
   //get the nodes
   size_t i = 0;
@@ -315,6 +310,7 @@ TetMesh *TetMesh::read(const char *nodefilename,
   mesh->matlabels.resize(ne, 0);
 
   i = 0;
+  bool zero_based = false;
   //get the elements
   while (elefile.good())
   {
@@ -343,11 +339,9 @@ TetMesh *TetMesh::read(const char *nodefilename,
 
     for (j = 0; j < 4; ++j)
     {
-      if( tval[j] == invalidNodeReferenceValue )
+      if( tval[j] == 0 )
       {
-        std::cerr << "Node reference error in elements file at element # " << i;
-        std::cerr << ". Check if file is zero or one-based." << std::endl;
-        exit(0);
+        zero_based = true;
       }
     }
 

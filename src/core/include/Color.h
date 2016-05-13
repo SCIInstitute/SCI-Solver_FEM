@@ -11,10 +11,6 @@ Random class for encapsulating colors...
 #include "Vec.h"
 #include <cmath>
 #include <algorithm>
-using std::fmod;
-using std::floor;
-using std::min;
-using std::max;
 #ifndef M_PI
 # define M_PI 3.14159265358979323846
 #endif
@@ -88,7 +84,7 @@ public:
 		if (h < 0.0)
 			h += (float)(2.0 * M_PI);
 		h /= (float)(M_PI / 3.0);
-		int i = int(floor(h));
+		int i = int(std::floor(h));
 		float f = h - i;
 		float p = v * (1.0f - s);
 		float q = v * (1.0f - (s*f));

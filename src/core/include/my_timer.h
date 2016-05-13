@@ -50,10 +50,6 @@ double inline CLOCK() {
 typedef std::map<const char *, double> Event;
 typedef std::map<const char *, double>::iterator Eiter;
 
-using std::cout;
-using std::endl;
-using std::setw;
-
 class levelProfile {
   private:
 #ifdef PROFILE

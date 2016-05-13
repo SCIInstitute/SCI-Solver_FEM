@@ -217,8 +217,8 @@ namespace AggMIS {
           bool verbose) {
         return AreEqual(b, a, verbose);
       }
-      bool AreEqual(vector<vector<int> > &a,
-          vector<vector<int> > &b,
+      bool AreEqual(std::vector<std::vector<int> > &a,
+        std::vector<std::vector<int> > &b,
           bool verbose) {
         // Check that main containers have matching sizes
         if (a.size() != b.size()) {
@@ -234,12 +234,12 @@ namespace AggMIS {
               printf("Sizes of secondary vectors %d do not match!\n", i);
               printf("a[%d].size()=%d  b[%d].size()=%d\n",
                   i, a[i].size(), i, b[i].size());
-              stringstream ss;
+              std::stringstream ss;
               ss << "Contents of A[" << i << "]";
-              Display::Print(a[i], ss.str());
+              AggMIS::Types::Display::Print(a[i], ss.str());
               ss.str("Contents of B[");
               ss << i << "]";
-              Display::Print(b[i], ss.str());
+              AggMIS::Types::Display::Print(b[i], ss.str());
             }
             return false;
           }
@@ -250,12 +250,12 @@ namespace AggMIS {
             if (a[i][j] != b[i][j]) {
               if (verbose) {
                 printf("Element[%d][%d] does not match!\n", i, j);
-                stringstream ss;
+                std::stringstream ss;
                 ss << "Contents of A[" << i << "]";
-                Display::Print(a[i], ss.str());
+                AggMIS::Types::Display::Print(a[i], ss.str());
                 ss.str("Contents of B[");
                 ss << i << "]";
-                Display::Print(b[i], ss.str());
+                AggMIS::Types::Display::Print(b[i], ss.str());
               }
               return false;
             }
@@ -263,8 +263,8 @@ namespace AggMIS {
         }
         return true;
       }
-      bool AreEqual(Graph_h& a,
-          Graph_h& b,
+      bool AreEqual(AggMIS::Types::Graph_h& a,
+        AggMIS::Types::Graph_h& b,
           bool verbose) {
         bool indicesMatch = AreEqual(*(a.indices),
             *(b.indices),
@@ -278,7 +278,22 @@ namespace AggMIS {
           printf("Adjacency lists of graphs differ!\n");
         return indicesMatch && adjacencyMatch;
       }
-      bool AreEqual(Graph_d& a,
+      bool AreEqual(AggMIS::Types::Graph_d& a,
+        AggMIS::Types::Graph_d& b,
+          bool verbose) {
+        bool indicesMatch = AreEqual(*(a.indices),
+            *(b.indices),
+            verbose);
+        bool adjacencyMatch = AreEqual(*(a.adjacency),
+            *(b.adjacency),
+            verbose);
+        if (!indicesMatch && verbose)
+          printf("Indices of graphs differ!\n");
+        if (!adjacencyMatch && verbose)
+          printf("Adjacency lists of graphs differ!\n");
+        return indicesMatch && adjacencyMatch;
+      }
+      bool AreEqual(Graph_h& a,
           Graph_d& b,
           bool verbose) {
         bool indicesMatch = AreEqual(*(a.indices),
@@ -293,23 +308,8 @@ namespace AggMIS {
           printf("Adjacency lists of graphs differ!\n");
         return indicesMatch && adjacencyMatch;
       }
-      bool AreEqual(Graph_h& a,
-          Graph_d& b,
-          bool verbose) {
-        bool indicesMatch = AreEqual(*(a.indices),
-            *(b.indices),
-            verbose);
-        bool adjacencyMatch = AreEqual(*(a.adjacency),
-            *(b.adjacency),
-            verbose);
-        if (!indicesMatch && verbose)
-          printf("Indices of graphs differ!\n");
-        if (!adjacencyMatch && verbose)
-          printf("Adjacency lists of graphs differ!\n");
-        return indicesMatch && adjacencyMatch;
-      }
-      bool AreEqual(Graph_d& a,
-          Graph_h& b,
+      bool AreEqual(AggMIS::Types::Graph_d& a,
+        AggMIS::Types::Graph_h& b,
           bool verbose) {
         bool indicesMatch = AreEqual(*(a.indices),
             *(b.indices),
@@ -325,10 +325,10 @@ namespace AggMIS {
       }
     }
     namespace Display {
-      void Print(IntVector_h& toPrint,
+      void Print(AggMIS::Types::IntVector_h& toPrint,
           int start,
           int end,
-          string message) {
+          std::string message) {
         printf("%s:\n", message.c_str());
         printf("\n %8d: ", 0);
         for (int i = start; i < end; i++)
@@ -344,46 +344,46 @@ namespace AggMIS {
       void Print(IntVector_d& toPrint,
           int start,
           int end,
-          string message) {
-        IntVector_h temp(toPrint);
+          std::string message) {
+        AggMIS::Types::IntVector_h temp(toPrint);
         Print(temp, start, end, message);
         temp.clear();
       }
-      void Print(IntVector_d& toPrint,
-          string message) {
-        IntVector_h temp(toPrint);
+      void Print(AggMIS::Types::IntVector_d& toPrint,
+          std::string message) {
+        AggMIS::Types::IntVector_h temp(toPrint);
         Print(temp, 0, temp.size(), message);
         temp.clear();
       }
-      void Print(IntVector_h& toPrint,
-          string message) {
+      void Print(AggMIS::Types::IntVector_h& toPrint,
+          std::string message) {
         Print(toPrint, 0, toPrint.size(), message);
       }
-      void Print(vector<vector<vector<int> > >& toPrint,
-          string message) {
+      void Print(std::vector<std::vector<std::vector<int> > >& toPrint,
+          std::string message) {
         // Print out general info:
         printf("Triple vector %s has %d entries:\n", message.c_str(), toPrint.size());
 
         for (int i = 0; i < toPrint.size(); i++)
         {
-          cout << message << "[" << i << "]: ";
+          std::cout << message << "[" << i << "]: ";
           for (int z = 0; z < toPrint[i].size(); z++)
           {
-            cout << "(";
+            std::cout << "(";
             for (int zz = 0; zz < toPrint[i][z].size(); zz++)
             {
-              cout << toPrint[i][z][zz];
+              std::cout << toPrint[i][z][zz];
               if (zz < toPrint[i][z].size() -1)
-                cout << " ";
+                std::cout << " ";
             }
-            cout << ") ";
+            std::cout << ") ";
           }
-          cout << "\n";
+          std::cout << "\n";
         }
-        cout << "\n";
+        std::cout << "\n";
       }
-      void Print(vector<vector<int> >& toPrint,
-          string message) {
+      void Print(std::vector<std::vector<int> >& toPrint,
+          std::string message) {
         printf("%s:\n", message.c_str());
         for (int j = 0; j < toPrint.size(); j++) {
           printf("\n %4d: ", j);
@@ -398,15 +398,15 @@ namespace AggMIS {
         }
         printf("\n");
       }
-      void Print(vector<int>& toPrint,
+      void Print(std::vector<int>& toPrint,
           int start,
           int end,
-          string message) {
+          std::string message) {
         IntVector_h temp(toPrint.begin(), toPrint.end());
         Print(temp, start, end, message);
       }
-      void Print(vector<int>& toPrint,
-          string message) {
+      void Print(std::vector<int>& toPrint,
+          std::string message) {
         Print(toPrint, 0, toPrint.size(), message);
       }
     }

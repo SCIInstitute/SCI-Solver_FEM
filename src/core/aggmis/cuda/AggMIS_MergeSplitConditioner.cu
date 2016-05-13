@@ -1542,8 +1542,8 @@ namespace AggMIS {
         }
         
         // Public methods for merge split conditioner
-        MergeSplitConditionerGPU::MergeSplitConditionerGPU(Graph_d& graph, 
-                                            IntVector_d& aggregation) {
+        MergeSplitConditionerGPU::MergeSplitConditionerGPU(AggMIS::Types::Graph_d& graph, 
+                                            AggMIS::Types::IntVector_d& aggregation) {
             this->graph = &graph;
             this->aggregation.assign(aggregation.begin(), aggregation.end());
             inducedGraph = GraphHelpers::GetInducedGraph(graph, aggregation);
@@ -1567,14 +1567,14 @@ namespace AggMIS {
         void MergeSplitConditionerGPU::SetVerbose(bool v) {
             verbose = v;
         }
-        void MergeSplitConditionerGPU::SetNodeWeights(IntVector_d &input) {
+        void MergeSplitConditionerGPU::SetNodeWeights(AggMIS::Types::IntVector_d &input) {
             nodeWeights.swap(input);
             GraphHelpers::getPartSizes(aggregation, weightedSizes, nodeWeights);
         }
-        IntVector_d* MergeSplitConditionerGPU::GetAggregation() {
+        AggMIS::Types::IntVector_d* MergeSplitConditionerGPU::GetAggregation() {
             return &aggregation;
         }
-        IntVector_d* MergeSplitConditionerGPU::GetNodeWeights() {
+        AggMIS::Types::IntVector_d* MergeSplitConditionerGPU::GetNodeWeights() {
             return &nodeWeights;
         }
         void MergeSplitConditionerGPU::CycleMerges(bool force) {
@@ -1603,7 +1603,7 @@ namespace AggMIS {
             bool somethingDone = MakeMergeSplits(desiredSize);
             
             // Choosing which sizes to use:
-            IntVector_d *sizes = &partSizes;
+            AggMIS::Types::IntVector_d *sizes = &partSizes;
             if (nodeWeights.size() > 0)
                 sizes = &weightedSizes;
             
@@ -1628,7 +1628,7 @@ namespace AggMIS {
                                             float minImprove, 
                                             int maxCycles) {
             if (verbose)
-                PrintProgress(&cout, "Starting conditioning.", true, true, true, true);
+                PrintProgress(&std::cout, "Starting conditioning.", true, true, true, true);
             
             // Start by making any optimal merges and splits
             if (verbose)
@@ -1672,9 +1672,9 @@ namespace AggMIS {
                 
                 if (verbose)
                 {
-                    stringstream ss;
+                    std::stringstream ss;
                     ss << "After condition cycle: " << counter;
-                    PrintProgress(&cout, ss.str(), true, true, true, true);
+                    PrintProgress(&std::cout, ss.str(), true, true, true, true);
                 }
             }
 
@@ -1701,10 +1701,10 @@ namespace AggMIS {
 //            else {
 //                printf("Aggregation does not validate after conditioning!\n");
 //                int t;
-//                cin >> t;
+//                std::cin >> t;
 //            }
             if (verbose)
-                PrintProgress(&cout, "After conditioning completed.", true, true, true, true);
+                PrintProgress(&std::cout, "After conditioning completed.", true, true, true, true);
             
             // Checking if the size constraints are met for the return
             if (respectUpper)
@@ -1713,8 +1713,8 @@ namespace AggMIS {
                 return (undersized == 0 && (float)outsizedParts / partSizes.size() < tolerance);
             
         }
-        void MergeSplitConditionerGPU::PrintProgress(ostream* output, 
-                                            string note,
+        void MergeSplitConditionerGPU::PrintProgress(std::ostream* output, 
+                                            std::string note,
                                             bool graphStat,
                                             bool progressStat,
                                             bool sizeStat,
@@ -1736,13 +1736,13 @@ namespace AggMIS {
 
             *output << "-----------------------------------------------------\n\n";
         }
-        void MergeSplitConditionerGPU::PrintSizeStats(ostream* output,
+        void MergeSplitConditionerGPU::PrintSizeStats(std::ostream* output,
                                             bool makeHeader) {
             if (makeHeader)
                 *output << "\n--------------------- Size Check --------------------\n";
             
             // Choosing which sizes to use:
-            IntVector_d *sizes = &partSizes;
+            AggMIS::Types::IntVector_d *sizes = &partSizes;
             if (nodeWeights.size() > 0)
                 sizes = &weightedSizes;
             
@@ -1784,7 +1784,7 @@ namespace AggMIS {
             if (makeHeader)
                 *output << "-----------------------------------------------------\n\n";            
         }
-        void MergeSplitConditionerGPU::PrintMemoryStats(ostream* output,
+        void MergeSplitConditionerGPU::PrintMemoryStats(std::ostream* output,
                                             bool makeHeader) {
             if (makeHeader)
                 *output << "\n-------------------- Memory Check -------------------\n";
@@ -1802,7 +1802,7 @@ namespace AggMIS {
             if (makeHeader)
                 *output << "-----------------------------------------------------\n\n";            
         }
-        void MergeSplitConditionerGPU::PrintProgressStats(ostream* output,
+        void MergeSplitConditionerGPU::PrintProgressStats(std::ostream* output,
                                             bool makeHeader) {
             if (makeHeader)
                 *output << "\n------------------- Progress Check ------------------\n";
@@ -1815,7 +1815,7 @@ namespace AggMIS {
             if (makeHeader)
                 *output << "-----------------------------------------------------\n\n";            
         }
-        void MergeSplitConditionerGPU::PrintGraphStats(ostream* output,
+        void MergeSplitConditionerGPU::PrintGraphStats(std::ostream* output,
                                             bool makeHeader) {
             if (makeHeader)
                 *output << "\n----------------- Graph Information -----------------\n";
@@ -1830,7 +1830,7 @@ namespace AggMIS {
                                             0,
                                             thrust::maximum<int>());
             
-            IntVector_d *valences = GraphHelpers::GetValences(*graph);
+            AggMIS::Types::IntVector_d *valences = GraphHelpers::GetValences(*graph);
             int minValence = thrust::reduce(valences->begin(),
                                             valences->end(),
                                             INT_MAX,
@@ -1864,9 +1864,9 @@ namespace AggMIS {
             if (makeHeader)
                 *output << "-----------------------------------------------------\n\n";            
         }
-        void MergeSplitConditionerGPU::InteractiveConsole(string message) {
+        void MergeSplitConditionerGPU::InteractiveConsole(std::string message) {
             // Start off by printing overall status info and message
-            PrintProgress(&cout, message, true, true, true, false);
+            PrintProgress(&std::cout, message, true, true, true, false);
             
             // Setting needed variables to defaults
             float minImprove = .1;
@@ -1879,13 +1879,13 @@ namespace AggMIS {
             // Starting the main prompt:
             char operation;
             printf("\nIC:");
-            cin >> operation;
+            std::cin >> operation;
             while (operation != 'd')
             {
                 if (operation == 'o' || operation == 'f')
                 {
                     bool force = operation == 'f';
-                    cin >> operation;
+                    std::cin >> operation;
                     if (operation == 'm')
                     {
                         if (cycling)
@@ -1894,8 +1894,8 @@ namespace AggMIS {
                             MarkMerges(force);
                             MakeMerges(false);
                         }
-                        string msg = force ? "After forced merges" : "After optimal merges";
-                        PrintProgress(&cout, msg, false, true, true, false);
+                        std::string msg = force ? "After forced merges" : "After optimal merges";
+                        PrintProgress(&std::cout, msg, false, true, true, false);
                     }
                     if (operation == 's')
                     {
@@ -1905,8 +1905,8 @@ namespace AggMIS {
                             MarkSplits(force);
                             MakeSplits();
                         }
-                        string msg = force ? "After forced splits" : "After optimal splits";
-                        PrintProgress(&cout, msg, false, true, true, false);                               
+                        std::string msg = force ? "After forced splits" : "After optimal splits";
+                        PrintProgress(&std::cout, msg, false, true, true, false);                               
                     }
                     if (operation == 'g')
                     {
@@ -1914,51 +1914,51 @@ namespace AggMIS {
                             CycleMergeSplits(minImprove, desiredSize);
                         else 
                             MakeMergeSplits(desiredSize);
-                        PrintProgress(&cout, "After merge-splits", false, true, true, false);
+                        PrintProgress(&std::cout, "After merge-splits", false, true, true, false);
                     }
                 }
                 else if (operation == 's') {
                     // Printing the current values of the variables
-                    string cyclingFlag = cycling ? "True" : "False";
-                    string respectUpperFlag = respectUpper ? "True" : "False";
-                    cout << "\nCurrent values of variables:";
-                    cout << "\n\tminSize: " << minSize;
-                    cout << "   maxSize: " << maxSize;
-                    cout << "   desiredSize: " << desiredSize;
-                    cout << "   maxCycles: " << maxCycles;
-                    cout << "\n\tminImprove: " << minImprove;
-                    cout << "   tolerance: " << tolerance;
-                    cout << "   cycling: " << cyclingFlag;
-                    cout << "   respectUpper: " << respectUpperFlag;
-                    cout << "\n\nEnter new values in same order\nIC:";
+                    std::string cyclingFlag = cycling ? "True" : "False";
+                    std::string respectUpperFlag = respectUpper ? "True" : "False";
+                    std::cout << "\nCurrent values of variables:";
+                    std::cout << "\n\tminSize: " << minSize;
+                    std::cout << "   maxSize: " << maxSize;
+                    std::cout << "   desiredSize: " << desiredSize;
+                    std::cout << "   maxCycles: " << maxCycles;
+                    std::cout << "\n\tminImprove: " << minImprove;
+                    std::cout << "   tolerance: " << tolerance;
+                    std::cout << "   cycling: " << cyclingFlag;
+                    std::cout << "   respectUpper: " << respectUpperFlag;
+                    std::cout << "\n\nEnter new values in same order\nIC:";
                     
                     // Grabbing the new values
-                    cin >> minSize;
-                    cin >> maxSize;
-                    cin >> desiredSize;
-                    cin >> maxCycles;
-                    cin >> minImprove;
-                    cin >> tolerance;
-                    cin >> cycling;
-                    cin >> respectUpper;
+                    std::cin >> minSize;
+                    std::cin >> maxSize;
+                    std::cin >> desiredSize;
+                    std::cin >> maxCycles;
+                    std::cin >> minImprove;
+                    std::cin >> tolerance;
+                    std::cin >> cycling;
+                    std::cin >> respectUpper;
                     
                     // Confirming the entry
                     cyclingFlag = cycling ? "True" : "False";
                     respectUpperFlag = respectUpper ? "True" : "False";
-                    cout << "\nNew values of variables:";
-                    cout << "\n\tminSize: " << minSize;
-                    cout << "   maxSize: " << maxSize;
-                    cout << "   desiredSize: " << desiredSize;
-                    cout << "   maxCycles: " << maxCycles;
-                    cout << "\n\tminImprove: " << minImprove;
-                    cout << "   tolerance: " << tolerance;
-                    cout << "   cycling: " << cyclingFlag;
-                    cout << "   respectUpper: " << respectUpperFlag << "\n\n";
+                    std::cout << "\nNew values of variables:";
+                    std::cout << "\n\tminSize: " << minSize;
+                    std::cout << "   maxSize: " << maxSize;
+                    std::cout << "   desiredSize: " << desiredSize;
+                    std::cout << "   maxCycles: " << maxCycles;
+                    std::cout << "\n\tminImprove: " << minImprove;
+                    std::cout << "   tolerance: " << tolerance;
+                    std::cout << "   cycling: " << cyclingFlag;
+                    std::cout << "   respectUpper: " << respectUpperFlag << "\n\n";
                 }
                 else if (operation == 'c')
                 {
                     Condition(desiredSize, respectUpper, tolerance, minImprove, maxCycles);
-                    PrintProgress(&cout, "After conditioning", false, true, true, false);
+                    PrintProgress(&std::cout, "After conditioning", false, true, true, false);
                 }
                 else if (operation == 'v') {
                     bool valid = Aggregation::IsValidAggregation(*graph, aggregation, false);
@@ -1969,14 +1969,14 @@ namespace AggMIS {
                 }
                 else if (operation == 'l') {
                     bool v;
-                    cin >> v;
+                    std::cin >> v;
                     SetVerbose(v);
                     printf("Set verbose to %s\n", v ? "True" : "False");
                 }
 
                 // Printing prompt for another go
                 printf("IC:");
-                cin >> operation;
+                std::cin >> operation;
             }
 
         }
@@ -1989,15 +1989,15 @@ namespace AggMIS {
             mergesToMake.assign(negOne, negOne + inducedGraph->Size());
             
             // Choosing which sizes to use:
-            IntVector_d *sizes = &partSizes;
+            AggMIS::Types::IntVector_d *sizes = &partSizes;
             if (nodeWeights.size() > 0)
                 sizes = &weightedSizes;
 
             // Declaring temp arrays
             int size = inducedGraph->Size();
-            IntVector_d desiredMerges(size, -1);
-            IntVector_d merging(size, 0);
-            IntVector_d incomplete(1,1);
+            AggMIS::Types::IntVector_d desiredMerges(size, -1);
+            AggMIS::Types::IntVector_d merging(size, 0);
+            AggMIS::Types::IntVector_d incomplete(1,1);
 
             // Figuring out block sizes for kernel call:
             int blockSize = 256;
@@ -2005,7 +2005,7 @@ namespace AggMIS {
 
             while (incomplete[0] == 1)
             {
-//                IntVector_h before(desiredMerges);
+//                AggMIS::Types::IntVector_h before(desiredMerges);
                 incomplete[0] = 0;
                 if (verbose)
                     printf("Calling FindDesirableMerges Kernel <<<%d, %d>>>\n",
@@ -2017,18 +2017,18 @@ namespace AggMIS {
                         force, 
                         inducedGraph->indStart(), 
                         inducedGraph->adjStart(), 
-                        StartOf(sizes), 
-                        StartOf(desiredMerges), 
-                        StartOf(merging));
+                        AggMIS::Types::StartOf(sizes), 
+                        AggMIS::Types::StartOf(desiredMerges), 
+                        AggMIS::Types::StartOf(merging));
                 if (verbose)
                     printf("Calling MarkMerges Kernel <<<%d, %d>>>\n",
                             blockSize, nBlocks);
                 Kernels::MarkMerges <<<blockSize, nBlocks>>>
                         (size, 
-                        StartOf(desiredMerges), 
-                        StartOf(merging), 
-                        StartOf(mergesToMake), 
-                        StartOf(incomplete));
+                        AggMIS::Types::StartOf(desiredMerges), 
+                        AggMIS::Types::StartOf(merging), 
+                        AggMIS::Types::StartOf(mergesToMake), 
+                        AggMIS::Types::StartOf(incomplete));
             }
 
             int marked = -1;
@@ -2042,8 +2042,8 @@ namespace AggMIS {
             catch (thrust::system::system_error &e)
             {
                 printf("Caught exception at end of MarkMerges!\n");
-                cerr << e.what() << endl;
-                cerr << "Error code: " << e.code() << endl;
+                std::cerr << e.what() << std::endl;
+                std::cerr << "Error code: " << e.code() << std::endl;
                 InputHelpers::GetNonEmptyLineCIN();
             }
             
@@ -2061,7 +2061,7 @@ namespace AggMIS {
             splitsToMake.assign(zero, zero + size);
 
             // Choosing which sizes to use:
-            IntVector_d *sizes = &partSizes;
+            AggMIS::Types::IntVector_d *sizes = &partSizes;
             if (nodeWeights.size() > 0)
                 sizes = &weightedSizes;
             
@@ -2086,8 +2086,8 @@ namespace AggMIS {
                     force, 
                     minSize, 
                     maxSize, 
-                    StartOf(sizes), 
-                    StartOf(splitsToMake));
+                    AggMIS::Types::StartOf(sizes), 
+                    AggMIS::Types::StartOf(splitsToMake));
 
             int marked = thrust::count(splitsToMake.begin(), splitsToMake.end(), 1);
             
@@ -2103,7 +2103,7 @@ namespace AggMIS {
             int size = inducedGraph->Size();
             
             // Choosing which sizes to use:
-            IntVector_d *sizes = &partSizes;
+            AggMIS::Types::IntVector_d *sizes = &partSizes;
             if (nodeWeights.size() > 0)
                 sizes = &weightedSizes;
             
@@ -2112,9 +2112,9 @@ namespace AggMIS {
             mergesToMake.assign(negOne, negOne + size);
 
             // Declaring temp arrays
-            IntVector_d desiredMerges(size, -1);
-            IntVector_d merging(size, 0);
-            IntVector_d incomplete(1,1);
+            AggMIS::Types::IntVector_d desiredMerges(size, -1);
+            AggMIS::Types::IntVector_d merging(size, 0);
+            AggMIS::Types::IntVector_d incomplete(1,1);
 
             // Figuring out block sizes for kernel call:
             int blockSize = 256;
@@ -2133,18 +2133,18 @@ namespace AggMIS {
                         desiredSize, 
                         inducedGraph->indStart(), 
                         inducedGraph->adjStart(), 
-                        StartOf(sizes), 
-                        StartOf(desiredMerges), 
-                        StartOf(merging));
+                        AggMIS::Types::StartOf(sizes), 
+                        AggMIS::Types::StartOf(desiredMerges), 
+                        AggMIS::Types::StartOf(merging));
                 if (verbose)
                     printf("Calling MarkMerges Kernel <<<%d, %d>>>\n",
                             blockSize, nBlocks);
                 Kernels::MarkMerges <<<blockSize, nBlocks>>>
                         (size, 
-                        StartOf(desiredMerges), 
-                        StartOf(merging), 
-                        StartOf(mergesToMake), 
-                        StartOf(incomplete));
+                        AggMIS::Types::StartOf(desiredMerges), 
+                        AggMIS::Types::StartOf(merging), 
+                        AggMIS::Types::StartOf(mergesToMake), 
+                        AggMIS::Types::StartOf(incomplete));
             }
             
             // Checking for marked merges
@@ -2164,7 +2164,7 @@ namespace AggMIS {
             thrust::counting_iterator<int> zero(0);
             
             // Get list of all small aggregates to split 0-64
-            IntVector_d smallSplits(splitsToMake.size());
+            AggMIS::Types::IntVector_d smallSplits(splitsToMake.size());
             int smallSplitsCount = thrust::copy_if(zero, 
                                         zero + splitsToMake.size(),
                                         thrust::make_zip_iterator(
@@ -2179,7 +2179,7 @@ namespace AggMIS {
                 printf("Found %d small splits to do.\n", smallSplitsCount);
             
             // Get list of all big aggregates to split 65-256
-            IntVector_d bigSplits(splitsToMake.size());
+            AggMIS::Types::IntVector_d bigSplits(splitsToMake.size());
             int bigSplitsCount = thrust::copy_if(zero, 
                                         zero + splitsToMake.size(),
                                         thrust::make_zip_iterator(
@@ -2200,9 +2200,9 @@ namespace AggMIS {
 //                printf("There should be %d total splits.\n", total);
 //            
 //            int d;
-//            std::cin >> d;
+//            std::std::cin >> d;
             
-            Graph_d* aggMap = Aggregation::GetAggregateMap(aggregation);
+            AggMIS::Types::Graph_d* aggMap = Aggregation::GetAggregateMap(aggregation);
             
             // Making the splits is different for weighted/non-weighted
             if (nodeWeights.size() == 0) {
@@ -2219,8 +2219,8 @@ namespace AggMIS {
 
                     Kernels::MakeSplits <<< toDo, 64 >>>
                             (aggMap->Size() + offset, 
-                            StartOf(smallSplits) + offset, 
-                            StartOf(aggregation), 
+                            AggMIS::Types::StartOf(smallSplits) + offset, 
+                            AggMIS::Types::StartOf(aggregation), 
                             aggMap->indStart(), 
                             aggMap->adjStart(), 
                             graph->indStart(), 
@@ -2239,15 +2239,15 @@ namespace AggMIS {
                         printf("Calling MakeSplits_Large Kernel <<<%d, %d>>>\n",
                                 toDo, 256);
                     
-                    Display::Print(bigSplits, "Big splits");
-                    IntVector_h sizes(bigSplits.size());
+                    AggMIS::Types::Display::Print(bigSplits, "Big splits");
+                    AggMIS::Types::IntVector_h sizes(bigSplits.size());
                     for (int i = 0; i < bigSplits.size(); i++)
                         sizes[i] = partSizes[bigSplits[i]];
-                    Display::Print(sizes, "Sizes of big splits");
+                    AggMIS::Types::Display::Print(sizes, "Sizes of big splits");
                     Kernels::MakeSplits_Large <<< toDo, 256 >>>
                             (aggMap->Size() + smallSplitsCount + offset, 
-                            StartOf(bigSplits) + offset, 
-                            StartOf(aggregation), 
+                            AggMIS::Types::StartOf(bigSplits) + offset, 
+                            AggMIS::Types::StartOf(aggregation), 
                             aggMap->indStart(), 
                             aggMap->adjStart(), 
                             graph->indStart(), 
@@ -2271,13 +2271,13 @@ namespace AggMIS {
 
                     Kernels::MakeSplitsWeighted <<< toDo, 64 >>>
                             (aggMap->Size() + offset, 
-                            StartOf(smallSplits) + offset, 
-                            StartOf(aggregation), 
+                            AggMIS::Types::StartOf(smallSplits) + offset, 
+                            AggMIS::Types::StartOf(aggregation), 
                             aggMap->indStart(), 
                             aggMap->adjStart(), 
                             graph->indStart(), 
                             graph->adjStart(),
-                            StartOf(nodeWeights));
+                            AggMIS::Types::StartOf(nodeWeights));
                     offset += toDo;
                 }
                 
@@ -2294,13 +2294,13 @@ namespace AggMIS {
 
                     Kernels::MakeSplitsWeighted_Large <<< toDo, 256 >>>
                             (aggMap->Size() + smallSplitsCount + offset, 
-                            StartOf(bigSplits) + offset, 
-                            StartOf(aggregation), 
+                            AggMIS::Types::StartOf(bigSplits) + offset, 
+                            AggMIS::Types::StartOf(aggregation), 
                             aggMap->indStart(), 
                             aggMap->adjStart(), 
                             graph->indStart(), 
                             graph->adjStart(),
-                            StartOf(nodeWeights));
+                            AggMIS::Types::StartOf(nodeWeights));
                     offset += toDo;
                 }
                 cudaDeviceSynchronize();
@@ -2315,15 +2315,15 @@ namespace AggMIS {
             if (nodeWeights.size() > 0)
                 GraphHelpers::getPartSizes(aggregation, weightedSizes, nodeWeights);
             
-//            IntVector_d afterSizes(bigSplits.size());
+//            AggMIS::Types::IntVector_d afterSizes(bigSplits.size());
 //            for (int i = 0; i < bigSplits.size(); i++)
 //                    afterSizes[i] = partSizes[bigSplits[i]];
-//            Display::Print(afterSizes, "Sizes of big splits after splitting");
+//            AggMIS::Types::Display::Print(afterSizes, "Sizes of big splits after splitting");
 //            
-//            IntVector_d afterSizes2(bigSplits.size());
+//            AggMIS::Types::IntVector_d afterSizes2(bigSplits.size());
 //            for (int i = 0; i < bigSplits.size(); i++)
 //                    afterSizes2[i] = partSizes[i + aggMap->Size() + smallSplitsCount];
-//            Display::Print(afterSizes, "Sizes of big splits after splitting 2");
+//            AggMIS::Types::Display::Print(afterSizes, "Sizes of big splits after splitting 2");
             
             // Clean up
             smallSplits.clear();
@@ -2370,10 +2370,10 @@ namespace AggMIS {
                             nBlocks, blockSize);
                 Kernels::MakeMerges_MarkSplits <<<nBlocks, blockSize>>>
                         (size, 
-                        StartOf(mergesToMake), 
-                        StartOf(mergeOffsets), 
-                        StartOf(aggregation), 
-                        StartOf(splitsToMake));
+                        AggMIS::Types::StartOf(mergesToMake), 
+                        AggMIS::Types::StartOf(mergeOffsets), 
+                        AggMIS::Types::StartOf(aggregation), 
+                        AggMIS::Types::StartOf(splitsToMake));
                 CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__);
             }
             else {
@@ -2382,9 +2382,9 @@ namespace AggMIS {
                             nBlocks, blockSize);
                 Kernels::MakeMerges <<<nBlocks, blockSize>>> 
                         (size, 
-                        StartOf(mergesToMake), 
-                        StartOf(mergeOffsets), 
-                        StartOf(aggregation));
+                        AggMIS::Types::StartOf(mergesToMake), 
+                        AggMIS::Types::StartOf(mergeOffsets), 
+                        AggMIS::Types::StartOf(aggregation));
                 if (CheckCudaError(cudaDeviceSynchronize(), __FILE__, __LINE__)) {
                     
                 }

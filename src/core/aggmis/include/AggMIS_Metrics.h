@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   AggMIS_Metrics.h
  * Author: T. James Lewis
  *
@@ -13,48 +13,51 @@
 #include <set>
 #include <map>
 namespace AggMIS {
-    namespace Metrics {
-        using namespace Types;
-        using namespace std;
-        class MetricsContext {
-        public:
-            MetricsContext(Graph_h &graph, IntVector_h &aggregation);
-            double GetConvexityRatio(int aggId);
-            double GetEccentricityRatio(int aggId);
-            double GetMinimumEnclosingBallRatio(int aggId);
-            int GetAggregateCount();
-            
-        private:
-            // Data structures
-            Graph_h *graph;
-            IntVector_h aggregation;
-            vector<vector<int> > aggregates;
-            vector<vector<int> > convexAggregates;
-            int currentAggregate;
-            
-            // Counters
-            int distanceLookups, makeConvexCalls;
-            
-            // Internal Methods
-            int Distance(int a, int b);
-            double GetEccentricityRatio(vector<int> &aggregate);
-            double GetMinimumEnclosingBallRatio(vector<int> &aggregate);
-            void MakeConvex(vector<int> &aggregate);
-            void EnsureConvex(int aggId);
-            vector<int>* FindCentroid(vector<int>& aggregate);
-            int FindMassScore(int node, vector<int>& aggregate);
-            map<int,int>* FindDistances(int rootNode, vector<int>& aggregate);
-            vector<vector<int> >* GetShortestPaths(int startId, int endId, map<int,int> &distances);
-            vector<vector<int> >* FindExternalsInPaths(vector<int>& aggregate, vector<vector<int> >* p);
-            bool IsPathSatisfied(set<int>& required, vector<vector<int> >& pathOptions);
-            set<int>* BruteForceMinimalNodes(vector<vector<vector<int> > >& pathOptions);
-            bool IncrementGuessVector(vector<int>& guess, vector<vector<vector<int> > >& externalOptions);
-            
-            // Setup helpers
-            void Initialize();
-            void GetAggregates();
-        };
-    }
+  namespace Metrics {
+    class MetricsContext {
+    public:
+      MetricsContext(Types::Graph_h &graph, Types::IntVector_h &aggregation);
+      double GetConvexityRatio(int aggId);
+      double GetEccentricityRatio(int aggId);
+      double GetMinimumEnclosingBallRatio(int aggId);
+      int GetAggregateCount();
+
+    private:
+      // Data structures
+      Types::Graph_h *graph;
+      Types::IntVector_h aggregation;
+      std::vector<std::vector<int> > aggregates;
+      std::vector<std::vector<int> > convexAggregates;
+      int currentAggregate;
+
+      // Counters
+      int distanceLookups, makeConvexCalls;
+
+      // Internal Methods
+      int Distance(int a, int b);
+      double GetEccentricityRatio(std::vector<int> &aggregate);
+      double GetMinimumEnclosingBallRatio(std::vector<int> &aggregate);
+      void MakeConvex(std::vector<int> &aggregate);
+      void EnsureConvex(int aggId);
+      std::vector<int>* FindCentroid(std::vector<int>& aggregate);
+      int FindMassScore(int node, std::vector<int>& aggregate);
+      std::map<int, int>* FindDistances(int rootNode, std::vector<int>& aggregate);
+      std::vector<std::vector<int> >* GetShortestPaths(int startId, int endId, 
+        std::map<int, int> &distances);
+      std::vector<std::vector<int> >* FindExternalsInPaths(std::vector<int>& aggregate, 
+        std::vector<std::vector<int> >* p);
+      bool IsPathSatisfied(std::set<int>& required,
+        std::vector<std::vector<int> >& pathOptions);
+      std::set<int>* BruteForceMinimalNodes(std::vector<
+        std::vector<std::vector<int> > >& pathOptions);
+      bool IncrementGuessVector(std::vector<int>& guess, std::vector<std::vector<
+        std::vector<int> > >& externalOptions);
+
+      // Setup helpers
+      void Initialize();
+      void GetAggregates();
+    };
+  }
 }
 
 #endif	/* AGGMIS_METRICS_H */

@@ -44,7 +44,7 @@ void AMG_Level<Matrix, Vector>::cycle(CycleType cycle, Vector_d& b_d, Vector_d& 
       smoother->preRRRFullCsr(AinCSR_d, Aout_d, aggregateIdx_d, partitionIdx_d, restrictorFull_d, ipermutation_d, b_d, x_d, bc_d, level_id, largestblocksize, largest_num_entries, largest_num_per_row);
       break;
     default:
-      cout << "Wrong DStype 1!" << endl;
+      std::cout << "Wrong DStype 1!" << std::endl;
       exit(0);
 
     }
@@ -62,7 +62,7 @@ void AMG_Level<Matrix, Vector>::cycle(CycleType cycle, Vector_d& b_d, Vector_d& 
       smoother->postPCRFullCsr(AinCSR_d, Aout_d, AoutBlockIdx_d, aggregateIdx_d, partitionIdx_d, prolongatorFull_d, ipermutation_d, b_d, x_d, xc_d, level_id, largestblocksize, largest_num_entries, largest_num_per_row);
       break;
     default:
-      cout << "Wrong DStype 0!" << endl;
+      std::cout << "Wrong DStype 0!" << std::endl;
       exit(0);
 
     }
@@ -99,7 +99,7 @@ void AMG_Level<Matrix, Vector>::cycle_level0(CycleType cycle, Vector_d_CG &b_d_C
       smoother->preRRRFullCsr(AinCSR_d, Aout_d, aggregateIdx_d, partitionIdx_d, restrictorFull_d, ipermutation_d, b_d, x_d, bc_d, level_id, largestblocksize, largest_num_entries, largest_num_per_row);
       break;
     default:
-      cout << "Wrong DStype 1!" << endl;
+      std::cout << "Wrong DStype 1!" << std::endl;
       exit(0);
 
     }
@@ -117,7 +117,7 @@ void AMG_Level<Matrix, Vector>::cycle_level0(CycleType cycle, Vector_d_CG &b_d_C
       smoother->postPCRFullCsr(AinCSR_d, Aout_d, AoutBlockIdx_d, aggregateIdx_d, partitionIdx_d, prolongatorFull_d, ipermutation_d, b_d, x_d, xc_d, level_id, largestblocksize, largest_num_entries, largest_num_per_row);
       break;
     default:
-      cout << "Wrong DStype 0!" << endl;
+      std::cout << "Wrong DStype 0!" << std::endl;
       exit(0);
 
     }

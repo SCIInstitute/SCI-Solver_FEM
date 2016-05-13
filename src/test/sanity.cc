@@ -8,7 +8,7 @@ TEST(SanityTests, EggCarton) {
   cfg.verbose_ = true;
   cfg.tetMesh_ = TetMesh::read(
     (cfg.filename_ + ".node").c_str(),
-    (cfg.filename_ + ".ele").c_str(), true, cfg.verbose_);
+    (cfg.filename_ + ".ele").c_str(), cfg.verbose_);
   cfg.maxLevels_ = 100;
   cfg.maxIters_ = 100;
   cfg.preInnerIters_ = 5;
