@@ -2,8 +2,6 @@
 #include "FEMSolver.h"
 #include "cusp/print.h"
 TEST(SanityTests, EggCarton) {
-  //make sure there is a command interpreter
-  ASSERT_EQ(0, (int)!(std::system(NULL)));
   //test the egg carton
   FEMSolver cfg;
   cfg.filename_ = std::string(TEST_DATA_DIR) + "/simple";
@@ -62,5 +60,5 @@ TEST(SanityTests, EggCarton) {
   }
   std::cout << "The error is : " << std::sqrt(error) << std::endl;
   cfg.writeVTK(x_actual, "test_egg_carton2");
-  //ASSERT_TRUE(std::sqrt(error) < 1.);
+  ASSERT_TRUE(std::sqrt(error) < 1.);
 }
