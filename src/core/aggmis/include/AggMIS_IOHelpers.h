@@ -14,12 +14,10 @@
 #include <vector>
 
 namespace AggMIS {
-    namespace InputHelpers {
-        using namespace std;
-        
-        string GetNonEmptyLineCIN();
+    namespace InputHelpers {        
+        std::string GetNonEmptyLineCIN();
         int GetSingleIntegerValueCIN();
-        vector<int> GetIntegerValuesCIN();
+        std::vector<int> GetIntegerValuesCIN();
     }
 }
 

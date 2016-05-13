@@ -21,7 +21,6 @@
 namespace AggMIS {
   bool CheckCudaError(cudaError_t code, const char *file, int line);
   namespace Types {
-    using namespace std;
     typedef thrust::device_vector<int> IntVector_d;
     typedef thrust::device_vector<unsigned int> UIntVector_d;
     typedef thrust::host_vector<int> IntVector_h;
@@ -114,8 +113,8 @@ namespace AggMIS {
       bool AreEqual(IntVector_d& a,
           IntVector_h& b,
           bool verbose);
-      bool AreEqual(vector<vector<int> > &a,
-          vector<vector<int> > &b,
+      bool AreEqual(std::vector<std::vector<int> > &a,
+        std::vector<std::vector<int> > &b,
           bool verbose);
       bool AreEqual(Graph_h& a,
           Graph_h& b,
@@ -131,28 +130,27 @@ namespace AggMIS {
           bool verbose);
     }
     namespace Display {
-      using namespace std;
       void Print(IntVector_h& toPrint,
           int start,
           int end,
-          string message);
+          std::string message);
       void Print(IntVector_d& toPrint,
           int start,
           int end,
-          string message);
+          std::string message);
       void Print(IntVector_d& toPrint,
-          string message);
+        std::string message);
       void Print(IntVector_h& toPrint,
-          string message);
-      void Print(vector<vector<vector<int> > >& toPrint, string message);
-      void Print(vector<vector<int> >& toPrint,
-          string message);
-      void Print(vector<int> &toPrint,
+        std::string message);
+      void Print(std::vector<std::vector<std::vector<int> > >& toPrint, std::string message);
+      void Print(std::vector<std::vector<int> >& toPrint,
+        std::string message);
+      void Print(std::vector<int> &toPrint,
           int start,
           int end,
-          string message);
-      void Print(vector<int> &toPrint,
-          string message);
+          std::string message);
+      void Print(std::vector<int> &toPrint,
+        std::string message);
     }
   }
 }

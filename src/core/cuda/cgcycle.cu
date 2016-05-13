@@ -42,7 +42,7 @@ CG_Flex_Cycle<Matrix, Vector>::CG_Flex_Cycle(CycleType next_cycle, int num_iters
       cusp::blas::axpy(y, r, -alpha);
       ValueType normr = cusp::blas::nrm2(r);
       if (verbose)
-         cout << "normr=" << scientific << normr << "  niter=" << niter << endl;
+         std::cout << "normr=" << std::scientific << normr << "  niter=" << niter << std::endl;
 
       if( (normr / bnorm) <= tol)
          break;
@@ -57,8 +57,8 @@ CG_Flex_Cycle<Matrix, Vector>::CG_Flex_Cycle(CycleType next_cycle, int num_iters
    cudaThreadSynchronize();
    iter_stop = CLOCK();
    if (verbose) {
-      cout << "average time per iteration:        " << (iter_stop-iter_start) / niter << endl;
-      cout << "total solve time:        " << (iter_stop-iter_start) << endl;
+      std::cout << "average time per iteration:        " << (iter_stop-iter_start) / niter << std::endl;
+      std::cout << "total solve time:        " << (iter_stop-iter_start) << std::endl;
    }
 
    y.clear();

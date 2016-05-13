@@ -9,8 +9,6 @@ template <class Matrix, class Vector> class SmoothedMG_AMG_Level;
 #include <cusp/precond/aggregation/smooth.h>
 #include <cusp/transpose.h>
 
-using namespace std;
-
 /***************************************************
  * Classical AMG Base Class
  *  Defines the AMG solve algorithm, decendents must

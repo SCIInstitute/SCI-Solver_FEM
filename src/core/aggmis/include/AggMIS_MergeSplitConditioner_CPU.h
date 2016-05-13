@@ -16,8 +16,6 @@
 
 namespace AggMIS {
     namespace MergeSplitCPU {
-        using namespace Types;
-        using namespace std;
         
         // Functors for Thrust calls
         namespace Functors {
@@ -87,8 +85,8 @@ namespace AggMIS {
             * @param aggregation A vector which labels every node in the graph
             * with an aggregate ID.
             */            
-            MergeSplitConditionerCPU(Graph_h &graph, 
-                    IntVector_h &aggregation);
+            MergeSplitConditionerCPU(Types::Graph_h &graph, 
+                    Types::IntVector_h &aggregation);
             void SetSizeBounds(int min, int max);
             void SetVerbose(bool v);
             /**
@@ -98,17 +96,17 @@ namespace AggMIS {
              * @param nodeWeights A vector containing the weights of each node
              * the contents of this vector are swapped out by the method.
              */
-            void SetNodeWeights(IntVector_h &nodeWeights);
+            void SetNodeWeights(Types::IntVector_h &nodeWeights);
             /**
              * Getter for the aggregation vector.
              * @return A pointer to the current aggregation vector
              */
-            IntVector_h* GetAggregation();
+            Types::IntVector_h* GetAggregation();
             /**
              * Getter for the NodeWeights vector
              * @return A pointer to the current NodeWeights vector
              */
-            IntVector_h* GetNodeWeights();
+            Types::IntVector_h* GetNodeWeights();
             void CycleMerges(bool force);
             void CycleSplits(bool force);
             void CycleMergeSplits(float minImprove, 
@@ -118,18 +116,18 @@ namespace AggMIS {
                     float tolerance, 
                     float minImprove, 
                     int maxCycles);
-            void PrintProgress(ostream* output, 
-                    string note,
+            void PrintProgress(std::ostream* output, 
+                    std::string note,
                     bool graphStat,
                     bool progressStat,
                     bool sizeStat);
-            void PrintSizeStats(ostream* output,
+            void PrintSizeStats(std::ostream* output,
                     bool makeHeader);
-            void PrintProgressStats(ostream* output,
+            void PrintProgressStats(std::ostream* output,
                     bool makeHeader);
-            void PrintGraphStats(ostream* output,
+            void PrintGraphStats(std::ostream* output,
                     bool makeHeader);
-            void InteractiveConsole(string message);
+            void InteractiveConsole(std::string message);
         private:
             bool MarkMerges(bool force);
             bool MarkSplits(bool force);
@@ -150,11 +148,11 @@ namespace AggMIS {
             void ValidateAggAdjacency();
             void ValidateAggMap();
             void ValidatePartSizes();
-            void ValidateArraySizes(string message);
+            void ValidateArraySizes(std::string message);
             
             // Data members
-            Graph_h *graph;
-            Graph_h *inducedGraph;
+            Types::Graph_h *graph;
+            Types::Graph_h *inducedGraph;
             
             int minSize, 
                 maxSize, 
@@ -163,7 +161,7 @@ namespace AggMIS {
                 mergeSplits,
                 splits;
             
-            IntVector_h aggregation,
+            Types::IntVector_h aggregation,
                 nodeWeights,
                 distances,
                 partSizes,
@@ -173,13 +171,13 @@ namespace AggMIS {
                 mergeOffsets;
             
             // Stores lists of nodes in each aggregate
-            vector<vector<int> > aggMap;
+            std::vector<std::vector<int> > aggMap;
             
             // Stores the neighbors of each aggregate
-            vector<vector<int> > aggAdjacency;
+            std::vector<std::vector<int> > aggAdjacency;
             
             // Stores the root point sets for each aggregate
-            vector<vector<int> > rootPoints;
+            std::vector<std::vector<int> > rootPoints;
             
             bool verbose;
         };

@@ -19,7 +19,6 @@ int main(int argc, char** argv)
   //Our main configuration object. We will set aspects where the
   // default values are not what we desire.
   FEMSolver cfg;
-  bool zero_based = false;
   std::string Aname = "", bName;
   cfg.filename_ = "../src/test/test_data/CubeMesh_size256step16";
   for (int i = 0; i < argc; i++) {
@@ -37,8 +36,6 @@ int main(int argc, char** argv)
       if (i + 1 >= argc) break;
       Aname = std::string(argv[i + 1]);
       i++;
-    } else if (strcmp(argv[i], "-z") == 0) {
-      zero_based = true;
     }
   }
   //assuming our device is zero...
@@ -63,7 +60,7 @@ int main(int argc, char** argv)
   //read in the Tetmesh
   cfg.tetMesh_ = TetMesh::read(
     (cfg.filename_ + ".node").c_str(),
-    (cfg.filename_ + ".ele").c_str(), zero_based, cfg.verbose_);
+    (cfg.filename_ + ".ele").c_str(), cfg.verbose_);
   //The stiffness matrix A 
   Matrix_ell_h A_h;
   if (Aname.empty()) {

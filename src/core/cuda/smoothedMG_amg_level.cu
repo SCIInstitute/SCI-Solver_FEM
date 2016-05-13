@@ -9,9 +9,6 @@
 #include<types.h>
 #include<cutil.h>
 #include <vector>
-
-using namespace std;
-
 template <class Matrix, class Vector>
 SmoothedMG_AMG_Level<Matrix, Vector>::SmoothedMG_AMG_Level(AMG<Matrix, Vector> *amg) 
   : AMG_Level<Matrix, Vector>(amg)

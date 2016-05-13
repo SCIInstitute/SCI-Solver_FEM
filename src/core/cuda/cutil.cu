@@ -147,7 +147,7 @@ void __global__ compute_ele_indices_kernel(IndexType* tri0, IndexType* tri1, Ind
 //  compute_ele_indices_kernel<IndexType, ValueType> << <blocks, threads >> >(d_tri0, d_tri1, d_tri2, ne, d_rowoffsets, thrust::raw_pointer_cast(&d_ele_indices[0]));
 //  cudaCheckError();
 //
-//  IndexType* tmpvector = thrust::raw_pointer_cast(&d_ele_indices[0]);
+//  IndexType* tmpstd::vector = thrust::raw_pointer_cast(&d_ele_indices[0]);
 //
 //  IndexType maxnumnb = thrust::reduce(d_nbcount, d_nbcount + nv, -1, thrust::maximum<IndexType > ()) * 2;
 //
@@ -256,8 +256,8 @@ void trimesh2csr<Matrix_d_CG>(TriMesh* meshPtr, Matrix_d_CG &A_d)
   num_entries = num_entries / 2 + nv;
   maxsize += 1; // should include itself
 
-  vector<IndexType> rowoffsets;
-  vector<IndexType> idxj;
+  std::vector<IndexType> rowoffsets;
+  std::vector<IndexType> idxj;
   rowoffsets.reserve(nv + 1);
   idxj.reserve(num_entries);
 
@@ -280,7 +280,7 @@ void trimesh2csr<Matrix_d_CG>(TriMesh* meshPtr, Matrix_d_CG &A_d)
   }
 
   int realsz = idxj.size();
-  vector<ValueType> values(realsz, 0.0);
+  std::vector<ValueType> values(realsz, 0.0);
 
 
   Matrix_h_CG A(nv, nv, realsz);
@@ -411,5 +411,9 @@ void computeResidual(const Matrix& A, const Vector& x, const Vector& b, Vector& 
 //template void trimesh2csr<int,float,cusp::host_memory>(const TriMesh* meshPtr, struct cudaCSRGraph& csrgraph);
 //template void tetmesh2csr<int,float,cusp::host_memory>(const TetMesh* meshPtr, struct cudaCSRGraph& csrgraph);
 
-template void computeResidual<Matrix_ell_h, Vector_h>(const Matrix_ell_h& A, const Vector_h& x, const Vector_h& b, Vector_h& r);
-template void computeResidual<Matrix_hyb_d, Vector_d>(const Matrix_hyb_d& A, const Vector_d& x, const Vector_d& b, Vector_d& r);
+template void computeResidual<Matrix_ell_h, Vector_h>(
+  const Matrix_ell_h& A, const Vector_h& x,
+  const Vector_h& b, Vector_h& r);
+template void computeResidual<Matrix_hyb_d, Vector_d>(
+  const Matrix_hyb_d& A, const Vector_d& x, 
+  const Vector_d& b, Vector_d& r);

@@ -22,13 +22,13 @@ namespace AggMIS {
                 return false;
             }
         };
-        IntVector_h* FloodFillMIS(int k, Graph_h &graph) {
-            IntVector_h *m = new IntVector_h(graph.Size(), -1);
-            IntVector_h &mis = *m; 
-            IntVector_h visited(graph.Size(), 0);
-            IntVector_h distances(graph.Size(), 1000);
-            queue<int> frontier;
-            priority_queue<fringeNode, vector<fringeNode>, fringeNodeComparer> fringe;
+        AggMIS::Types::IntVector_h* FloodFillMIS(int k, AggMIS::Types::Graph_h &graph) {
+            AggMIS::Types::IntVector_h *m = new AggMIS::Types::IntVector_h(graph.Size(), -1);
+            AggMIS::Types::IntVector_h &mis = *m; 
+            AggMIS::Types::IntVector_h visited(graph.Size(), 0);
+            AggMIS::Types::IntVector_h distances(graph.Size(), 1000);
+            std::queue<int> frontier;
+            std::priority_queue<fringeNode, std::vector<fringeNode>, fringeNodeComparer> fringe;
 
 
             // Picking a random starting point:
@@ -139,10 +139,10 @@ namespace AggMIS {
             distances.clear();
             return m;
         }
-        IntVector_h* NaiveMIS(int k, Graph_h graph) {
-            IntVector_h *m = new IntVector_h(graph.Size(), -1);
-            IntVector_h &mis = *m;  
-            IntVector_h distances(graph.Size(), 1000);
+        AggMIS::Types::IntVector_h* NaiveMIS(int k, AggMIS::Types::Graph_h graph) {
+            AggMIS::Types::IntVector_h *m = new AggMIS::Types::IntVector_h(graph.Size(), -1);
+            AggMIS::Types::IntVector_h &mis = *m;  
+            AggMIS::Types::IntVector_h distances(graph.Size(), 1000);
             for (int i = 0; i < graph.Size(); i++)
             {
                 if (mis[i] == -1)
@@ -150,7 +150,7 @@ namespace AggMIS {
                     mis[i] = 1;
                     distances[i] = 0;
 
-                    queue<int> frontier;
+                    std::queue<int> frontier;
 
                     // Pushing neighbors of mis node onto frontier to start out
                     int start = (*(graph.indices))[i];

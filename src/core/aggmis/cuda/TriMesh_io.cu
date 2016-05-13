@@ -58,8 +58,8 @@ static bool we_are_little_endian();
 static void check_need_swap(const point &p, bool &need_swap);
 static void check_ind_range(TriMesh *mesh);
 static void skip_comments(FILE *f);
-static void tess(const vector<point> &verts, const vector<int> &thisface,
-		 vector<TriMesh::Face> &tris);
+static void tess(const std::vector<point> &verts, const std::vector<int> &thisface,
+		 std::vector<TriMesh::Face> &tris);
 
 static void write_ply_ascii(TriMesh *mesh, FILE *f,
 	bool write_norm, bool float_color);
@@ -111,10 +111,10 @@ static inline void swap_double(double &x)
 {
 	unsigned char buf[8];
 	memcpy(buf, &x, 8);
-	swap(buf[0], buf[7]);
-	swap(buf[1], buf[6]);
-	swap(buf[2], buf[5]);
-	swap(buf[3], buf[4]);
+	std::swap(buf[0], buf[7]);
+  std::swap(buf[1], buf[6]);
+  std::swap(buf[2], buf[5]);
+  std::swap(buf[3], buf[4]);
 	memcpy(&x, buf, 8);
 }
 
@@ -650,7 +650,7 @@ static bool read_ray(FILE *f, TriMesh *mesh)
 // Read an obj file
 static bool read_obj(FILE *f, TriMesh *mesh)
 {
-	vector<int> thisface;
+	std::vector<int> thisface;
 	while (1) {
 		skip_comments(f);
 		if (feof(f))
@@ -935,8 +935,8 @@ static bool read_faces_bin(FILE *f, TriMesh *mesh, bool need_swap,
 	// potentially variable-length
 	int face_skip = face_len - face_idx;
 
-	vector<unsigned char> buf(max(face_idx, face_skip));
-	vector<int> thisface;
+	std::vector<unsigned char> buf(max(face_idx, face_skip));
+	std::vector<int> thisface;
 	for (int i = 0; i < nfaces; i++) {
 		COND_READ(face_idx > 0, buf[0], face_idx);
 
@@ -982,7 +982,7 @@ static bool read_faces_asc(FILE *f, TriMesh *mesh, int nfaces,
 	char buf[1024];
 	skip_comments(f);
 	TriMesh::dprintf("\n  Reading %d faces... ", nfaces);
-	vector<int> thisface;
+	std::vector<int> thisface;
 	for (int i = 0; i < nfaces; i++) {
 		thisface.clear();
 		int this_face_count = 3;
@@ -1236,8 +1236,8 @@ static void skip_comments(FILE *f)
 
 
 // Tesselate an arbitrary n-gon.  Appends triangles to "tris".
-static void tess(const vector<point> &verts, const vector<int> &thisface,
-		 vector<TriMesh::Face> &tris)
+static void tess(const std::vector<point> &verts, const std::vector<int> &thisface,
+		 std::vector<TriMesh::Face> &tris)
 {
 	if (thisface.size() < 3)
 		return;

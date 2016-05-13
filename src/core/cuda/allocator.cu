@@ -4,7 +4,6 @@
 
 #include <stack>
 #include <map>
-using namespace std;
 
 template<typename T>
 Allocator<T>::FreeMap Allocator<T>::free_vars; 

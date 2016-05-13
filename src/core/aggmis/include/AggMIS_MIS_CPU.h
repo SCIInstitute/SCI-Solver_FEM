@@ -11,10 +11,8 @@
 #include <queue>
 namespace AggMIS {
     namespace MIS {
-        using namespace Types;
-        using namespace std;
-        IntVector_h* FloodFillMIS(int k, Graph_h &graph);
-        IntVector_h* NaiveMIS(int k, Graph_h &graph);
+      Types::IntVector_h* FloodFillMIS(int k, Types::Graph_h &graph);
+        Types::IntVector_h* NaiveMIS(int k, Types::Graph_h &graph);
     }
 }
 #endif	/* AGGMIS_MIS_CPU_H */

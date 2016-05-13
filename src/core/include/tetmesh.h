@@ -23,8 +23,6 @@
 #include <math.h>
 #include <vector>
 #include <list>
-using std::vector;
-
 
 class TetMesh
 {
@@ -91,17 +89,17 @@ public:
   };
 
   // The basics: vertices and faces
-  vector<point> vertices;
-  vector<Tet> tets;
-  vector<int> matlabels;
+  std::vector<point> vertices;
+  std::vector<Tet> tets;
+  std::vector<int> matlabels;
   // Connectivity structures:
   //  For each vertex, all neighboring vertices
-  vector< vector<int> > neighbors;
+  std::vector< std::vector<int> > neighbors;
   //  For each vertex, all neighboring faces
-  vector< vector<int> > adjacenttets;
-  vector<Tet> across_face;
+  std::vector< std::vector<int> > adjacenttets;
+  std::vector<Tet> across_face;
 
-  vector<double> radiusInscribe;
+  std::vector<double> radiusInscribe;
 
   void need_meshquality();
 
@@ -130,8 +128,7 @@ public:
   //  zero_based: set to true if the element numbers in the file are zero-
   //    based (defaults to false).
   //  verbose: set to true for verbose output
-  static TetMesh *read(const char *nodefilename, const char* elefilename,
-    const bool zero_based = false, const bool verbose = false);
+  static TetMesh *read(const char *nodefilename, const char* elefilename, const bool verbose = false);
   //void write(const char *filename);
 
   // Debugging printout, controllable by a "verbose"ness parameter

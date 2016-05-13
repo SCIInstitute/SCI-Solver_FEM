@@ -1,16 +1,16 @@
 #include <AggMIS_Aggregation_CPU.h>
 namespace AggMIS {
     namespace Aggregation {
-        IntVector_h* AggregateToNearest(Graph_h &graph,
-                                IntVector_h &roots) {
+        Types::IntVector_h* AggregateToNearest(Types::Graph_h &graph,
+                                Types::IntVector_h &roots) {
             // Allocating an array for distances:
-            IntVector_h rootDistance(roots.size());
+            Types::IntVector_h rootDistance(roots.size());
             
             // Allocating return array
-            IntVector_h *aggregation = new IntVector_h(roots.size());
+            Types::IntVector_h *aggregation = new Types::IntVector_h(roots.size());
             
             // A queue of unallocated nodes
-            queue<int> toAllocate;
+            std::queue<int> toAllocate;
             
             // Assigning initial distances, numbering aggregates, and adding
             // nodes to queue for allocation.
@@ -93,16 +93,16 @@ namespace AggMIS {
             
             return aggregation;
         }
-        bool IsValidAggregation(Graph_h &graph,
-                                IntVector_h &aggregation,
+        bool IsValidAggregation(Types::Graph_h &graph,
+                                Types::IntVector_h &aggregation,
                                 bool verbose) {
             int errorsFound = 0;
-            IntVector_h* ps = GetPartSizes(aggregation);
-            IntVector_h &partSizes = *ps;
-            IntVector_h visitedNodes(graph.Size(), 0);
-            IntVector_h exploredAggregates(partSizes.size(), 0);
-            set<int> problemAggregates;
-            queue<int> toExplore;
+            Types::IntVector_h* ps = GetPartSizes(aggregation);
+            Types::IntVector_h &partSizes = *ps;
+            Types::IntVector_h visitedNodes(graph.Size(), 0);
+            Types::IntVector_h exploredAggregates(partSizes.size(), 0);
+            std::set<int> problemAggregates;
+            std::queue<int> toExplore;
             for (int i = 0; i < graph.Size(); i++)
             {
                 int thisAggregate = aggregation[i];
@@ -138,7 +138,7 @@ namespace AggMIS {
             if (errorsFound > 0)
             {
                 printf("Found %d errors while checking aggregation!\n", errorsFound);
-                set<int>::iterator it;
+                std::set<int>::iterator it;
                 for (it = problemAggregates.begin(); it != problemAggregates.end(); it++)
                     printf("\t%d", *it);
                 printf("\n");
@@ -146,9 +146,9 @@ namespace AggMIS {
             }
             return true;            
         }
-        IntVector_h* GetPartSizes(IntVector_h &aggregation) {
+        Types::IntVector_h* GetPartSizes(Types::IntVector_h &aggregation) {
             // Allocate return array
-            IntVector_h *partSizes = new IntVector_h();
+            Types::IntVector_h *partSizes = new Types::IntVector_h();
             
             // Iterate over the aggregation and count nodes
             for (int i = 0; i < aggregation.size(); i++) {
@@ -159,10 +159,10 @@ namespace AggMIS {
             }
             return partSizes;
         }
-        IntVector_h* GetPartSizes(IntVector_h &aggregation, 
-                                IntVector_h &nodeWeights) {
+        Types::IntVector_h* GetPartSizes(Types::IntVector_h &aggregation, 
+                                Types::IntVector_h &nodeWeights) {
             // Allocate return array
-            IntVector_h *partSizes = new IntVector_h();
+            Types::IntVector_h *partSizes = new Types::IntVector_h();
             
             // Iterate over the aggregation and count nodes
             for (int i = 0; i < aggregation.size(); i++) {
@@ -173,10 +173,10 @@ namespace AggMIS {
             }
             return partSizes;
         }
-        vector<vector<int> >* GetAggregateGraph(Graph_h& graph, 
-                                vector<int> &nodeList) {
+        std::vector<std::vector<int> >* GetAggregateGraph(Types::Graph_h& graph, 
+                                std::vector<int> &nodeList) {
             // Create the return structure.
-            vector<vector<int> > *aggGraph = new vector<vector<int> >(nodeList.size());
+            std::vector<std::vector<int> > *aggGraph = new std::vector<std::vector<int> >(nodeList.size());
             
             // Fill the adjacency by translating the adjacency to local indices
             for (int nIt = 0; nIt < nodeList.size(); nIt++) {
@@ -193,11 +193,11 @@ namespace AggMIS {
             }
             return aggGraph;
         }
-        int FindFarthestNode(vector<vector<int> > &graph, 
+        int FindFarthestNode(std::vector<std::vector<int> > &graph, 
                                 int start) {
             // Data structures for flood fill
-            vector<int> distances(graph.size(), -1);
-            queue<int> toExplore;
+            std::vector<int> distances(graph.size(), -1);
+            std::queue<int> toExplore;
             toExplore.push(start);
             distances[start] = 0;
             
@@ -230,20 +230,20 @@ namespace AggMIS {
             }
             return farthestNode;
         }
-        void MarkDistances(vector<vector<int> >& graph, 
-                                vector<int>& distances, 
+        void MarkDistances(std::vector<std::vector<int> >& graph, 
+                                std::vector<int>& distances, 
                                 int startPoint) {
             // Put single start point into vector and call vector version.
-            vector<int> startPoints;
+            std::vector<int> startPoints;
             startPoints.push_back(startPoint);
             MarkDistances(graph, distances, startPoints);
         }
-        void MarkDistances(vector<vector<int> >& graph, 
-                                vector<int>& distances, 
-                                vector<int> startPoints) {
+        void MarkDistances(std::vector<std::vector<int> >& graph, 
+                                std::vector<int>& distances, 
+                                std::vector<int> startPoints) {
             // Initialize data structures for flood fill
             distances.assign(graph.size(), -1);
-            queue<int> toExplore;
+            std::queue<int> toExplore;
             
             // Handle start points
             for (int i = 0; i < startPoints.size(); i++) {
@@ -269,11 +269,11 @@ namespace AggMIS {
                 }
             }
         }
-        int FindMassScore(vector<vector<int> >& graph, 
+        int FindMassScore(std::vector<std::vector<int> >& graph, 
                                 int startPoint) {
             // Initialize data structures for flood fill
-            vector<int> distances(graph.size(), -1);
-            queue<int> toExplore;
+            std::vector<int> distances(graph.size(), -1);
+            std::queue<int> toExplore;
             
             // Put start point on queue
             toExplore.push(startPoint);
@@ -302,9 +302,9 @@ namespace AggMIS {
             }
             return score;
         }
-        vector<int>* GetCentroid(vector<vector<int> >& graph, 
+        std::vector<int>* GetCentroid(std::vector<std::vector<int> >& graph, 
                                 int startPoint) {
-            vector<int> scores(graph.size(), -1);
+            std::vector<int> scores(graph.size(), -1);
             int currentNode = startPoint;
 
             // Find score for first node
@@ -330,7 +330,7 @@ namespace AggMIS {
             }
 
             // Find any adjacent nodes with equivalent score
-            vector<int> *result = new vector<int>();
+            std::vector<int> *result = new std::vector<int>();
             result->push_back(currentNode);
             for (int i = 0; i < graph[currentNode].size(); i++)
             {
