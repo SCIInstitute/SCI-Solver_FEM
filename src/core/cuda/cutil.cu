@@ -217,7 +217,19 @@ void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_d_CG &A_d, bool v
     }
   }
   if( verbose )
-    std::cout << "done." << std::endl;
+    std::cout << "done with " << nv << " entries." << std::endl;
+
+
+  /******** TESTING PURPOSES ************/
+  for(int i = 0; i < nv; ++i)
+  {
+    for(int j = 0; j < maxsize; ++j)
+    {
+      if( A.column_indices(i,j) != X )
+        std::cout << i << "," << j << std::endl;
+    }
+  }
+  /******** TESTING PURPOSES ************/
 
 
   if( verbose )

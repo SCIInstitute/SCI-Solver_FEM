@@ -140,7 +140,7 @@ void FEMSolver::getMatrixFromMesh(Matrix_ell_h* A_h) {
     Matrix_ell_d_CG Aell_d;
     Vector_d_CG RHS(this->tetMesh_->vertices.size(), 0.0);
     //generate the unit constant mesh stiffness matrix
-    //tetmesh2ell<Matrix_ell_d_CG >(this->tetMesh_, A_h, Aell_d, this->verbose_);
+    tetmesh2ell<Matrix_ell_d_CG >(this->tetMesh_, Aell_d, this->verbose_);
     Aell_d = *A_h;
     cudaThreadSynchronize();
     //assembly step
@@ -335,6 +335,20 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
     }
   }
   in.close();
+
+#if 0
+  /******** TESTING PURPOSES ************/
+  for(int i = 0; i < current_row; ++i)
+  {
+    for(int j = 0; j < max_row; ++j)
+    {
+      if( A.column_indices(i,j) != bad_entry )
+        std::cout << i << "," << j << std::endl;
+    }
+  }
+  /******** TESTING PURPOSES ************/
+#endif
+
   *A_h = Matrix_ell_h(A);
   return 0;
 }
