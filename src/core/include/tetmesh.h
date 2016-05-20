@@ -94,6 +94,7 @@ public:
   vector<point> vertices;
   vector<Tet> tets;
   vector<int> matlabels;
+  vector<float> materialValue;
   // Connectivity structures:
   //  For each vertex, all neighboring vertices
   vector< vector<int> > neighbors;
