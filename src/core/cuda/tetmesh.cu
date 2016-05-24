@@ -263,6 +263,7 @@ TetMesh *TetMesh::read(const char *nodefilename,
   std::string line;
   int nv;
   int tmp;
+  int labelIdx = 0;
   while (nodefile.good()) {
     std::getline(nodefile, line);
     if (line.empty() || line.at(0) == '#') continue;
