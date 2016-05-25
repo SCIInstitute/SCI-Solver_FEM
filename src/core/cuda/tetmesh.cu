@@ -254,6 +254,11 @@ TetMesh *TetMesh::read(const char *nodefilename,
   mesh->set_verbose(verb);
   std::ifstream nodefile(nodefilename);
   std::ifstream elefile(elefilename);
+  if( verb )
+  {
+    printf("Opening node file %s\n", nodefilename);
+    printf("Opening element file %s\n", elefilename);
+  }
   if(!nodefile.is_open() || !elefile.is_open())
   {
     printf("node or ele file open failed!\n");
@@ -299,7 +304,7 @@ TetMesh *TetMesh::read(const char *nodefilename,
     i++;
   }
   nodefile.close();
-  if (verbose) std::cout << "Read in node file successfully" << std::endl;
+  if (verb) std::cout << "Read in node file successfully" << std::endl;
   //get the number of elements
   int ne;
   int haslabel;
@@ -322,7 +327,6 @@ TetMesh *TetMesh::read(const char *nodefilename,
     std::getline(elefile, line);
     if (line.empty() || line.at(0) == '#') continue;
     int tval[4], mat;
-
     //Read from first part of the element file to get vertices comprising elements
     if( i < ne )
     {
@@ -362,20 +366,21 @@ TetMesh *TetMesh::read(const char *nodefilename,
     //After elements section, read the material property values at the end of the file
     else if( haslabel > 0 )
     {
-      if (sscanf(line.c_str(), "%f", &tmp) != 1)
+      float tmpMatl;
+      if (sscanf(line.c_str(), "%f", &tmpMatl) != 1)
       {
         std::cerr << "Bad material property in ele file, line # " << i << std::endl;
         exit(0);
       }
       if( labelIdx < haslabel )
-        mesh->materialValue[labelIdx++] = tmp;
+        mesh->materialValue[labelIdx++] = tmpMatl;
     }
     i++;
   }
 
   elefile.close();
 
-  if (verbose) std::cout << "Read in ele file successfully" << std::endl;
+  if (verb) std::cout << "Read in ele file successfully" << std::endl;
   int minidx = INT_MAX;
   for(int i = 0; i < ne; i++)
   {
@@ -387,7 +392,7 @@ TetMesh *TetMesh::read(const char *nodefilename,
   }
   if(minidx == 1)
   {
-    if (verbose) printf("Minimum element index is 1\n");
+    if (verb) printf("Minimum element index is 1\n");
     for(int i = 0; i < ne; i++)
     {
       for(int j = 0; j < 4; j++)

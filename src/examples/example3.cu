@@ -91,7 +91,6 @@ int main(int argc, char** argv)
   //Our main configuration object. We will set aspects where the
   // default values are not what we desire.
   FEMSolver cfg;
-  bool verbose = false;
   bool zero_based = false;
   std::string filename, aFilename, bFilename;
   for (int i = 0; i < argc; i++) {
@@ -146,11 +145,11 @@ int main(int argc, char** argv)
   //set the convergence tolerance algorithm
   cfg.convergeType_ = /*(ConvergenceType::)*/ABSOLUTE_CONVERGENCE;
   //read in the Tetmesh
-  if (filename.empty())
+  if (cfg.filename_.empty())
     cfg.filename_ = "../src/test/test_data/CubeMesh_size256step16";
   cfg.tetMesh_ = TetMesh::read(
       (cfg.filename_ + ".node").c_str(),
-      (cfg.filename_ + ".ele").c_str(), zero_based, verbose);
+      (cfg.filename_ + ".ele").c_str(), zero_based, cfg.verbose_);
   //The stiffness matrix A 
   Matrix_ell_h A_h;
   //get the basic stiffness matrix (constant) by creating the mesh matrix
@@ -173,12 +172,12 @@ int main(int argc, char** argv)
   A_h = Matrix_ell_h(out);
 
   //Import right-hand-side single-column array (b)
-  if( importRhsVectorFromFile(bFilename, &test, b_h, verbose) < 0 )
+  if( importRhsVectorFromFile(bFilename, &test, b_h, cfg.verbose_) < 0 )
     return 0;
 
   Matrix_ell_h A_h_imported;
   //Import stiffness matrix (A)
-  if( importStiffnessMatrixFromFile(aFilename, &A_h_imported, verbose) < 0 )
+  if( importStiffnessMatrixFromFile(aFilename, &A_h_imported, cfg.verbose_) < 0 )
     return 0;
 
   //The final call to the solver
