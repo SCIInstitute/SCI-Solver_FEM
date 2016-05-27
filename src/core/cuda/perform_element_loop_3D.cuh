@@ -480,7 +480,7 @@ void sum_into_global_linear_system_3d_host(IndexType* __restrict__ ids, ValueTyp
 template<typename IndexType, typename ValueType >
 __global__ void element_loop_3d_kernel(size_t nv, ValueType *d_nx, ValueType *d_ny, ValueType *d_nz, size_t ne, IndexType *d_tri0, IndexType *d_tri1, IndexType *d_tri2, IndexType *d_tri3,
     ValueType *d_ellvalues, IndexType *d_ellcolidx, size_t nrow, size_t num_col_per_row, size_t pitch,
-    ValueType * d_b, IndexType* matlabels, ValueType* integrand)
+    ValueType * d_b, IndexType* matlabels, ValueType* matvalues, ValueType* integrand)
 {
   ValueType coeffs[16];
   ValueType stiffMat[10];
@@ -583,31 +583,7 @@ __global__ void element_loop_3d_kernel(size_t nv, ValueType *d_nx, ValueType *d_
 
     //compute element stiffness matrix
     matlabel = matlabels[eleidx];
-    switch (matlabel)
-    {
-    case 0:
-      co = 1.0;
-      break;
-    case 1:
-      co = 1.0;
-      break;
-    case 2:
-      co = 2;
-      break;
-    case 3:
-      co = 3.0;
-      break;
-    case 4:
-      co = 4.0;
-      break;
-    case 5:
-      co = 5.0;
-      break;
-    case 6:
-      co = 6.0;
-      break;
-
-    }
+    co = matvalues[matlabel];
 
     compute_stiffness_matrix_3d<IndexType, ValueType > (coeffs, Tvol, stiffMat, co);
     //    if(threadIdx.x < 0)
@@ -628,7 +604,7 @@ __global__ void element_loop_3d_kernel(size_t nv, ValueType *d_nx, ValueType *d_
 
 template<typename IndexType, typename ValueType >
 void element_loop_3d_host(Vector_h_CG &nx, Vector_h_CG &ny, Vector_h_CG &nz, IdxVector_h &tri0, IdxVector_h &tri1, IdxVector_h &tri2, IdxVector_h &tri3, Matrix_ell_h_CG &A, Vector_h_CG &b,
-    Vector_h_CG & phi, Vector_h_CG &weight_x, Vector_h_CG &weight_y, Vector_h_CG & weight_z, IdxVector_h &matlabels, Vector_h_CG &integrand)
+    Vector_h_CG & phi, Vector_h_CG &weight_x, Vector_h_CG &weight_y, Vector_h_CG & weight_z, IdxVector_h &matlabels, Vector_h_CG &matvalues, Vector_h_CG &integrand)
 {
   ValueType coeffs[16];
   ValueType stiffMat[10];
@@ -739,10 +715,7 @@ void element_loop_3d_host(Vector_h_CG &nx, Vector_h_CG &ny, Vector_h_CG &nz, Idx
 
     //compute element stiffness matrix
     matlabel = matlabels[eleidx];
-    if (matlabel == 0)
-      co = 1.0;
-    else
-      co = 1.0;
+    co = matvalues[matlabel];
 
     compute_stiffness_matrix_3d<IndexType, ValueType > (coeffs, Tvol, stiffMat, co);
 
@@ -756,7 +729,7 @@ void element_loop_3d_host(Vector_h_CG &nx, Vector_h_CG &ny, Vector_h_CG &nz, Idx
 }
 
 void perform_element_loop_3d(Vector_d_CG &nx, Vector_d_CG &ny, Vector_d_CG &nz, IdxVector_d &tri0, IdxVector_d &tri1, IdxVector_d &tri2, IdxVector_d &tri3, Matrix_ell_d_CG &A, Vector_d_CG &b,
-    Vector_h_CG & phi, Vector_h_CG &weight_x, Vector_h_CG &weight_y, Vector_h_CG & weight_z, IdxVector_d &matlabels, Vector_d_CG &integrand, bool isdevice)
+    Vector_h_CG & phi, Vector_h_CG &weight_x, Vector_h_CG &weight_y, Vector_h_CG & weight_z, IdxVector_d &matlabels, Vector_d_CG &matvalues, Vector_d_CG &integrand, bool isdevice)
 {
   typedef typename Matrix_ell_d_CG::index_type IndexType;
   typedef typename Matrix_ell_d_CG::value_type ValueType;
@@ -776,6 +749,7 @@ void perform_element_loop_3d(Vector_d_CG &nx, Vector_d_CG &ny, Vector_d_CG &nz, 
     IndexType *d_tri3 = thrust::raw_pointer_cast(&tri3[0]);
 
     IndexType *d_matlabels = thrust::raw_pointer_cast(&matlabels[0]);
+    ValueType *d_matvalues = thrust::raw_pointer_cast(&matvalues[0]);
 
     ValueType *d_ellvalues = thrust::raw_pointer_cast(&A.values.values[0]);
     IndexType *d_ellcolidx = thrust::raw_pointer_cast(&A.column_indices.values[0]);
@@ -808,7 +782,7 @@ void perform_element_loop_3d(Vector_d_CG &nx, Vector_d_CG &ny, Vector_d_CG &nz, 
       << <num_blocks, threads >> >(
           nv, d_nx, d_ny, d_nz, ne, d_tri0, d_tri1, d_tri2, d_tri3,
           d_ellvalues, d_ellcolidx, nrow, num_col_per_row, pitch,
-          d_b, d_matlabels, integrand_d);
+          d_b, d_matlabels, d_matvalues, integrand_d);
 
   }
   else
@@ -825,6 +799,7 @@ void perform_element_loop_3d(Vector_d_CG &nx, Vector_d_CG &ny, Vector_d_CG &nz, 
     Vector_h_CG integrand_h = integrand;
 
     IdxVector_h h_matlabels = matlabels;
+    Vector_h_CG h_matvalues = matvalues;
 
     start = CLOCK();
 
@@ -838,7 +813,7 @@ void perform_element_loop_3d(Vector_d_CG &nx, Vector_d_CG &ny, Vector_d_CG &nz, 
 
     element_loop_3d_host<IndexType, ValueType >
       (h_nx, h_ny, h_nz, h_tri0, h_tri1, h_tri2, h_tri3,
-       h_Aell, h_b, phi, weight_x, weight_y, weight_z, h_matlabels, integrand_h);
+       h_Aell, h_b, phi, weight_x, weight_y, weight_z, h_matlabels, h_matvalues, integrand_h);
 
     start = CLOCK();
 

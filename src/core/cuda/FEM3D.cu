@@ -564,9 +564,10 @@ void FEM3D::assemble(TetMesh* meshPtr, Matrix_ell_d_CG &A, Vector_d_CG &b, bool 
   ValueType* tmp_w_z = thrust::raw_pointer_cast(&weight_z[0]);
 
   IdxVector_d matlabels = meshPtr->matlabels;
+  Vector_d_CG matvalues = meshPtr->materialValue;
   Vector_d_CG integrandMass_d = integrandMass;
 
-  perform_element_loop_3d(d_vx, d_vy, d_vz, d_tri0, d_tri1, d_tri2, d_tri3, A, b, phi, weight_x, weight_y, weight_z, matlabels, integrandMass_d, isdevice);
+  perform_element_loop_3d(d_vx, d_vy, d_vz, d_tri0, d_tri1, d_tri2, d_tri3, A, b, phi, weight_x, weight_y, weight_z, matlabels, matvalues, integrandMass_d, isdevice);
   phi.clear();
 
 }
