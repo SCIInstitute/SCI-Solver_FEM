@@ -92,7 +92,10 @@ int main(int argc, char** argv)
   // default values are not what we desire.
   FEMSolver cfg;
   bool zero_based = false;
+  bool importStiffness = false;
+  bool importRhs = false;
   std::string filename, aFilename, bFilename;
+
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i],"-v") == 0) {
       cfg.verbose_ = true;
@@ -105,11 +108,13 @@ int main(int argc, char** argv)
       if (i+1 >= argc)
     	break;
       bFilename = std::string(argv[i+1]);
+      importRhs = true;
       i++;
     } else if (strcmp(argv[i],"-A") == 0) {
       if (i+1 >= argc)
     	break;
       aFilename = std::string(argv[i+1]);
+      importStiffness = true;
       i++;
     } else if (strcmp(argv[i],"-z") == 0) {
       zero_based = true;
@@ -166,23 +171,28 @@ int main(int argc, char** argv)
   }
   //multiply the mesh matrix by the stiffness properties matrix.
   vector<double> test;
-  Matrix_ell_h out, A_fromFile;
-  Matrix_ell_h my_A(A_h);
-  cusp::multiply(identity, my_A, out);
-  A_h = Matrix_ell_h(out);
+  //Matrix_ell_h out;
+  //Matrix_ell_h my_A(A_h);
+  //cusp::multiply(identity, my_A, out);
+  //A_h = Matrix_ell_h(out);
 
-  //Import right-hand-side single-column array (b)
-  if( importRhsVectorFromFile(bFilename, &test, b_h, cfg.verbose_) < 0 )
-    return 0;
+  if( importRhs ) {
+    //Import right-hand-side single-column array (b)
+    if( importRhsVectorFromFile(bFilename, &test, b_h, cfg.verbose_) < 0 )
+      return 0;
+  }
 
-  Matrix_ell_h A_h_imported;
-  //Import stiffness matrix (A)
-  if( importStiffnessMatrixFromFile(aFilename, &A_h_imported, cfg.verbose_) < 0 )
-    return 0;
+  if( importStiffness ) {
+    Matrix_ell_h A_h_imported;
+    //Import stiffness matrix (A)
+    if( importStiffnessMatrixFromFile(aFilename, &A_h_imported, cfg.verbose_) < 0 )
+      return 0;
+    A_h = A_h_imported;
+  }
 
   //The final call to the solver
-  cfg.checkMatrixForValidContents(&A_h_imported);
-  cfg.solveFEM(&A_h_imported, &x_h, &b_h);
+  cfg.checkMatrixForValidContents(&A_h);
+  cfg.solveFEM(&A_h, &x_h, &b_h);
   //At this point, you can do what you need with the matrices.
   if (cfg.writeMatlabArray("output.mat", x_h)) {
     std::cerr << "failed to write matlab file." << std::endl;

@@ -175,8 +175,6 @@ void tetmesh2ell<Matrix_ell_d_CG>(TetMesh* meshPtr, Matrix_ell_d_CG &A_d, bool v
   int nv = meshPtr->vertices.size();
   int ne = meshPtr->tets.size();
 
-
-
   meshPtr->need_neighbors();
   for(int i = 0; i < nv; i++)
   {
