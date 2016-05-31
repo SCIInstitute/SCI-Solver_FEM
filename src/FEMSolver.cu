@@ -50,20 +50,6 @@ void FEMSolver::solveFEM(Matrix_ell_h* A_h,
   clock_t starttime, endtime;
   starttime = clock();
   Matrix_ell_d_CG A_device(*A_h);
-  //assembly step
-  if (this->triMesh_ != NULL) {
-    // 2D fem solving object
-    FEM2D fem2d;
-    Vector_d_CG RHS(this->triMesh_->vertices.size(), 0.0);
-    fem2d.initializeWithTriMesh(this->triMesh_);
-    fem2d.assemble(this->triMesh_, A_device, RHS);
-  } else {
-    // 3D fem solving object
-    FEM3D fem3d;
-    Vector_d_CG RHS(this->tetMesh_->vertices.size(), 0.0);
-    fem3d.initializeWithTetMesh(this->tetMesh_);
-    fem3d.assemble(this->tetMesh_, A_device, RHS, true);
-  }
   //copy back to the host
   cudaThreadSynchronize();
   //register configuration parameters
@@ -76,8 +62,7 @@ void FEMSolver::solveFEM(Matrix_ell_h* A_h,
     this->aggregatorType_, this->blockSize_,
     this->triMesh_, this->tetMesh_);
   //setup multi grid for solver
-  Matrix_ell_d_CG A_test(*A_h);
-  amg.setup(A_test);
+  amg.setup(A_device);
   //print info
   if (this->verbose_)
     amg.printGridStatistics();
@@ -141,22 +126,33 @@ void FEMSolver::checkMatrixForValidContents(Matrix_ell_h* A_h) {
 void FEMSolver::getMatrixFromMesh(Matrix_ell_h* A_h) {
   if (this->triMesh_ == NULL && this->tetMesh_ == NULL)
     exit(0);
-  Matrix_ell_d_CG Aell_d;
+  Matrix_ell_d_CG A_device;
+  //assembly / generate matrix step
   if (this->triMesh_ != NULL) {
     this->triMesh_->set_verbose(this->verbose_);
     this->triMesh_->need_neighbors();
     this->triMesh_->need_meshquality();
     //generate the unit constant mesh stiffness matrix
-    trimesh2ell<Matrix_ell_d_CG >(this->triMesh_, Aell_d);
+    trimesh2ell<Matrix_ell_d_CG >(this->triMesh_, A_device);
+    // 2D fem solving object
+    FEM2D fem2d;
+    Vector_d_CG RHS(this->triMesh_->vertices.size(), 0.0);
+    fem2d.initializeWithTriMesh(this->triMesh_);
+    fem2d.assemble(this->triMesh_, A_device, RHS);
   } else {
     this->tetMesh_->set_verbose(this->verbose_);
     this->tetMesh_->need_neighbors();
     this->tetMesh_->need_meshquality();
     //generate the unit constant mesh stiffness matrix
-    tetmesh2ell<Matrix_ell_d_CG >(this->tetMesh_, Aell_d, this->verbose_);
+    tetmesh2ell<Matrix_ell_d_CG >(this->tetMesh_, A_device, this->verbose_);
+    // 3D fem solving object
+    FEM3D fem3d;
+    Vector_d_CG RHS(this->tetMesh_->vertices.size(), 0.0);
+    fem3d.initializeWithTetMesh(this->tetMesh_);
+    fem3d.assemble(this->tetMesh_, A_device, RHS, true);
   }
   cudaThreadSynchronize();
-  *A_h = Matrix_ell_h(Aell_d);
+  *A_h = Matrix_ell_h(A_device);
 }
 
 bool FEMSolver::compare_sparse_entry(SparseEntry_t a, SparseEntry_t b) {

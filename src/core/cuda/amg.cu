@@ -94,13 +94,11 @@ void AMG<Matrix, Vector>::setup(const Matrix_d &Acsr_d) {
   level->m_tetmeshPtr = this->tetMesh_;
 
   if (this->verbose_)  std::cout << "Entering AMG setup loop." << std::endl;
-  while (true)
-  {
+  while (true)  {
     int N = level->A_d.num_rows;
     if (this->verbose_) 
       std::cout << "Rows: " << N << " of max: " << this->topSize_ << std::endl;
-    if (N < this->topSize_ || num_levels >= this->maxLevels_)
-    {
+    if (N < this->topSize_ || num_levels >= this->maxLevels_)    {
       coarsestlevel = num_levels - 1;
       Matrix_h Atmp = level->A_d;
       cusp::array2d<ValueType, cusp::host_memory> coarse_dense(Atmp);
@@ -114,8 +112,7 @@ void AMG<Matrix, Vector>::setup(const Matrix_d &Acsr_d) {
     level->createNextLevel(this->verbose_);
     if (this->verbose_)  std::cout << "Finished with createNextLevel call." << std::endl;
 
-    if (level->level_id == 0)
-    {
+    if (level->level_id == 0)    {
       Ahyb_d_CG = level->A_d;
     }
     if (this->verbose_)  std::cout << "Copied A_d." << std::endl;
