@@ -383,7 +383,8 @@ int FEMSolver::readMatlabNormalMatrix(const std::string &filename, vector<double
 
   //Array name
   uint32_t arrayName_type = 0;
-  in.read((char*)&arrayName_type, 2);
+  //Read 4 bytes rather than 2 since this should be uncompressed mat format
+  in.read((char*)&arrayName_type, 4);
   if (arrayName_type != 1 && arrayName_type != 2) {
     std::cerr << "WARNING: Invalid variable type (" << arrayName_type;
     std::cerr << ") for array name characters (Must be 8-bit)." << std::endl;
@@ -391,7 +392,8 @@ int FEMSolver::readMatlabNormalMatrix(const std::string &filename, vector<double
     return -1;
   }
   uint32_t arrayName_length = 0;
-  in.read((char*)&arrayName_length, 2);
+  //Read 4 bytes rather than 2 since this should be uncompressed mat format
+  in.read((char*)&arrayName_length, 4);
   //Account for padding of array name to match 32-bit requirement
   int lenRemainder = arrayName_length % 4;
   if (lenRemainder != 0)
@@ -399,7 +401,14 @@ int FEMSolver::readMatlabNormalMatrix(const std::string &filename, vector<double
   in.read(buffer, arrayName_length); //Read the array name (ignore)
 
   //Data type in array field
-  in.read((char*)&type, 4);
+  //Workaround for Matlab's confusing subelement padding format. The spec is
+  // not as clear as it should be about what the data alignment is. There may
+  // or may not be zero-padding after an array element. A new subelement won't
+  // start with a zero value, so this should be a safe workaround.
+  type = 0;
+  while( type == 0 )
+    in.read((char*)&type, 4);
+
   if (type != 9) {
     std::cerr << "Matrix data type must be miDOUBLE (type is ";
     std::cerr << type << ")." << std::endl;
