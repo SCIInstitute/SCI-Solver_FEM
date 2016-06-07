@@ -4,9 +4,10 @@
 #include "cutil.h"
 #include "amg.h"
 #include <time.h>
+#include "cusp/elementwise.h"
 
 FEMSolver::FEMSolver(
-  std::string fname, bool verbose) :
+  std::string fname, bool isTetMesh, bool verbose) :
   verbose_(verbose),                  // output verbosity
   filename_(fname),                   // mesh file name
   maxLevels_(100),                    // the maximum number of levels
@@ -31,7 +32,15 @@ FEMSolver::FEMSolver(
   blockSize_(256),                    // maximum size of a block
   tetMesh_(NULL),                     // the tetmesh pointer
   triMesh_(NULL)                      // the trimesh pointer
-{}
+{
+  if (isTetMesh) {
+    this->tetMesh_ = TetMesh::read((this->filename_ + ".node").c_str(),
+      (this->filename_ + ".ele").c_str(), verbose);
+  } else {
+    this->triMesh_ = TriMesh::read(this->filename_.c_str());
+  }
+  this->getMatrixFromMesh();
+}
 
 FEMSolver::~FEMSolver() {
   if (this->tetMesh_ != NULL)
@@ -45,11 +54,12 @@ FEMSolver::~FEMSolver() {
 * @data The set of options for the Eikonal algorithm.
 *       The defaults are used if nothing is provided.
 */
-void FEMSolver::solveFEM(Matrix_ell_h* A_h,
+void FEMSolver::solveFEM(
   Vector_h_CG* x_h, Vector_h_CG* b_h) {
+  this->checkMatrixForValidContents(&this->A_h_);
   clock_t starttime, endtime;
   starttime = clock();
-  Matrix_ell_d_CG A_device(*A_h);
+  Matrix_ell_d_CG A_device(this->A_h_);
   //copy back to the host
   cudaThreadSynchronize();
   //register configuration parameters
@@ -79,6 +89,10 @@ void FEMSolver::solveFEM(Matrix_ell_h* A_h,
 
   if (this->verbose_)
     printf("Computing time : %.10lf ms\n", duration);
+}
+
+size_t FEMSolver::getMatrixRows() {
+  return this->A_h_.num_rows;
 }
 
 bool FEMSolver::InitCUDA() {
@@ -123,7 +137,7 @@ void FEMSolver::checkMatrixForValidContents(Matrix_ell_h* A_h) {
   }
 }
 
-void FEMSolver::getMatrixFromMesh(Matrix_ell_h* A_h) {
+void FEMSolver::getMatrixFromMesh() {
   if (this->triMesh_ == NULL && this->tetMesh_ == NULL)
     exit(0);
   Matrix_ell_d_CG A_device;
@@ -152,14 +166,14 @@ void FEMSolver::getMatrixFromMesh(Matrix_ell_h* A_h) {
     fem3d.assemble(this->tetMesh_, A_device, RHS, true);
   }
   cudaThreadSynchronize();
-  *A_h = Matrix_ell_h(A_device);
+  this->A_h_ = Matrix_ell_h(A_device);
 }
 
 bool FEMSolver::compare_sparse_entry(SparseEntry_t a, SparseEntry_t b) {
   return ((a.row_ != b.row_) ? (a.row_ < b.row_) : (a.col_ < b.col_));
 }
 
-int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h *A_h) {
+int FEMSolver::readMatlabSparseMatrix(const std::string &filename) {
   //read in the description header
   std::ifstream in(filename.c_str(), std::ios::binary);
   if (!in.is_open()) {
@@ -323,11 +337,12 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h 
       row_count = 0;
     }
   }
-  *A_h = Matrix_ell_h(A);
+  Matrix_ell_h original(this->A_h_);
+  cusp::add(A, original, this->A_h_);
   return 0;
 }
 
-int FEMSolver::readMatlabNormalMatrix(const std::string &filename, std::vector<double> *A_h) {
+int FEMSolver::readMatlabArray(const std::string &filename, Vector_h_CG* rhs) {
   //read in the description header
   std::ifstream in(filename.c_str());
   if (!in.is_open()) {
@@ -413,15 +428,15 @@ int FEMSolver::readMatlabNormalMatrix(const std::string &filename, std::vector<d
   double readInDouble;
   unsigned int numValues = arrayData_length / byte_per_element;
 
-  A_h->clear();
+  rhs->clear();
   for (int j = 0; j < numValues; ++j) {
     in.read(buffer, byte_per_element);
     memcpy(&readInDouble, buffer, sizeof(double));
-    A_h->push_back(readInDouble);
+    rhs->push_back(readInDouble);
   }
 
   in.close();
-  return numValues;
+  return 0;
 }
 
 int FEMSolver::writeMatlabArray(const std::string &filename, const Vector_h_CG &array) {
@@ -556,78 +571,3 @@ void FEMSolver::writeVTK(std::vector <float> values, std::string fname)
     fclose(vtkfile);
   }
 }
-
-void FEMSolver::printElementWithHeader(std::vector<double>& test, unsigned int index)
-{
-  std::cout << "element #" << index << " = " << test[index] << std::endl;
-}
-
-void FEMSolver::printMatlabReadContents(std::vector<double>& test)
-{
-  std::cout << "test result vector is size = " << test.size() << std::endl;
-  int incr = test.size() / 5;
-  for (int j = 0; j < test.size(); j += incr) {
-    printElementWithHeader(test, j);
-  }
-  if (test.size() > 0)
-    std::cout << "last element = " << test[test.size() - 1] << std::endl;
-}
-
-int FEMSolver::importRhsVectorFromFile(std::string filename, 
-  Vector_h_CG& targetVector, bool verbose)
-{
-  if (filename.empty()) {
-    std::string errMsg = "No matlab file provided for RHS (b) vector.";
-    errMsg += " Specify the file using argument at commandline using -b switch.";
-    std::cerr << errMsg << std::endl;
-    return -1;
-  }
-  std::vector<double> source;
-  if (FEMSolver::readMatlabNormalMatrix(filename, &source) < 0) {
-    std::cerr << "Failed to read matlab file for RHS (b)." << std::endl;
-    return -1;
-  }
-  //  targetVector = static_cast<const vector<double> >(*source);
-  targetVector = source;
-  if (verbose) {
-    int sizeRead = targetVector.size();
-    std::cout << "Finished reading RHS (b) data file with ";
-    std::cout << sizeRead << " values." << std::endl;
-  }
-  return 0;
-}
-
-int FEMSolver::importStiffnessMatrixFromFile(std::string filename, 
-  Matrix_ell_h* targetMatrix, bool verbose)
-{
-  if (filename.empty()) {
-    std::string errMsg = "No matlab file provided for stiffness matrix (A).";
-    errMsg += " Specify the file using argument at commandline using -A switch.";
-    std::cerr << errMsg << std::endl;
-    return -1;
-  }
-  if (FEMSolver::readMatlabSparseMatrix(filename, targetMatrix) != 0) {
-    std::cerr << "Failed to read matlab file for stiffness matrix (A)." << std::endl;
-    return -1;
-  }
-  if (verbose) {
-    std::string msg = "Finished reading stiffness matrix.";
-    std::cout << msg << std::endl;
-  }
-  return 0;
-}
-
-void FEMSolver::debugPrintMatlabels(TetMesh* mesh)
-{
-  std::cout << "Found " << mesh->matlabels.size() << " elements in matlabels." << std::endl;
-  unsigned int numZeros = 0;
-  for (std::vector<int>::iterator it = mesh->matlabels.begin(); it != mesh->matlabels.end(); ++it)
-  {
-    if ((*it) == 0)
-      numZeros++;
-    else
-      std::cout << (*it) << std::endl;
-  }
-  std::cout << numZeros << " zero values found." << std::endl;
-}
-

@@ -12,6 +12,7 @@
 
 /** The class that represents all of the available options for FEM */
 class FEMSolver {
+private:
   class SparseEntry_t {
   public:
     int32_t row_;
@@ -21,31 +22,21 @@ class FEMSolver {
       static_cast<float>(v)) {}
     ~SparseEntry_t() {}
   };
-
-  public:
+  bool InitCUDA();
+  static bool compare_sparse_entry(SparseEntry_t a, SparseEntry_t b);
+public:
   FEMSolver(std::string fname = "../src/test/test_data/simple",
-      bool verbose = false);
+      bool isTetMesh = true, bool verbose = false);
   virtual ~FEMSolver();
-  public:
-  void solveFEM(Matrix_ell_h* A_h, Vector_h_CG* x_h, Vector_h_CG* b_h);
-  void getMatrixFromMesh(Matrix_ell_h* A_h);
-  static int readMatlabSparseMatrix(const std::string &filename, Matrix_ell_h *A_h);
-  static int readMatlabNormalMatrix(const std::string &filename, std::vector<double> *A_h);
+  void solveFEM(Vector_h_CG* x_h, Vector_h_CG* b_h);
+  void getMatrixFromMesh();
+  int readMatlabSparseMatrix(const std::string &filename);
+  int readMatlabArray(const std::string &filename, Vector_h_CG* rhs);
   int writeMatlabArray(const std::string &filename, const Vector_h_CG &array);
   void checkMatrixForValidContents(Matrix_ell_h* A_h);
   void writeVTK(std::vector <float> values, std::string fname);
-  void printElementWithHeader(std::vector<double>& test, unsigned int index);
-  void printMatlabReadContents(std::vector<double>& test);
-  int importRhsVectorFromFile(std::string filename,
-      Vector_h_CG& targetVector, bool verbose);
-  int importStiffnessMatrixFromFile(std::string filename,
-      Matrix_ell_h* targetMatrix, bool verbose);
-  void debugPrintMatlabels(TetMesh* mesh);
-  private:
-  bool InitCUDA();
-  static bool compare_sparse_entry(SparseEntry_t a, SparseEntry_t b);
-  public:
-  //data
+  size_t getMatrixRows();
+  //data members
   bool verbose_;                  // output verbosity
   std::string filename_;          // mesh file name
   int maxLevels_;                 // the maximum number of levels
@@ -71,6 +62,8 @@ class FEMSolver {
   //The pointers to the meshes
   TetMesh * tetMesh_;
   TriMesh * triMesh_;
+  //The A matrix used by the solver
+  Matrix_ell_h A_h_;
 };
 
 #endif

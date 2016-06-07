@@ -12,40 +12,26 @@
 int main(int argc, char** argv)
 {
   //Verbose option
-  FEMSolver cfg;
-  cfg.filename_ = "../src/test/test_data/sphere_290verts.ply";
+  bool verbose = false;
+  std::string filename = "../src/test/test_data/sphere_290verts.ply";
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i], "-v") == 0) {
-      cfg.verbose_ = true;
+      verbose = true;
     } else if (strcmp(argv[i], "-i") == 0) {
       if (i + 1 >= argc) break;
-      cfg.filename_ = std::string(argv[i + 1]);
+      filename = std::string(argv[i + 1]);
       i++;
     }
   }
   //Our main configuration object. We will set aspects where the
   // default values are not what we desire.
-  //Now we read in the mesh of choice
-  //read in the Tetmesh
-  cfg.triMesh_ = TriMesh::read(cfg.filename_.c_str());
-  //The stiffness matrix A 
-  Matrix_ell_h A;
-  //get the basic stiffness matrix (constant) by creating the mesh matrix
-  cfg.getMatrixFromMesh(&A);
-  //intialize the b matrix to ones for now. TODO @DEBUG
-  Vector_h_CG b_h(A.num_rows, 1.0);
+  FEMSolver cfg(filename, false, verbose);
+  //intialize the b matrix to ones for now. 
+  Vector_h_CG b_h(cfg.getMatrixRows(), 1.0);
   //The answer vector.
-  Vector_h_CG x_h(A.num_rows, 0.0); //intial X vector
-  //************************ DEBUG : creating identity matrix for stiffness properties for now.
-  Matrix_ell_h identity(A.num_rows, A.num_rows, A.num_rows, 1);
-  for (int i = 0; i < A.num_rows; i++) {
-	  identity.column_indices(i, 0) = i;
-	  identity.values(i, 0) = 1;
-  }
-  //************************ DEBUG*/
+  Vector_h_CG x_h(cfg.getMatrixRows(), 0.0); //intial X vector
   //The final call to the solver
-  cfg.checkMatrixForValidContents(&A);
-  cfg.solveFEM(&A, &x_h, &b_h);
+  cfg.solveFEM(&x_h, &b_h);
   //At this point, you can do what you need with the matrices.
   cfg.writeMatlabArray("output.mat", x_h);
   //write the VTK
@@ -56,10 +42,10 @@ int main(int argc, char** argv)
   int pos = cfg.filename_.find_last_of("/");
   if (pos == std::string::npos)
     pos = cfg.filename_.find_last_of("\\");
-  cfg.filename_ = cfg.filename_.substr(pos + 1,
+  std::string outname = cfg.filename_.substr(pos + 1,
     cfg.filename_.size() - 1);
-  pos = cfg.filename_.find_last_of(".");
-  cfg.filename_ = cfg.filename_.substr(0, pos);
-  cfg.writeVTK(vals, cfg.filename_);
+  pos = outname.find_last_of(".");
+  outname = outname.substr(0, pos);
+  cfg.writeVTK(vals, outname);
   return 0;
 }
