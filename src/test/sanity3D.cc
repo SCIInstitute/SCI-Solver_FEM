@@ -1,12 +1,9 @@
 #include "gtest/gtest.h"
 #include "FEMSolver.h"
-TEST(SanityTests, EggCarton) {
+TEST(SanityTests, EggCarton3D) {
   //test the egg carton
   FEMSolver cfg(std::string(TEST_DATA_DIR) + "/simple", true, true);
-
-  cfg.blockSize_ = 128;
-
-  size_t num_vert = cfg.tetMesh_->vertices.size();
+  size_t num_vert = cfg.getMatrixRows(); 
   float lambda = 1.f;
   //read the A matrix
   cfg.readMatlabSparseMatrix(std::string(TEST_DATA_DIR) + "/simple.mat");

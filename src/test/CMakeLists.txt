@@ -45,4 +45,5 @@ function(NEWTEST name)
   add_dependencies(${name} gtest FEM_SOLVER FEM_CORE)
 endfunction()
 #the tests
-newtest(sanity)
+newtest(sanity2D)
+newtest(sanity3D)
