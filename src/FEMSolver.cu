@@ -344,7 +344,7 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename) {
 
 int FEMSolver::readMatlabArray(const std::string &filename, Vector_h_CG* rhs) {
   //read in the description header
-  std::ifstream in(filename.c_str());
+  std::ifstream in(filename.c_str(), std::ios::in | std::ios::binary);
   if (!in.is_open()) {
     std::cerr << "could not open file: " << filename << std::endl;
     return -1;
@@ -425,17 +425,13 @@ int FEMSolver::readMatlabArray(const std::string &filename, Vector_h_CG* rhs) {
   //Length of array field
   uint32_t arrayData_length;
   in.read((char*)&arrayData_length, 4);
-  double readInDouble;
-  unsigned int numValues = arrayData_length / byte_per_element;
-
-  rhs->clear();
-  for (int j = 0; j < numValues; ++j) {
-    in.read(buffer, byte_per_element);
-    memcpy(&readInDouble, buffer, sizeof(double));
-    rhs->push_back(readInDouble);
-  }
-
+  std::vector<double> double_vals(arrayData_length / 8, 0);
+  in.read(reinterpret_cast<char*>(double_vals.data()), arrayData_length);
   in.close();
+  rhs->clear();
+  for (int j = 0; j < double_vals.size(); j++) {
+    rhs->push_back(double_vals[j]);
+  }
   return 0;
 }
 
@@ -507,7 +503,7 @@ int FEMSolver::writeMatlabArray(const std::string &filename, const Vector_h_CG &
 
 }
 
-void FEMSolver::writeVTK(std::vector <float> values, std::string fname)
+void FEMSolver::writeVTK(std::vector <double> values, std::string fname)
 {
   if (this->tetMesh_ != NULL) {
     int nv = this->tetMesh_->vertices.size();
@@ -566,7 +562,7 @@ void FEMSolver::writeVTK(std::vector <float> values, std::string fname)
     }
     fprintf(vtkfile, "POINT_DATA %d\nSCALARS traveltime float 1\nLOOKUP_TABLE default\n", nv);
     for (size_t i = 0; i < nv; i++) {
-      fprintf(vtkfile, "%.12f\n", values[i]);
+      fprintf(vtkfile, "%.12f\n", static_cast<float>(values[i]));
     }
     fclose(vtkfile);
   }

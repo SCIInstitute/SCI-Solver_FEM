@@ -34,7 +34,7 @@ public:
   int readMatlabArray(const std::string &filename, Vector_h_CG* rhs);
   int writeMatlabArray(const std::string &filename, const Vector_h_CG &array);
   void checkMatrixForValidContents(Matrix_ell_h* A_h);
-  void writeVTK(std::vector <float> values, std::string fname);
+  void writeVTK(std::vector <double> values, std::string fname);
   size_t getMatrixRows();
   //data members
   bool verbose_;                  // output verbosity

@@ -3,30 +3,20 @@
 TEST(SanityTests, EggCarton3D) {
   //test the egg carton
   FEMSolver cfg(std::string(TEST_DATA_DIR) + "/simple", true, true);
-  size_t num_vert = cfg.getMatrixRows(); 
   float lambda = 1.f;
   //read the A matrix
   cfg.readMatlabSparseMatrix(std::string(TEST_DATA_DIR) + "/simple.mat");
-  //create the b vector
-  Vector_h_CG b_h(num_vert, 1.0), x_h(num_vert, 0.0);
-  for (int i = 0; i < num_vert; i++) {
-    b_h[i] = 8. * M_PI * M_PI * std::sin(2. * M_PI * cfg.tetMesh_->vertices[i][0]) *
-      std::sin(2. * M_PI * cfg.tetMesh_->vertices[i][1]) + lambda *
-      std::sin(2. * M_PI * cfg.tetMesh_->vertices[i][0]) *
-      std::sin(2. * M_PI * cfg.tetMesh_->vertices[i][1]);
-  }
-  //create the b vector
-  std::vector<float> x_answer;
-  for (int i = 0; i < num_vert; i++) {
-    x_answer.push_back(
-      std::sin(2. * M_PI * cfg.tetMesh_->vertices[i][0]) *
-      std::sin(2. * M_PI * cfg.tetMesh_->vertices[i][1]));
-  }
+  //read the b vector
+  Vector_h_CG b_h, x_h(cfg.getMatrixRows(), 0.), x_answer;
+  cfg.readMatlabArray(std::string(TEST_DATA_DIR) + "/simpleb.mat", &b_h);
+  //solve
   cfg.solveFEM(&x_h, &b_h);
+  //read in known answer
+  cfg.readMatlabArray(std::string(TEST_DATA_DIR) + "/simpleAns.mat", &x_answer);
   //look for error
-  float error = 0.f;
-  std::vector<float> x_actual;
-  for (int i = 0; i < num_vert; i++) {
+  double error = 0.f;
+  std::vector<double> x_actual;
+  for (int i = 0; i < cfg.getMatrixRows(); i++) {
     error += (x_h[i] - x_answer[i]) * (x_h[i] - x_answer[i]);
     x_actual.push_back(x_h[i]);
   }

@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 	  std::cerr << "failed to write matlab file." << std::endl;
   }
   //write the VTK
-  std::vector<float> vals;
+  std::vector<double> vals;
   for (size_t i = 0; i < x_h.size(); i++){
     vals.push_back(x_h[i]);
   }

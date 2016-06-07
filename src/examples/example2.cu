@@ -35,7 +35,7 @@ int main(int argc, char** argv)
   //At this point, you can do what you need with the matrices.
   cfg.writeMatlabArray("output.mat", x_h);
   //write the VTK
-  std::vector<float> vals;
+  std::vector<double> vals;
   for (size_t i = 0; i < x_h.size(); i++){
     vals.push_back(x_h[i]);
   }
