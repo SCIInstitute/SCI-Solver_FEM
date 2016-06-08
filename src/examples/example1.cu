@@ -1,8 +1,4 @@
-#include <cstdlib>
-#include <cstdio>
 #include "FEMSolver.h"
-#include <cuda_resources.h>
-
 /**
  * SCI-Solver_FEM :: Example 1
  * This example is the basic steps for running the solver:

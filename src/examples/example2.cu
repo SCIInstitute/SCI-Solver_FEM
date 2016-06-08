@@ -1,8 +1,4 @@
-#include <cstdlib>
-#include <cstdio>
 #include "FEMSolver.h"
-#include <string>
-
 /**
  * SCI-Solver_FEM :: Example 2
  * This example is nearly identical to Example 1, except:
