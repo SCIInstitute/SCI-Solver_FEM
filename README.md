@@ -17,7 +17,7 @@ Table of Contents
 - [Using the Library](#using-the-library)
 - [Testing](#testing)<br/>
 
-<br/><br/><br/>
+<br/>
 
 <h4>FEM Aknowledgements</h4>
 **<a href ="http://www.sciencedirect.com/science/article/pii/S0377042713004470">
