@@ -11,7 +11,7 @@ Table of Contents
 - [FEM Aknowledgements](#fem-aknowledgements)
 - [Requirements](#requirements)
 - [Building](#building)<br/>
-		- [Linux / OSX](#linux-and-osx)<br/>
+		- [Linux / OSX](#linux-osx)<br/>
 		- [Windows](#windows)<br/>
 - [Running Examples](#running-examples)
 - [Using the Library](#using-the-library)
