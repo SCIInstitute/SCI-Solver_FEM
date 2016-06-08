@@ -7,7 +7,7 @@ TEST(SanityTests, EggCarton3D) {
   //read the A matrix
   cfg.readMatlabSparseMatrix(std::string(TEST_DATA_DIR) + "/simple.mat");
   //read the b vector
-  Vector_h_CG b_h, x_h(cfg.getMatrixRows(), 0.), x_answer;
+  Vector_h_CG b_h(cfg.getMatrixRows(), 1.0), x_h(cfg.getMatrixRows(), 0.), x_answer;
   cfg.readMatlabArray(std::string(TEST_DATA_DIR) + "/simpleb.mat", &b_h);
   //solve
   cfg.solveFEM(&x_h, &b_h);

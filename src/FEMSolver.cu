@@ -337,7 +337,19 @@ int FEMSolver::readMatlabSparseMatrix(const std::string &filename) {
       row_count = 0;
     }
   }
+  //zero out current entries.
   Matrix_ell_h original(this->A_h_);
+  for (size_t ii = 0; ii < original.num_rows; ii++) {
+    size_t jj = 0;
+    size_t numNeighbor = ((this->triMesh_ == NULL) ? 
+      (this->tetMesh_->neighbors[ii].size()) :
+      (this->triMesh_->neighbors[ii].size())) + 1;
+    while (jj < numNeighbor) {
+      original.values(ii, jj) = 1e-12f;
+      jj++;
+    }
+  }
+  //add custom entries to zeroed entries.
   cusp::add(A, original, this->A_h_);
   return 0;
 }

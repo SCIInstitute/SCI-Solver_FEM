@@ -13,21 +13,39 @@ int main(int argc, char** argv)
 {
   //Verbose option
   bool verbose = false;
-  std::string filename = "../src/test/test_data/sphere_290verts.ply";
+  std::string fname = "../src/test/test_data/sphere_290verts.ply", bName = "", Aname = "";
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i], "-v") == 0) {
       verbose = true;
     } else if (strcmp(argv[i], "-i") == 0) {
       if (i + 1 >= argc) break;
-      filename = std::string(argv[i + 1]);
+      fname = std::string(argv[i + 1]);
+      i++;
+    } else if (strcmp(argv[i], "-b") == 0) {
+      if (i + 1 >= argc) break;
+      bName = std::string(argv[i + 1]);
+      i++;
+    } else if (strcmp(argv[i], "-A") == 0) {
+      if (i + 1 >= argc) break;
+      Aname = std::string(argv[i + 1]);
       i++;
     }
   }
   //Our main configuration object. We will set aspects where the
   // default values are not what we desire.
-  FEMSolver cfg(filename, false, verbose);
-  //intialize the b matrix to ones for now. 
+  FEMSolver cfg(fname, false, verbose);
+  if (!Aname.empty()) {
+    //Import stiffness matrix (A)
+    if (cfg.readMatlabSparseMatrix(Aname) != 0)
+      std::cerr << "Failed to read in A matrix: " << Aname << std::endl;
+  }
+  //intialize the b matrix to ones for now.
   Vector_h_CG b_h(cfg.getMatrixRows(), 1.0);
+  if (!bName.empty()) {
+    //Import right-hand-side single-column array (b)
+    if (cfg.readMatlabArray(bName, &b_h) != 0)
+      std::cerr << "Failed to read in b array: " << bName << std::endl;
+  }
   //The answer vector.
   Vector_h_CG x_h(cfg.getMatrixRows(), 0.0); //intial X vector
   //The final call to the solver
