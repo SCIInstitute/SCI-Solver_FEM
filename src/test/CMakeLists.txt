@@ -47,3 +47,4 @@ endfunction()
 #the tests
 newtest(sanity2D)
 newtest(sanity3D)
+newtest(tetVol)

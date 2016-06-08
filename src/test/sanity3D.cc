@@ -21,6 +21,5 @@ TEST(SanityTests, EggCarton3D) {
     x_actual.push_back(x_h[i]);
   }
   std::cout << "The error is : " << std::sqrt(error) << std::endl;
-  cfg.writeVTK(x_actual, "test_egg_carton2");
   ASSERT_TRUE(std::sqrt(error) < 1.);
 }
