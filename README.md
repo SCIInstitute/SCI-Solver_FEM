@@ -7,7 +7,7 @@ The code was written by Zhisong Fu and T. James Lewis at the Scientific Computin
 University of Utah, Salt Lake City, USA. The theory behind this code is published in the papers linked below. 
 Table of Contents
 ========
-<img src="https://raw.githubusercontent.com/SCIInstitute/SCI-Solver_FEM/master/src/Resources/fem.gif"  align="right" hspace="20" width=450>
+<img src="https://raw.githubusercontent.com/SCIInstitute/SCI-Solver_FEM/master/src/Resources/fem.png"  align="right" hspace="20" width=350>
 - [FEM Aknowledgements](#fem-aknowledgements)
 - [Requirements](#requirements)
 - [Building](#building)<br/>
@@ -22,7 +22,7 @@ Table of Contents
 <h4>FEM Aknowledgements</h4>
 **<a href ="http://www.sciencedirect.com/science/article/pii/S0377042713004470">
 Architecting the Finite Element Method Pipeline for the GPU</a>**<br/>
-<img src="https://raw.githubusercontent.com/SCIInstitute/SCI-Solver_FEM/master/src/Resources/fem2.gif"  align="right" hspace="20" width=460>
+<img src="https://raw.githubusercontent.com/SCIInstitute/SCI-Solver_FEM/master/src/Resources/fem2.png"  align="right" hspace="20" width=360>
 
 **AUTHORS:**
 <br/>Zhisong Fu(*a*) <br/>
