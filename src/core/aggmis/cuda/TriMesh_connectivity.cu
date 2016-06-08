@@ -29,9 +29,10 @@ void TriMesh::need_meshquality()
     fprintf(valancefile, "%d\n", val);
   }
   avg_valance = sum / neighbors.size();
-  printf("Max valance is %d\n", max_valance);
-  printf("average valance is %d\n", avg_valance);
-
+  if (this->verbose) {
+    printf("Max valance is %d\n", max_valance);
+    printf("average valance is %d\n", avg_valance);
+  }
   int ne = faces.size();
   for(int i =0; i<ne; i++)
   {
@@ -68,7 +69,6 @@ void TriMesh::need_meshquality()
 
 }
 
-
 void TriMesh::need_faceedges()
 {
   if (faces.empty())
@@ -97,8 +97,9 @@ void TriMesh::need_neighbors()
 {
   if (!neighbors.empty())
     return;
-
-  printf("Finding vertex neighbors... ");
+  if (this->verbose) {
+    printf("Finding vertex neighbors... ");
+  }
   int nv = vertices.size(), nf = faces.size();
 
   std::vector<int> numneighbors(nv);
@@ -124,7 +125,9 @@ void TriMesh::need_neighbors()
     }
   }
 
-  printf("Done.\n");
+  if (this->verbose) {
+    printf("Done.\n");
+  }
 }
 
 void TriMesh::rescale(int size)
@@ -212,7 +215,9 @@ void TriMesh::need_adjacentfaces()
     return;
   //  need_faces();
 
-  printf("Finding vertex to triangle maps... ");
+  if (this->verbose) {
+    printf("Finding vertex to triangle maps... ");
+  }
   int nv = vertices.size(), nf = faces.size();
 
   std::vector<int> numadjacentfaces(nv);
@@ -231,7 +236,9 @@ void TriMesh::need_adjacentfaces()
       adjacentfaces[faces[i][j]].push_back(i);
   }
 
-  printf("Done.\n");
+  if (this->verbose) {
+    printf("Done.\n");
+  }
 }
 
 // Find the face across each edge from each other face (-1 on boundary)
@@ -242,8 +249,9 @@ void TriMesh::need_across_edge()
     return;
   need_adjacentfaces();
 
-  printf("Finding across-edge maps... ");
-
+  if (this->verbose) {
+    printf("Finding across-edge maps... ");
+  }
   int nf = faces.size();
   across_edge.resize(nf, Face(-1,-1,-1));
 
@@ -273,6 +281,8 @@ void TriMesh::need_across_edge()
     }
   }
 
-  printf("Done.\n");
+  if (this->verbose) {
+    printf("Done.\n");
+  }
 }
 

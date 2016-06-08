@@ -37,6 +37,7 @@ FEMSolver::FEMSolver(
     this->tetMesh_ = TetMesh::read((this->filename_ + ".node").c_str(),
       (this->filename_ + ".ele").c_str(), verbose);
   } else {
+    TriMesh::verbose = verbose;
     this->triMesh_ = TriMesh::read(this->filename_.c_str());
   }
   this->getMatrixFromMesh();
