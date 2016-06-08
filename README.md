@@ -8,7 +8,7 @@ University of Utah, Salt Lake City, USA. The theory behind this code is publishe
 Table of Contents
 ========
 <img src="https://raw.githubusercontent.com/SCIInstitute/SCI-Solver_FEM/master/src/Resources/fem.gif"  align="right" hspace="20" width=450>
-- [FEM Aknowledgements](#levelset-aknowledgements)
+- [FEM Aknowledgements](#fem-aknowledgements)
 - [Requirements](#requirements)
 - [Building](#building)<br/>
 		- [Linux / OSX](#linux-and-osx)<br/>
@@ -52,7 +52,7 @@ Requirements
 Building
 ==============
 
-<h3>Unix / OSX</h3>
+<h3>Linux / OSX</h3>
 In a terminal:
 ```c++
 mkdir SCI-SOLVER_FEM/build
@@ -168,7 +168,7 @@ TriMesh * FEMSolver::triMesh_;
 <h3>FEM Solver Parameters</h3>
 
 ```C++
-  class LevelSet {
+  class FEMSolver {
 	  bool verbose_;                  // output verbosity
 	  std::string filename_;          // mesh file name
 	  int maxLevels_;                 // the maximum number of levels
