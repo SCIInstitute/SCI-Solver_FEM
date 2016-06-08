@@ -11,7 +11,7 @@ Table of Contents
 - [FEM Aknowledgements](#fem-aknowledgements)
 - [Requirements](#requirements)
 - [Building](#building)<br/>
-		- [Linux / OSX](#linux-osx)<br/>
+		- [Linux and OSX](#linux-and-osx)<br/>
 		- [Windows](#windows)<br/>
 - [Running Examples](#running-examples)
 - [Using the Library](#using-the-library)
@@ -52,7 +52,7 @@ Requirements
 Building
 ==============
 
-<h3>Linux / OSX</h3>
+<h3>Linux and OSX</h3>
 In a terminal:
 ```c++
 mkdir SCI-SOLVER_FEM/build
