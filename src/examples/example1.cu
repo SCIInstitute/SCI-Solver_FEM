@@ -12,7 +12,7 @@
 int main(int argc, char** argv)
 {
   //option
-  std::string Aname = "", bName, fname = "../src/test/test_data/CubeMesh_size256step16";
+  std::string Aname, bName, ansName, fname = "../src/test/test_data/CubeMesh_size256step16";
   bool verbose = false;
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i], "-v") == 0) {
@@ -24,6 +24,10 @@ int main(int argc, char** argv)
     } else if (strcmp(argv[i], "-b") == 0) {
       if (i + 1 >= argc) break;
       bName = std::string(argv[i + 1]);
+      i++;
+    } else if (strcmp(argv[i], "-a") == 0) {
+      if (i + 1 >= argc) break;
+      ansName = std::string(argv[i + 1]);
       i++;
     } else if (strcmp(argv[i], "-A") == 0) {
       if (i + 1 >= argc) break;
@@ -46,6 +50,20 @@ int main(int argc, char** argv)
     if (cfg.readMatlabArray(bName, &b_h) != 0)
       std::cerr << "Failed to read in b array: " << bName << std::endl;
   }
+  //intialize the ans matrix to ones for now.
+  Vector_h_CG ans_h(cfg.getMatrixRows(), 1.0);
+  if (!ansName.empty()) {
+    //Import right-hand-side single-column array (b)
+    if (cfg.readMatlabArray(ansName, &ans_h) != 0)
+      std::cerr << "Failed to read in ans array: " << bName << std::endl;
+  }
+  //write the VTK
+  std::vector<double> ans;
+  for (size_t i = 0; i < ans_h.size(); i++){
+    ans.push_back(ans_h[i]);
+  }
+  cfg.writeVTK(ans, "answer");
+  std::cout << "wrote out answer mesh" << std::endl;
   //The answer vector.
   Vector_h_CG x_h(cfg.getMatrixRows(), 0.0); //intial X vector
   //The final call to the solver
