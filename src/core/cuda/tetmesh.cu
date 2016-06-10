@@ -312,22 +312,17 @@ TetMesh *TetMesh::read(const char *nodefilename,
   i = 0;
   bool zero_based = false;
   //get the elements
-  while (elefile.good())
-  {
+  while (elefile.good()) {
     std::getline(elefile, line);
     if (line.empty() || line.at(0) == '#') continue;
     int tval[4], mat;
-    if (haslabel == 0)
-    {
+    if (haslabel == 0) {
       if (sscanf(line.c_str(), "%d %d %d %d %d",
-          &tmp, &tval[0], &tval[1], &tval[2], &tval[3]) != 5)
-      {
+          &tmp, &tval[0], &tval[1], &tval[2], &tval[3]) != 5) {
         std::cerr << "Bad Ele file, line # " << i << std::endl;
         exit(0);
       }
-    }
-    else
-    {
+    } else {
       if (sscanf(line.c_str(), "%d %d %d %d %d %d",
           &tmp, &tval[0], &tval[1], &tval[2], &tval[3], &mat) != 6)
       {
@@ -336,19 +331,19 @@ TetMesh *TetMesh::read(const char *nodefilename,
       }
       mesh->matlabels[i] = mat;
     }
-
-    for (j = 0; j < 4; ++j)
-    {
-      if( tval[j] == 0 )
-      {
+    for (j = 0; j < 4; j++) {
+      mesh->tets[i][j] = tval[j];
+      if (tval[j] == 0) {
         zero_based = true;
       }
     }
-
-    for (j = 0; j < 4; ++j)
-      mesh->tets[i][j] = tval[j] - (zero_based?0:1);
-
     i++;
+  }
+  if (!zero_based) {
+    for (size_t k = 0; k < mesh->tets.size(); k++)  {
+      for (j = 0; j < 4; j++)
+        mesh->tets[k][j]--;
+    }
   }
 
   elefile.close();
