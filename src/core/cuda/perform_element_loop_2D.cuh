@@ -174,7 +174,7 @@ __device__ int binarySearch(IndexType *indices, IndexType low, IndexType high, I
   return retval;
 }
 
-__device__ double atomicAdd(double* address, double val)
+__device__ double atomicAdd_2d(double* address, double val)
 {
   unsigned long long int *address_as_ull = (unsigned long long int*)address;
   unsigned long long int old = *address_as_ull, assumed;
@@ -202,7 +202,7 @@ __device__ void sum_into_global_linear_system_cuda(IndexType* __restrict__ ids, 
   IndexType loc = binarySearch<IndexType >(mat_row_cols, 1, num_col_per_row - 1, idxj, pitch); // first one is diagonal
   if (loc >= 0)
   {
-    atomicAdd(&mat_row_coefs[pitch * loc], coef);
+    atomicAdd_2d(&mat_row_coefs[pitch * loc], coef);
     //    mat_row_coefs[pitch * loc] += coef;
   }
 
@@ -211,7 +211,7 @@ __device__ void sum_into_global_linear_system_cuda(IndexType* __restrict__ ids, 
   loc = binarySearch<IndexType >(mat_row_cols, 1, num_col_per_row - 1, idxi, pitch); // first one is diagonal
   if (loc >= 0)
   {
-    atomicAdd(&mat_row_coefs[pitch * loc], coef);
+    atomicAdd_2d(&mat_row_coefs[pitch * loc], coef);
     //    mat_row_coefs[pitch * loc] += coef;
   }
 
@@ -223,7 +223,7 @@ __device__ void sum_into_global_linear_system_cuda(IndexType* __restrict__ ids, 
   loc = binarySearch<IndexType >(mat_row_cols, 1, num_col_per_row - 1, idxj, pitch); // first one is diagonal
   if (loc >= 0)
   {
-    atomicAdd(&mat_row_coefs[pitch * loc], coef);
+    atomicAdd_2d(&mat_row_coefs[pitch * loc], coef);
     //    mat_row_coefs[pitch * loc] += coef;
   }
 
@@ -232,7 +232,7 @@ __device__ void sum_into_global_linear_system_cuda(IndexType* __restrict__ ids, 
   loc = binarySearch<IndexType >(mat_row_cols, 1, num_col_per_row - 1, idxi, pitch); // first one is diagonal
   if (loc >= 0)
   {
-    atomicAdd(&mat_row_coefs[pitch * loc], coef);
+    atomicAdd_2d(&mat_row_coefs[pitch * loc], coef);
     //    mat_row_coefs[pitch * loc] += coef;
   }
 
@@ -244,7 +244,7 @@ __device__ void sum_into_global_linear_system_cuda(IndexType* __restrict__ ids, 
   loc = binarySearch<IndexType >(mat_row_cols, 1, num_col_per_row - 1, idxj, pitch); // first one is diagonal
   if (loc >= 0)
   {
-    atomicAdd(&mat_row_coefs[pitch * loc], coef);
+    atomicAdd_2d(&mat_row_coefs[pitch * loc], coef);
     //    mat_row_coefs[pitch * loc] += coef;
   }
 
@@ -253,7 +253,7 @@ __device__ void sum_into_global_linear_system_cuda(IndexType* __restrict__ ids, 
   loc = binarySearch<IndexType >(mat_row_cols, 1, num_col_per_row - 1, idxi, pitch); // first one is diagonal
   if (loc >= 0)
   {
-    atomicAdd(&mat_row_coefs[pitch * loc], coef);
+    atomicAdd_2d(&mat_row_coefs[pitch * loc], coef);
     //    mat_row_coefs[pitch * loc] += coef;
   }
 
@@ -261,27 +261,27 @@ __device__ void sum_into_global_linear_system_cuda(IndexType* __restrict__ ids, 
   mat_row_cols = &d_ellcolidx[idxi];
   mat_row_coefs = &d_ellvalues[idxi];
   coef = stiffMat[0] + lambda * massMat[0];
-  atomicAdd(&mat_row_coefs[0], coef);
+  atomicAdd_2d(&mat_row_coefs[0], coef);
   //  mat_row_coefs[0] += coef;
 
   idxi = ids[1];
   mat_row_cols = &d_ellcolidx[idxi];
   mat_row_coefs = &d_ellvalues[idxi];
   coef = stiffMat[3] + lambda * massMat[3];
-  atomicAdd(&mat_row_coefs[0], coef);
+  atomicAdd_2d(&mat_row_coefs[0], coef);
   //  mat_row_coefs[0] += coef;
 
   idxi = ids[2];
   mat_row_cols = &d_ellcolidx[idxi];
   mat_row_coefs = &d_ellvalues[idxi];
   coef = stiffMat[5] + lambda * massMat[5];
-  atomicAdd(&mat_row_coefs[0], coef);
+  atomicAdd_2d(&mat_row_coefs[0], coef);
   //  mat_row_coefs[0] += coef;
 
   //  sum_into_vector
-  atomicAdd(&d_b[ids[0]], ele_b[0]);
-  atomicAdd(&d_b[ids[1]], ele_b[1]);
-  atomicAdd(&d_b[ids[2]], ele_b[2]);
+  atomicAdd_2d(&d_b[ids[0]], ele_b[0]);
+  atomicAdd_2d(&d_b[ids[1]], ele_b[1]);
+  atomicAdd_2d(&d_b[ids[2]], ele_b[2]);
 }
 
 template<typename IndexType, typename ValueType>
